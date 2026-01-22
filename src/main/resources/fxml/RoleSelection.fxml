@@ -58,7 +58,7 @@
 
     <ImageView fitHeight="${rootHBox.height}" pickOnBounds="true" preserveRatio="false">
         <image>
-            <Image url="@../icons/front.png" />
+            <Image url="@../icons/f1.png" />
         </image>
         <effect>
             <DropShadow color="#00000020" radius="20" />
