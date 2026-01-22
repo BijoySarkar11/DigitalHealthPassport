@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane styleClass="root" stylesheets="@../css/styles.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.healthpassport.ui.doctor.DoctorDashboardController">
+
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="20" style="-fx-background-color: white; -fx-padding: 15 30; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 2);">
+            <Label styleClass="heading-text" style="-fx-font-size: 20px;" text="Doctor Portal" />
+            <HBox HBox.hgrow="ALWAYS" />
+            <Button text="Log Out" styleClass="button-secondary" onAction="#handleLogout"/>
+        </HBox>
+    </top>
+
+    <center>
+        <VBox spacing="30" style="-fx-padding: 40;">
+
+            <VBox spacing="5">
+                <Label fx:id="welcomeLabel" styleClass="heading-text" text="Welcome, Dr. Smith" />
+                <Label styleClass="sub-text" text="Manage your patients and appointments" />
+            </VBox>
+
+            <HBox spacing="30">
+                <VBox styleClass="card" minWidth="300" spacing="15">
+                    <Label styleClass="heading-text" style="-fx-font-size: 18px;" text="My Profile" />
+                    <VBox spacing="5">
+                        <Label text="Doctor ID" style="-fx-font-weight: bold; -fx-text-fill: #64748B;"/>
+                        <Label text="DR-5501" style="-fx-font-size: 16px;"/>
+                    </VBox>
+                    <VBox spacing="5">
+                        <Label text="Department" style="-fx-font-weight: bold; -fx-text-fill: #64748B;"/>
+                        <Label text="Cardiology" style="-fx-font-size: 16px;"/>
+                    </VBox>
+                </VBox>
+
+                <VBox styleClass="card" spacing="20" alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
+                    <Label styleClass="heading-text" style="-fx-font-size: 18px;" text="Patient Management" />
+
+                    <HBox spacing="20">
+                        <Button text="🔍 Search Patient" styleClass="button-primary"
+                                style="-fx-font-size: 16px; -fx-padding: 20 30; -fx-background-color: #059669;"
+                                onAction="#handleSearchPatient"/>
+
+                        <Button text="➕ New Patient" styleClass="button-primary"
+                                style="-fx-font-size: 16px; -fx-padding: 20 30; -fx-background-color: #10B981;"
+                                onAction="#handleNewPatient"/>
+                    </HBox>
+
+                    <Label styleClass="sub-text" text="Search existing records or register a new patient admission." />
+                </VBox>
+            </HBox>
+
+        </VBox>
+    </center>
+</BorderPane>

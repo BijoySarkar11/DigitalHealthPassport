@@ -1,55 +1,80 @@
-/* GLOBAL BACKGROUND */
+/* =========================================
+   GLOBAL RESET
+   ========================================= */
 .root {
     -fx-font-family: 'Segoe UI', sans-serif;
-    -fx-background-color: #F4F6F9;
+    /* Clean white background, like the reference */
+    -fx-background-color: #FFFFFF;
 }
 
-/* CARDS (White floating boxes) */
-.card {
-    -fx-background-color: white;
-    -fx-background-radius: 20;
-    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.05), 20, 0, 0, 5);
-    -fx-padding: 30;
+/* =========================================
+   HERO TYPOGRAPHY
+   ========================================= */
+.hero-headline {
+    /* The main dark text */
+    -fx-text-fill: #2D3436;
+    -fx-font-weight: 900; /* Extra Bold */
+    -fx-line-spacing: -10px; /* Tighten up the lines */
 }
 
-/* HEADINGS */
-.heading-text {
-    -fx-font-size: 24px;
-    -fx-font-weight: bold;
-    -fx-text-fill: #1E293B;
+.hero-headline-colored {
+    /* The colored part of the headline */
+    -fx-text-fill: #0984E3; /* A nice professional blue */
+    -fx-font-weight: 900;
+    -fx-line-spacing: -10px;
 }
 
-/* SUBTITLES */
-.sub-text {
-    -fx-font-size: 14px;
-    -fx-text-fill: #64748B;
+.hero-subtitle {
+    /* Subtitle text color */
+    -fx-text-fill: #636E72;
+    -fx-line-spacing: 5px;
 }
 
-/* PRIMARY BUTTON (Blue) */
-.button-primary {
-    -fx-background-color: #2563EB;
+/* =========================================
+   PORTAL CARDS (Clean Button Style)
+   ========================================= */
+.portal-card {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 15;
+    -fx-padding: 20 30;
+    -fx-alignment: center;
+    -fx-cursor: hand;
+    -fx-min-width: 160px;
+
+    /* A subtle border for definition */
+    -fx-border-color: #DFE6E9;
+    -fx-border-width: 2;
+    -fx-border-radius: 15;
+
+    /* Soft shadow for depth */
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 15, 0, 4, 4);
+
+    /* Smooth transition for hover effect */
+    -fx-transition: all 0.3s ease;
+}
+
+.portal-card:hover {
+    -fx-background-color: #0984E3; /* Change to blue on hover */
+    -fx-border-color: #0984E3;
+    -fx-translate-y: -5px; /* Move up */
+    /* Stronger, colored shadow on hover */
+    -fx-effect: dropshadow(three-pass-box, rgba(9, 132, 227, 0.4), 20, 0, 6, 6);
+}
+
+/* Text styles change on hover (handled by JavaFX structure) */
+.portal-card:hover > .label {
     -fx-text-fill: white;
-    -fx-font-weight: bold;
-    -fx-font-size: 14px;
-    -fx-background-radius: 12;
-    -fx-padding: 10 20;
-    -fx-cursor: hand;
-}
-.button-primary:hover {
-    -fx-background-color: #1D4ED8;
 }
 
-/* SECONDARY BUTTON (Outline) */
-.button-secondary {
-    -fx-background-color: transparent;
-    -fx-border-color: #2563EB;
-    -fx-border-radius: 12;
-    -fx-border-width: 1.5;
-    -fx-text-fill: #2563EB;
+/* Card Text */
+.card-title {
+    -fx-font-size: 18px;
     -fx-font-weight: bold;
-    -fx-cursor: hand;
-    -fx-padding: 8 18;
+    -fx-text-fill: #2D3436;
+    -fx-padding: 10 0 5 0;
 }
-.button-secondary:hover {
-    -fx-background-color: #EFF6FF;
+
+.card-desc {
+    -fx-font-size: 14px;
+    -fx-text-fill: #636E72;
 }

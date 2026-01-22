@@ -13,8 +13,8 @@ public class Main extends Application {
     public void start(Stage primaryStage) {
         try {
             // This loads your "Role Selection" screen first
-            Parent root = FXMLLoader.load(getClass().getResource("/fxml/PatientDashboard.fxml"));
-            // Sets the window title
+// Correct: Start at the beginning
+            Parent root = FXMLLoader.load(getClass().getResource("/fxml/RoleSelection.fxml"));            // Sets the window title
             primaryStage.setTitle("Digital Health Passport");
 
             // Sets the window size (Width: 1000, Height: 700)
