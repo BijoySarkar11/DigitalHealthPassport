@@ -1,0 +1,55 @@
+/* GLOBAL BACKGROUND */
+.root {
+    -fx-font-family: 'Segoe UI', sans-serif;
+    -fx-background-color: #F4F6F9;
+}
+
+/* CARDS (White floating boxes) */
+.card {
+    -fx-background-color: white;
+    -fx-background-radius: 20;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.05), 20, 0, 0, 5);
+    -fx-padding: 30;
+}
+
+/* HEADINGS */
+.heading-text {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1E293B;
+}
+
+/* SUBTITLES */
+.sub-text {
+    -fx-font-size: 14px;
+    -fx-text-fill: #64748B;
+}
+
+/* PRIMARY BUTTON (Blue) */
+.button-primary {
+    -fx-background-color: #2563EB;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+    -fx-background-radius: 12;
+    -fx-padding: 10 20;
+    -fx-cursor: hand;
+}
+.button-primary:hover {
+    -fx-background-color: #1D4ED8;
+}
+
+/* SECONDARY BUTTON (Outline) */
+.button-secondary {
+    -fx-background-color: transparent;
+    -fx-border-color: #2563EB;
+    -fx-border-radius: 12;
+    -fx-border-width: 1.5;
+    -fx-text-fill: #2563EB;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+    -fx-padding: 8 18;
+}
+.button-secondary:hover {
+    -fx-background-color: #EFF6FF;
+}
