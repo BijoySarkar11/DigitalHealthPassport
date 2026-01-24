@@ -5,64 +5,91 @@
 <?import javafx.scene.effect.DropShadow?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.text.Font?>
+<?import javafx.scene.shape.Circle?>
+<?import javafx.scene.shape.Rectangle?>
 
-<HBox fx:id="rootHBox" alignment="CENTER_LEFT" styleClass="root" stylesheets="@../css/styles.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.healthpassport.ui.login.RoleSelectionController">
+<VBox alignment="TOP_CENTER" styleClass="root-background" stylesheets="@../css/styles.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.healthpassport.ui.login.RoleSelectionController">
 
-    <VBox alignment="CENTER_LEFT" spacing="25.0" HBox.hgrow="ALWAYS" style="-fx-padding: 0 40 0 40;">
+    <padding>
+        <Insets top="10.0" bottom="20.0" />
+    </padding>
 
-        <VBox spacing="5.0">
-            <Label styleClass="hero-headline" text="DIGITAL HEALTH" textFill="#2d3436">
-                <font>
-                    <Font name="System Bold" size="42.0" />
-                </font>
-            </Label>
-            <Label styleClass="hero-headline-colored" text="PASSPORT." textFill="#0984e3">
-                <font>
-                    <Font name="System Bold" size="42.0" />
-                </font>
-            </Label>
-
-            <Label maxWidth="450.0" styleClass="hero-subtitle" text="Your secure, connected gateway to better healthcare management. Access records, book appointments, and manage care—all in one place." wrapText="true" textFill="#636e72">
-                <font>
-                    <Font size="14.0" />
-                </font>
-                <VBox.margin>
-                    <Insets top="10.0" />
-                </VBox.margin>
-            </Label>
+    <HBox alignment="CENTER" spacing="15.0" styleClass="heading-container">
+        <Label styleClass="logo-icon" text="✚" />
+        <VBox alignment="CENTER_LEFT" spacing="0.0">
+            <Label styleClass="logo-text-top" text="DIGITAL HEALTH" />
+            <Label styleClass="logo-text-bottom" text="PASSPORT" />
         </VBox>
+    </HBox>
 
-        <HBox spacing="15.0">
-            <VBox styleClass="portal-card" onMouseClicked="#handlePatientLogin">
-                <Label text="🧘" style="-fx-font-size: 28px;"/>
-                <Label styleClass="card-title" text="Patient" />
-                <Label styleClass="card-desc" text="My Records" />
+    <StackPane VBox.vgrow="ALWAYS">
+
+        <AnchorPane pickOnBounds="false">
+            <Circle fill="#E0F2FE" radius="250.0" AnchorPane.leftAnchor="-150.0" AnchorPane.topAnchor="-150.0" />
+            <Circle fill="#E0F2FE" radius="200.0" AnchorPane.bottomAnchor="-100.0" AnchorPane.rightAnchor="-100.0" />
+        </AnchorPane>
+
+        <HBox alignment="CENTER" maxHeight="600.0" maxWidth="1000.0" spacing="0.0" styleClass="main-card">
+
+            <clip>
+                <Rectangle arcHeight="60.0" arcWidth="60.0" height="600.0" width="1000.0" />
+            </clip>
+
+            <effect>
+                <DropShadow color="#00000025" radius="50" offsetY="25" />
+            </effect>
+
+            <ImageView fitHeight="600.0" fitWidth="500.0" pickOnBounds="true" preserveRatio="false">
+                <image>
+                    <Image url="@../icons/frontp1.jpg" />
+                </image>
+            </ImageView>
+
+            <VBox alignment="CENTER" spacing="40.0" styleClass="right-panel" HBox.hgrow="ALWAYS">
+
+                <VBox alignment="CENTER_LEFT" maxWidth="350.0" spacing="10.0">
+                    <Label styleClass="form-header" text="Select Portal" />
+                    <Label styleClass="form-subheader" text="Choose your role to access the dashboard." />
+                </VBox>
+
+                <VBox maxWidth="350.0" spacing="20.0">
+                    <HBox alignment="CENTER_LEFT" onMouseClicked="#handlePatientLogin" spacing="20.0" styleClass="portal-button">
+                        <Label style="-fx-font-size: 30px;" text="🧘" />
+                        <VBox>
+                            <Label styleClass="btn-title" text="Patient Portal" />
+                            <Label styleClass="btn-desc" text="View Health Records" />
+                        </VBox>
+                    </HBox>
+
+                    <HBox alignment="CENTER_LEFT" onMouseClicked="#handleDoctorLogin" spacing="20.0" styleClass="portal-button">
+                        <Label style="-fx-font-size: 30px;" text="🩺" />
+                        <VBox>
+                            <Label styleClass="btn-title" text="Doctor Portal" />
+                            <Label styleClass="btn-desc" text="Manage Appointments" />
+                        </VBox>
+                    </HBox>
+
+                    <HBox alignment="CENTER_LEFT" onMouseClicked="#handleAdminLogin" spacing="20.0" styleClass="portal-button">
+                        <Label style="-fx-font-size: 30px;" text="🛡️" />
+                        <VBox>
+                            <Label styleClass="btn-title" text="Administrator" />
+                            <Label styleClass="btn-desc" text="System Controls" />
+                        </VBox>
+                    </HBox>
+                </VBox>
+
+                <HBox alignment="CENTER" spacing="20.0">
+                    <Label styleClass="social-icon" text="🌐" />
+                    <Label styleClass="social-icon" text="📧" />
+                    <Label styleClass="social-icon" text="📞" />
+                </HBox>
+
             </VBox>
 
-            <VBox styleClass="portal-card" onMouseClicked="#handleDoctorLogin">
-                <Label text="🩺" style="-fx-font-size: 28px;"/>
-                <Label styleClass="card-title" text="Doctor" />
-                <Label styleClass="card-desc" text="Appointments" />
-            </VBox>
-
-            <VBox styleClass="portal-card" onMouseClicked="#handleAdminLogin">
-                <Label text="🛡️" style="-fx-font-size: 28px;"/>
-                <Label styleClass="card-title" text="Admin" />
-                <Label styleClass="card-desc" text="System Control" />
-            </VBox>
         </HBox>
-    </VBox>
-
-    <ImageView fitHeight="${rootHBox.height}" pickOnBounds="true" preserveRatio="false">
-        <image>
-            <Image url="@../icons/f1.png" />
-        </image>
-        <effect>
-            <DropShadow color="#00000020" radius="20" />
-        </effect>
-    </ImageView>
-
-</HBox>
+    </StackPane>
+</VBox>

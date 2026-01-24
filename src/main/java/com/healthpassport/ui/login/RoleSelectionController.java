@@ -4,48 +4,47 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
 import java.io.IOException;
 
 public class RoleSelectionController {
 
-    // When user clicks the "Patient" card
+    // 1. PATIENT LOGIN
     @FXML
     private void handlePatientLogin(MouseEvent event) {
-        openLoginScreen(event, "Patient");
+        openScreen(event, "/fxml/PatientLogin.fxml", "Patient Portal Login");
     }
 
-    // When user clicks the "Doctor" card
+    // 2. DOCTOR LOGIN
     @FXML
     private void handleDoctorLogin(MouseEvent event) {
-        openLoginScreen(event, "Doctor");
+        System.out.println("Doctor Login clicked - Feature coming soon");
     }
 
-    // When user clicks the "Admin" card
+    // 3. ADMIN LOGIN
     @FXML
     private void handleAdminLogin(MouseEvent event) {
-        openLoginScreen(event, "Admin");
+        System.out.println("Admin Login clicked - Feature coming soon");
     }
 
-    private void openLoginScreen(MouseEvent event, String role) {
+    // Helper method to handle navigation WITHOUT resizing
+    private void openScreen(MouseEvent event, String fxmlPath, String title) {
         try {
-            // We load the generic Login.fxml
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Login.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
             Parent root = loader.load();
 
-            // We tell the Login Controller which role was clicked
-            LoginController controller = loader.getController();
-            controller.setRole(role);
-
-            // Show the new screen
+            // Get the current stage (window)
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            stage.setScene(new Scene(root));
+
+            // FIX: Don't create a new Scene. Just replace the content (Root).
+            // This keeps the window size exactly as it is.
+            stage.getScene().setRoot(root);
+            stage.setTitle(title);
 
         } catch (IOException e) {
             e.printStackTrace();
-            System.out.println("Error: Could not find /fxml/Login.fxml");
+            System.err.println("Error: Could not load " + fxmlPath + ". Check if the file exists in src/main/resources/fxml/");
         }
     }
 }

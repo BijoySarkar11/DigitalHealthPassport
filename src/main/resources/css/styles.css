@@ -1,80 +1,160 @@
 /* =========================================
-   GLOBAL RESET
+   1. BACKGROUND & DECORATION
    ========================================= */
-.root {
+.root-background {
     -fx-font-family: 'Segoe UI', sans-serif;
-    /* Clean white background, like the reference */
-    -fx-background-color: #FFFFFF;
+    -fx-background-color: #F8FAFC;
+}
+
+.decorative-circle {
+    -fx-fill: #E0F2FE;
 }
 
 /* =========================================
-   HERO TYPOGRAPHY
+   2. TOP LOGO (Compact Top Spacing)
    ========================================= */
-.hero-headline {
-    /* The main dark text */
-    -fx-text-fill: #2D3436;
-    -fx-font-weight: 900; /* Extra Bold */
-    -fx-line-spacing: -10px; /* Tighten up the lines */
+.heading-container {
+    /* Minimal padding to save vertical space for the big card */
+    -fx-padding: 5 0 5 0;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 0, 2);
 }
 
-.hero-headline-colored {
-    /* The colored part of the headline */
-    -fx-text-fill: #0984E3; /* A nice professional blue */
+.logo-icon {
+    -fx-font-size: 50px;
+    -fx-text-fill: #2563EB;
+}
+
+.logo-text-top {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1E293B;
+    -fx-scale-x: 1.15;
+    -fx-padding: 0 10 0 10;
+}
+
+.logo-text-bottom {
+    -fx-font-size: 38px;
     -fx-font-weight: 900;
-    -fx-line-spacing: -10px;
-}
-
-.hero-subtitle {
-    /* Subtitle text color */
-    -fx-text-fill: #636E72;
-    -fx-line-spacing: 5px;
+    -fx-text-fill: #2563EB;
+    -fx-scale-x: 1.20;
+    -fx-padding: 0 15 0 15;
 }
 
 /* =========================================
-   PORTAL CARDS (Clean Button Style)
+   3. MAIN CARD PANELS
    ========================================= */
-.portal-card {
-    -fx-background-color: #FFFFFF;
-    -fx-background-radius: 15;
-    -fx-padding: 20 30;
-    -fx-alignment: center;
-    -fx-cursor: hand;
-    -fx-min-width: 160px;
+.main-card {
+    -fx-background-color: transparent;
+}
 
-    /* A subtle border for definition */
-    -fx-border-color: #DFE6E9;
+.right-panel {
+    -fx-background-color: white;
+    -fx-padding: 50; /* Balanced padding for 600px height */
+    -fx-min-width: 500px;
+}
+
+.form-header {
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1E293B;
+}
+
+.form-subheader {
+    -fx-font-size: 15px;
+    -fx-text-fill: #94A3B8;
+}
+
+/* =========================================
+   4. BUTTONS
+   ========================================= */
+.portal-button {
+    -fx-background-color: white;
+    -fx-border-color: #E2E8F0;
     -fx-border-width: 2;
     -fx-border-radius: 15;
-
-    /* Soft shadow for depth */
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 15, 0, 4, 4);
-
-    /* Smooth transition for hover effect */
-    -fx-transition: all 0.3s ease;
+    -fx-background-radius: 15;
+    -fx-padding: 20 25;
+    -fx-cursor: hand;
+    -fx-transition: all 0.2s ease;
 }
 
-.portal-card:hover {
-    -fx-background-color: #0984E3; /* Change to blue on hover */
-    -fx-border-color: #0984E3;
-    -fx-translate-y: -5px; /* Move up */
-    /* Stronger, colored shadow on hover */
-    -fx-effect: dropshadow(three-pass-box, rgba(9, 132, 227, 0.4), 20, 0, 6, 6);
+.portal-button:hover {
+    -fx-border-color: #2563EB;
+    -fx-background-color: #F8FAFC;
+    -fx-effect: dropshadow(three-pass-box, rgba(37, 99, 235, 0.15), 15, 0, 0, 5);
+    -fx-translate-x: 5px;
 }
 
-/* Text styles change on hover (handled by JavaFX structure) */
-.portal-card:hover > .label {
-    -fx-text-fill: white;
-}
-
-/* Card Text */
-.card-title {
+.btn-title {
     -fx-font-size: 18px;
     -fx-font-weight: bold;
-    -fx-text-fill: #2D3436;
-    -fx-padding: 10 0 5 0;
+    -fx-text-fill: #334155;
 }
 
-.card-desc {
+.btn-desc {
+    -fx-font-size: 13px;
+    -fx-text-fill: #94A3B8;
+}
+
+.social-icon {
+    -fx-font-size: 20px;
+    -fx-text-fill: #CBD5E1;
+    -fx-cursor: hand;
+}
+.social-icon:hover {
+    -fx-text-fill: #2563EB;
+}
+
+.input-label {
     -fx-font-size: 14px;
-    -fx-text-fill: #636E72;
+    -fx-font-weight: bold;
+    -fx-text-fill: #475569;
+}
+
+/* Modern Text Fields */
+.text-field-modern {
+    -fx-background-color: white;
+    -fx-border-color: #CBD5E1;
+    -fx-border-width: 1.5;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 12;
+    -fx-font-size: 14px;
+    -fx-text-fill: #334155;
+}
+
+.text-field-modern:focused {
+    -fx-border-color: #2563EB;
+    -fx-background-color: #F8FAFC;
+}
+
+/* Primary Login Button */
+.primary-button {
+    -fx-background-color: #2563EB; /* Medical Blue */
+    -fx-text-fill: white;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-padding: 12 20;
+    -fx-background-radius: 8;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(three-pass-box, rgba(37, 99, 235, 0.3), 10, 0, 0, 4);
+}
+
+.primary-button:hover {
+    -fx-background-color: #1D4ED8; /* Darker Blue */
+    -fx-translate-y: 1px;
+}
+
+/* Links (Forgot Password) */
+.forgot-link {
+    -fx-text-fill: #2563EB;
+    -fx-font-weight: bold;
+    -fx-underline: false;
+    -fx-border-color: transparent;
+    -fx-padding: 0;
+}
+
+.forgot-link:hover {
+    -fx-text-fill: #1D4ED8;
+    -fx-underline: true;
 }
