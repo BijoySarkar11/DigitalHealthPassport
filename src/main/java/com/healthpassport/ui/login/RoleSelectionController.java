@@ -19,13 +19,14 @@ public class RoleSelectionController {
     // 2. DOCTOR LOGIN
     @FXML
     private void handleDoctorLogin(MouseEvent event) {
-        System.out.println("Doctor Login clicked - Feature coming soon");
+        openScreen(event, "/fxml/DoctorLogin.fxml", "Doctor Portal Login");
     }
 
-    // 3. ADMIN LOGIN
+    // 3. ADMIN LOGIN (UPDATED)
     @FXML
     private void handleAdminLogin(MouseEvent event) {
-        System.out.println("Admin Login clicked - Feature coming soon");
+        // Now links to the Admin Login screen!
+        openScreen(event, "/fxml/AdminLogin.fxml", "Administrator Portal Login");
     }
 
     // Helper method to handle navigation WITHOUT resizing
@@ -37,8 +38,7 @@ public class RoleSelectionController {
             // Get the current stage (window)
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
 
-            // FIX: Don't create a new Scene. Just replace the content (Root).
-            // This keeps the window size exactly as it is.
+            // Don't create a new Scene. Just replace the content (Root).
             stage.getScene().setRoot(root);
             stage.setTitle(title);
 
