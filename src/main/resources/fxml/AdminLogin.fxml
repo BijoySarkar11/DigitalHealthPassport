@@ -43,8 +43,8 @@
                        style="-fx-cursor: hand; -fx-text-fill: #94A3B8; -fx-font-size: 14px; -fx-font-weight: bold;" />
                 <Label text="Admin Login"
                        style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #2F4F4F;" />
-                <Label text="Secure system access."
-                       style="-fx-font-size: 14px; -fx-text-fill: #5C8D7D;" />
+                <!--<Label text="Secure system access."
+                       style="-fx-font-size: 14px; -fx-text-fill: #5C8D7D;" />-->
             </VBox>
 
             <VBox maxWidth="Infinity" spacing="15.0">

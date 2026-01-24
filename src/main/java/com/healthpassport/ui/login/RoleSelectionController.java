@@ -58,7 +58,7 @@ public class RoleSelectionController {
         btn.setScaleX(1.05);
         btn.setScaleY(1.05);
         // Hover Style: Dark Gray (#333333)
-        btn.setStyle("-fx-background-color: #333333; -fx-text-fill: #FFFFFF; -fx-background-radius: 10; -fx-font-weight: bold; -fx-padding: 10 20; -fx-cursor: hand; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2); -fx-font-size: 13px;");
+        btn.setStyle("-fx-background-color: #26463D; -fx-text-fill: #FFFFFF; -fx-background-radius: 10; -fx-font-weight: bold; -fx-padding: 10 20; -fx-cursor: hand; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2); -fx-font-size: 13px;");
     }
 
     @FXML
@@ -67,6 +67,6 @@ public class RoleSelectionController {
         btn.setScaleX(1.0);
         btn.setScaleY(1.0);
         // Exit Style: Reset to Black (#000000)
-        btn.setStyle("-fx-background-color: #000000; -fx-text-fill: #FFFFFF; -fx-background-radius: 10; -fx-font-weight: bold; -fx-padding: 10 20; -fx-cursor: hand; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2); -fx-font-size: 13px;");
+        btn.setStyle("-fx-background-color: #26463D; -fx-text-fill: #FFFFFF; -fx-background-radius: 10; -fx-font-weight: bold; -fx-padding: 10 20; -fx-cursor: hand; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2); -fx-font-size: 13px;");
     }
 }

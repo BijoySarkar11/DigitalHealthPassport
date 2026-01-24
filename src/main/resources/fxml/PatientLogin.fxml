@@ -45,8 +45,8 @@
                 <Label text="Patient Login"
                        style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #26463D;" />
 
-                <Label text="Enter your details to access records."
-                       style="-fx-font-size: 14px; -fx-text-fill: #7DBFA6;" />
+                <!--<Label text="Enter your details to access records."
+                       style="-fx-font-size: 14px; -fx-text-fill: #7DBFA6;" /> -->
             </VBox>
 
             <VBox maxWidth="Infinity" spacing="15.0">

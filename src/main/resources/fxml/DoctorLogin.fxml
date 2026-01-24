@@ -43,8 +43,8 @@
                        style="-fx-cursor: hand; -fx-text-fill: #94A3B8; -fx-font-size: 14px; -fx-font-weight: bold;" />
                 <Label text="Doctor Login"
                        style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #26463D;" />
-                <Label text="Enter credentials to access dashboard."
-                       style="-fx-font-size: 14px; -fx-text-fill: #26463D;" />
+                <!--<Label text="Enter credentials to access dashboard."
+                       style="-fx-font-size: 14px; -fx-text-fill: #26463D;" /> -->
             </VBox>
 
             <VBox maxWidth="Infinity" spacing="15.0">

@@ -75,13 +75,13 @@
     <Button text="Request for Admin Status"
             onAction="#handleRequestAdminStatus"
             onMouseEntered="#handleButtonEnter"   onMouseExited="#handleButtonExit"     StackPane.alignment="BOTTOM_RIGHT"
-            style="-fx-background-color: #000000; -fx-text-fill: #FFFFFF; -fx-background-radius: 10; -fx-font-weight: bold; -fx-padding: 10 20; -fx-cursor: hand; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2); -fx-font-size: 13px;">
+            style="-fx-background-color: #26463D; -fx-text-fill: #FFFFFF; -fx-background-radius: 10; -fx-font-weight: bold; -fx-padding: 10 20; -fx-cursor: hand; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2); -fx-font-size: 13px;">
         <StackPane.margin>
             <Insets bottom="30.0" right="30.0" />
         </StackPane.margin>
             onAction="#handleRequestAdminStatus"
             StackPane.alignment="BOTTOM_RIGHT"
-            style="-fx-background-color: #000000; -fx-text-fill: #FFFFFF; -fx-background-radius: 10; -fx-font-weight: bold; -fx-padding: 10 20; -fx-cursor: hand; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2); -fx-font-size: 13px;">
+            style="-fx-background-color: #26463D; -fx-text-fill: #FFFFFF; -fx-background-radius: 10; -fx-font-weight: bold; -fx-padding: 10 20; -fx-cursor: hand; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2); -fx-font-size: 13px;">
         <StackPane.margin>
             <Insets bottom="30.0" right="30.0" />
         </StackPane.margin>
