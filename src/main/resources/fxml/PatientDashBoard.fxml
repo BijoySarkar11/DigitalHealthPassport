@@ -6,12 +6,21 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<BorderPane styleClass="root" stylesheets="@../css/styles.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.digitalhealthpassport.ui.patient.PatientDashboardController">
+<BorderPane style="-fx-background-color: #F8FAFC; -fx-font-family: 'Segoe UI', sans-serif;"
+            xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.digitalhealthpassport.ui.patient.PatientDashboardController">
 
     <top>
-        <HBox alignment="CENTER_LEFT" spacing="20" style="-fx-background-color: white; -fx-padding: 15 30; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 2);">
-            <Label styleClass="heading-text" style="-fx-font-size: 20px;" text="Digital Health Passport" />
-            <HBox HBox.hgrow="ALWAYS" /> <Button text="Log Out" styleClass="button-secondary" onAction="#handleLogout"/>
+        <HBox alignment="CENTER_LEFT" spacing="20"
+              style="-fx-background-color: white; -fx-padding: 15 30; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 2);">
+
+            <Label text="Digital Health Passport"
+                   style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #2563EB;" />
+
+            <HBox HBox.hgrow="ALWAYS" />
+
+            <Button text="Log Out" onAction="#handleLogout"
+                    style="-fx-background-color: white; -fx-border-color: #E2E8F0; -fx-border-radius: 8; -fx-background-radius: 8; -fx-text-fill: #64748B; -fx-cursor: hand; -fx-padding: 8 15;" />
         </HBox>
     </top>
 
@@ -19,37 +28,49 @@
         <VBox spacing="30" style="-fx-padding: 40;">
 
             <VBox spacing="5">
-                <Label fx:id="welcomeLabel" styleClass="heading-text" text="Welcome, Patient" />
-                <Label styleClass="sub-text" text="Here is your health overview" />
+                <Label fx:id="welcomeLabel" text="Welcome, Patient"
+                       style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #1E293B;" />
+                <Label text="Here is your health overview"
+                       style="-fx-font-size: 15px; -fx-text-fill: #94A3B8;" />
             </VBox>
 
             <HBox spacing="30">
-                <VBox styleClass="card" minWidth="300" spacing="15">
-                    <Label styleClass="heading-text" style="-fx-font-size: 18px;" text="My Profile" />
+
+                <VBox minWidth="300" spacing="15"
+                      style="-fx-background-color: white; -fx-background-radius: 15; -fx-padding: 25; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 10, 0, 0, 4);">
+
+                    <Label text="My Profile"
+                           style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #1E293B;" />
 
                     <VBox spacing="5">
-                        <Label text="Patient ID" styleClass="sub-text" style="-fx-font-weight: bold;"/>
-                        <Label fx:id="patientIdLabel" text="Loading..." style="-fx-font-size: 16px;"/>
+                        <Label text="Patient ID" style="-fx-font-weight: bold; -fx-text-fill: #64748B; -fx-font-size: 12px;"/>
+                        <Label fx:id="patientIdLabel" text="Loading..." style="-fx-font-size: 16px; -fx-text-fill: #334155;"/>
                     </VBox>
 
                     <VBox spacing="5">
-                        <Label text="Blood Group" styleClass="sub-text" style="-fx-font-weight: bold;"/>
-                        <Label fx:id="bloodGroupLabel" text="Loading..." style="-fx-font-size: 16px;"/>
+                        <Label text="Blood Group" style="-fx-font-weight: bold; -fx-text-fill: #64748B; -fx-font-size: 12px;"/>
+                        <Label fx:id="bloodGroupLabel" text="Loading..." style="-fx-font-size: 16px; -fx-text-fill: #334155;"/>
                     </VBox>
 
                     <VBox spacing="5">
-                        <Label text="Age" styleClass="sub-text" style="-fx-font-weight: bold;"/>
-                        <Label fx:id="ageLabel" text="Loading..." style="-fx-font-size: 16px;"/>
+                        <Label text="Age" style="-fx-font-weight: bold; -fx-text-fill: #64748B; -fx-font-size: 12px;"/>
+                        <Label fx:id="ageLabel" text="Loading..." style="-fx-font-size: 16px; -fx-text-fill: #334155;"/>
                     </VBox>
                 </VBox>
 
-                <VBox styleClass="card" spacing="20" alignment="CENTER_LEFT">
-                    <Label styleClass="heading-text" style="-fx-font-size: 18px;" text="Quick Actions" />
+                <VBox spacing="20" alignment="CENTER_LEFT"
+                      style="-fx-background-color: white; -fx-background-radius: 15; -fx-padding: 25; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 10, 0, 0, 4);">
 
-                    <Button text="🔍 Search Doctors" styleClass="button-primary" style="-fx-font-size: 16px; -fx-padding: 15 30;" onAction="#handleSearchDoctors"/>
+                    <Label text="Quick Actions"
+                           style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #1E293B;" />
 
-                    <Label styleClass="sub-text" text="Find specialists near you and book appointments." wrapText="true" maxWidth="250"/>
+                    <Button text="🔍 Search Doctors" onAction="#handleSearchDoctors"
+                            style="-fx-background-color: #2563EB; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 15 30; -fx-background-radius: 8; -fx-cursor: hand; -fx-effect: dropshadow(three-pass-box, rgba(37, 99, 235, 0.3), 10, 0, 0, 4);" />
+
+                    <Label text="Find specialists near you and book appointments." wrapText="true" maxWidth="250"
+                           style="-fx-font-size: 14px; -fx-text-fill: #94A3B8;" />
                 </VBox>
+
             </HBox>
 
         </VBox>
