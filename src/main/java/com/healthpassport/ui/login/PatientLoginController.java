@@ -21,21 +21,19 @@ public class PatientLoginController {
     @FXML
     private PasswordField passwordField;
 
-    // LOGIN BUTTON LOGIC
+
     @FXML
     private void handleLogin(ActionEvent event) {
-        // For now, we bypass the password check and go straight to the dashboard
         System.out.println("Logging in...");
 
         try {
-            // Load the Dashboard FXML
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/PatientDashboard.fxml"));
             Parent root = loader.load();
 
-            // Get the current window (Stage) from the event source (the button)
+
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
 
-            // Switch to Dashboard (Using setRoot to keep window size)
+
             stage.getScene().setRoot(root);
             stage.setTitle("Digital Health Passport - Patient Dashboard");
 
@@ -45,7 +43,7 @@ public class PatientLoginController {
         }
     }
 
-    // BACK BUTTON LOGIC
+
     @FXML
     private void handleBackToRole(MouseEvent event) {
         try {

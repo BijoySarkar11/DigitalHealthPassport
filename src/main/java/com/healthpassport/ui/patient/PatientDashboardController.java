@@ -17,10 +17,10 @@ public class PatientDashboardController {
 
     @FXML
     public void initialize() {
-        // Placeholder Data - In a real app, fetch this from a database
+
         patientNameLabel.setText("Pranty");
         dobLabel.setText("04/01/2005");
-        ageLabel.setText("21 Yrs"); // Calculated from DOB
+        ageLabel.setText("21 Yrs");
     }
 
     @FXML

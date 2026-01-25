@@ -30,7 +30,7 @@ public class AdminLoginController {
         }
 
         System.out.println("Attempting Admin Login for: " + username);
-        // Admin authentication logic will go here
+
     }
 
     @FXML
@@ -41,7 +41,7 @@ public class AdminLoginController {
 
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
 
-            // Use setRoot to prevent window resizing
+
             stage.getScene().setRoot(root);
             stage.setTitle("Digital Health Passport - Role Selection");
 

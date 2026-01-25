@@ -20,7 +20,7 @@ public class LoginController {
 
     private String currentRole = "Patient"; // Default
 
-    // This is called by RoleSelectionController to set the title
+
     public void setRole(String role) {
         this.currentRole = role;
         roleTitleLabel.setText(role + " Login");
@@ -30,7 +30,7 @@ public class LoginController {
     private void handleLogin(ActionEvent event) {
         System.out.println("Logging in as: " + currentRole);
 
-        // TEMPORARY: We are skipping password check for now so you can test navigation!
+
         try {
             String targetFxml = "";
 
@@ -43,7 +43,7 @@ public class LoginController {
                 return;
             }
 
-            // Load the correct dashboard
+
             Parent root = FXMLLoader.load(getClass().getResource(targetFxml));
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(new Scene(root));
@@ -57,7 +57,7 @@ public class LoginController {
     @FXML
     private void handleBack(ActionEvent event) {
         try {
-            // Go back to Role Selection
+
             Parent root = FXMLLoader.load(getClass().getResource("/fxml/RoleSelection.fxml"));
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(new Scene(root));

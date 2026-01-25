@@ -30,7 +30,7 @@ public class DoctorLoginController {
         }
 
         System.out.println("Attempting Doctor Login for: " + username);
-        // Real authentication logic goes here later
+
     }
 
     @FXML
@@ -39,10 +39,10 @@ public class DoctorLoginController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/RoleSelection.fxml"));
             Parent root = loader.load();
 
-            // Get current stage
+
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
 
-            // Use setRoot to avoid resizing
+
             stage.getScene().setRoot(root);
             stage.setTitle("Digital Health Passport - Role Selection");
 
