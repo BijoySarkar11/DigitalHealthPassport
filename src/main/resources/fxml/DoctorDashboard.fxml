@@ -1,77 +1,135 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.layout.BorderPane?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.effect.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.*?>
 
-<BorderPane style="-fx-background-color: #F8FAFC; -fx-font-family: 'Segoe UI', sans-serif;"
-            xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.healthpassport.ui.doctor.DoctorDashboardController">
+<StackPane fx:id="rootPane" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.healthpassport.ui.patient.PatientDashboardController">
 
-    <top>
-        <HBox alignment="CENTER_LEFT" spacing="20"
-              style="-fx-background-color: white; -fx-padding: 15 30; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 2);">
+    <ImageView fitHeight="${rootPane.height}" fitWidth="${rootPane.width}" pickOnBounds="true" preserveRatio="false">
+        <image>
+            <Image url="@../icons/bg.png" />
+        </image>
+        <effect>
+            <BoxBlur height="15.0" iterations="3" width="15.0" />
+        </effect>
+    </ImageView>
 
-            <Label text="Doctor Portal"
-                   style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #0F172A;" />
+    <VBox alignment="TOP_CENTER" spacing="20.0" style="-fx-padding: 30;">
 
-            <HBox HBox.hgrow="ALWAYS" />
-
-            <Button text="Log Out" onAction="#handleLogout"
-                    style="-fx-background-color: white; -fx-border-color: #E2E8F0; -fx-border-radius: 8; -fx-background-radius: 8; -fx-text-fill: #64748B; -fx-cursor: hand; -fx-padding: 8 15; -fx-font-weight: bold;" />
+        <HBox alignment="CENTER" spacing="10.0">
+            <Label style="-fx-font-size: 30px; -fx-text-fill: #1E4D45;" text="🧘" />
+            <Label style="-fx-font-size: 24px; -fx-font-weight: 900; -fx-text-fill: #1E4D45; -fx-letter-spacing: 2;" text="DOCTOR PORTAL" />
         </HBox>
-    </top>
 
-    <center>
-        <VBox spacing="30" style="-fx-padding: 40;">
+        <HBox alignment="CENTER" spacing="30.0" VBox.vgrow="ALWAYS">
 
-            <VBox spacing="5">
-                <Label fx:id="welcomeLabel" text="Welcome, Dr. Smith"
-                       style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #1E293B;" />
-                <Label text="Manage your patients and appointments"
-                       style="-fx-font-size: 15px; -fx-text-fill: #94A3B8;" />
-            </VBox>
+            <VBox alignment="TOP_CENTER" maxWidth="300.0" minWidth="300.0" spacing="20.0" style="-fx-background-color: #E8F3EE; -fx-background-radius: 30; -fx-padding: 30; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);">
 
-            <HBox spacing="30">
+                <VBox prefHeight="20.0" />
 
-                <VBox minWidth="300" spacing="15"
-                      style="-fx-background-color: white; -fx-background-radius: 15; -fx-padding: 25; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 10, 0, 0, 4);">
-
-                    <Label text="My Profile"
-                           style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #1E293B;" />
-
-                    <VBox spacing="5">
-                        <Label text="Doctor ID" style="-fx-font-weight: bold; -fx-text-fill: #64748B; -fx-font-size: 12px;"/>
-                        <Label text="DR-5501" style="-fx-font-size: 16px; -fx-text-fill: #334155;"/>
-                    </VBox>
-
-                    <VBox spacing="5">
-                        <Label text="Department" style="-fx-font-weight: bold; -fx-text-fill: #64748B; -fx-font-size: 12px;"/>
-                        <Label text="Cardiology" style="-fx-font-size: 16px; -fx-text-fill: #334155;"/>
-                    </VBox>
+                <VBox alignment="CENTER" spacing="5.0">
+                    <Label fx:id="patientNameLabel" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #1E4D45;" text="Pranty" />
+                    <Label style="-fx-font-size: 14px; -fx-text-fill: #5C8D7D;" text="Patient ID: PT-0025235" />
                 </VBox>
 
-                <VBox spacing="20" alignment="CENTER_LEFT" HBox.hgrow="ALWAYS"
-                      style="-fx-background-color: white; -fx-background-radius: 15; -fx-padding: 25; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 10, 0, 0, 4);">
+                <Line endX="200.0" stroke="#7DBFA6" strokeWidth="0.5" />
 
-                    <Label text="Patient Management"
-                           style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #1E293B;" />
-
-                    <HBox spacing="20">
-                        <Button text="🔍 Search Patient" onAction="#handleSearchPatient"
-                                style="-fx-background-color: #059669; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 15 30; -fx-background-radius: 8; -fx-cursor: hand; -fx-effect: dropshadow(three-pass-box, rgba(5, 150, 105, 0.3), 10, 0, 0, 4);" />
-
-                        <Button text="➕ New Patient" onAction="#handleNewPatient"
-                                style="-fx-background-color: #10B981; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 15 30; -fx-background-radius: 8; -fx-cursor: hand; -fx-effect: dropshadow(three-pass-box, rgba(16, 185, 129, 0.3), 10, 0, 0, 4);" />
+                <VBox spacing="15.0" style="-fx-padding: 10 0;">
+                    <HBox alignment="CENTER_LEFT" spacing="15.0">
+                        <Label style="-fx-font-size: 20px; -fx-text-fill: #26463D;" text="📅" />
+                        <VBox>
+                            <Label style="-fx-font-size: 12px; -fx-text-fill: #5C8D7D;" text="Date of Birth" />
+                            <Label fx:id="dobLabel" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #1E4D45;" text="04/01/2005" />
+                        </VBox>
                     </HBox>
 
-                    <Label text="Search existing records or register a new patient admission."
-                           style="-fx-font-size: 14px; -fx-text-fill: #94A3B8;" />
-                </VBox>
-            </HBox>
+                    <HBox alignment="CENTER_LEFT" spacing="15.0">
+                        <Label style="-fx-font-size: 20px; -fx-text-fill: #26463D;" text="⚥" />
+                        <VBox>
+                            <Label style="-fx-font-size: 12px; -fx-text-fill: #5C8D7D;" text="Gender" />
+                            <Label style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #1E4D45;" text="Female" />
+                        </VBox>
+                    </HBox>
 
-        </VBox>
-    </center>
-</BorderPane>
+                    <HBox alignment="CENTER_LEFT" spacing="15.0">
+                        <Label style="-fx-font-size: 20px; -fx-text-fill: #26463D;" text="📞" />
+                        <VBox>
+                            <Label style="-fx-font-size: 12px; -fx-text-fill: #5C8D7D;" text="Phone No" />
+                            <Label style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #1E4D45;" text="017********" />
+                        </VBox>
+                    </HBox>
+
+                    <HBox alignment="CENTER_LEFT" spacing="15.0">
+                        <Label style="-fx-font-size: 20px; -fx-text-fill: #26463D;" text="🩸" />
+                        <VBox>
+                            <Label style="-fx-font-size: 12px; -fx-text-fill: #5C8D7D;" text="Blood Group" />
+                            <Label style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #1E4D45;" text="AB+" />
+                        </VBox>
+                    </HBox>
+                </VBox>
+
+                <VBox VBox.vgrow="ALWAYS" />
+
+                <Button maxWidth="Infinity" style="-fx-background-color: #7DBFA6; -fx-text-fill: white; -fx-background-radius: 15; -fx-font-weight: bold; -fx-padding: 10; -fx-cursor: hand;" text="Edit Profile" />
+
+                <Button maxWidth="Infinity" onAction="#handleLogout" style="-fx-background-color: transparent; -fx-text-fill: #26463D; -fx-font-weight: bold; -fx-border-color: #26463D; -fx-border-radius: 15; -fx-padding: 10; -fx-cursor: hand;" text="LOG OUT" />
+
+            </VBox>
+
+            <VBox maxWidth="900.0" spacing="20.0" style="-fx-background-color: rgba(255,255,255,0.85); -fx-background-radius: 30; -fx-padding: 30; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);" HBox.hgrow="ALWAYS">
+
+                <HBox alignment="CENTER_LEFT" spacing="10.0">
+                    <Button style="-fx-background-color: #26463D; -fx-text-fill: white; -fx-background-radius: 10; -fx-padding: 8 20; -fx-font-weight: bold;" text="Health Records" />
+                    <Button style="-fx-background-color: transparent; -fx-text-fill: #5C8D7D; -fx-font-weight: bold; -fx-cursor: hand;" text="Prescriptions" />
+                    <Button style="-fx-background-color: transparent; -fx-text-fill: #5C8D7D; -fx-font-weight: bold; -fx-cursor: hand;" text="Test Reports" />
+                </HBox>
+
+                <ScrollPane fitToWidth="true" hbarPolicy="NEVER" style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;" vbarPolicy="NEVER">
+                    <VBox spacing="25.0">
+
+                        <VBox spacing="10.0">
+                            <Label style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #1E4D45;" text="Vitals" />
+                            <HBox spacing="15.0">
+                                <VBox style="-fx-background-color: white; -fx-background-radius: 15; -fx-padding: 15; -fx-min-width: 120;" HBox.hgrow="ALWAYS">
+                                    <Label style="-fx-text-fill: #5C8D7D; -fx-font-size: 12px;" text="🎂 Age" />
+                                    <Label fx:id="ageLabel" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #1E4D45;" text="21 Yrs" />
+                                </VBox>
+                                <VBox style="-fx-background-color: white; -fx-background-radius: 15; -fx-padding: 15; -fx-min-width: 120;" HBox.hgrow="ALWAYS">
+                                    <Label style="-fx-text-fill: #5C8D7D; -fx-font-size: 12px;" text="📏 Height" />
+                                    <Label style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #1E4D45;" text="165 cm" />
+                                </VBox>
+                                <VBox style="-fx-background-color: white; -fx-background-radius: 15; -fx-padding: 15; -fx-min-width: 120;" HBox.hgrow="ALWAYS">
+                                    <Label style="-fx-text-fill: #5C8D7D; -fx-font-size: 12px;" text="⚖️ Weight" />
+                                    <Label style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #1E4D45;" text="55 kg" />
+                                </VBox>
+                                <VBox style="-fx-background-color: white; -fx-background-radius: 15; -fx-padding: 15; -fx-min-width: 120;" HBox.hgrow="ALWAYS">
+                                    <Label style="-fx-text-fill: #5C8D7D; -fx-font-size: 12px;" text="📊 BMI" />
+                                    <Label style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #1E4D45;" text="20.2" />
+                                </VBox>
+                            </HBox>
+                        </VBox>
+
+                        <VBox spacing="10.0">
+                            <Label style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #1E4D45;" text="Medical History" />
+                        </VBox>
+
+                        <VBox spacing="10.0">
+                            <Label style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #1E4D45;" text="Upcoming Appointment" />
+                        </VBox>
+
+                        <VBox spacing="10.0">
+                            <Label style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #1E4D45;" text="Recent Tests" />
+                        </VBox>
+
+                    </VBox>
+                </ScrollPane>
+
+            </VBox>
+
+        </HBox>
+
+    </VBox>
+</StackPane>

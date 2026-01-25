@@ -1,49 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Hyperlink?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.PasswordField?>
-<?import javafx.scene.control.TextField?>
-<?import javafx.scene.effect.BoxBlur?>
-<?import javafx.scene.effect.DropShadow?>
-<?import javafx.scene.image.Image?>
-<?import javafx.scene.image.ImageView?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.StackPane?>
-<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.effect.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
 
-<StackPane fx:id="rootPane" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.healthpassport.ui.login.PatientLoginController">
+<StackPane fx:id="rootPane" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.healthpassport.ui.login.PatientLoginController">
 
-    <ImageView fitWidth="${rootPane.width}" fitHeight="${rootPane.height}" pickOnBounds="true" preserveRatio="false">
+    <ImageView fitHeight="${rootPane.height}" fitWidth="${rootPane.width}" pickOnBounds="true" preserveRatio="false">
         <image>
             <Image url="@../icons/bg.png" />
         </image>
         <effect>
-            <BoxBlur height="15.0" width="15.0" iterations="3" />
+            <BoxBlur height="15.0" iterations="3" width="15.0" />
         </effect>
     </ImageView>
 
     <VBox alignment="CENTER" spacing="30.0" style="-fx-padding: 40;">
 
         <HBox alignment="CENTER" spacing="10.0">
-            <Label text="✚" style="-fx-font-size: 40px; -fx-text-fill: #1E4D45; -fx-font-weight: bold;" />
+            <Label style="-fx-font-size: 40px; -fx-text-fill: #1E4D45; -fx-font-weight: bold;" text="✚" />
             <VBox alignment="CENTER_LEFT">
-                <Label text="DIGITAL HEALTH" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2F4F4F;" />
-                <Label text="PASSPORT" style="-fx-font-size: 28px; -fx-font-weight: 900; -fx-text-fill: #1E4D45;" />
+                <Label style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2F4F4F;" text="DIGITAL HEALTH" />
+                <Label style="-fx-font-size: 28px; -fx-font-weight: 900; -fx-text-fill: #1E4D45;" text="PASSPORT" />
             </VBox>
         </HBox>
 
-        <VBox alignment="CENTER" maxHeight="500.0" maxWidth="450.0" spacing="30.0"
-              style="-fx-background-color: white; -fx-background-radius: 30; -fx-padding: 40; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 20, 0, 0, 10);">
+        <VBox alignment="CENTER" maxHeight="500.0" maxWidth="450.0" spacing="30.0" style="-fx-background-color: white; -fx-background-radius: 30; -fx-padding: 40; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 20, 0, 0, 10);">
 
             <VBox alignment="CENTER_LEFT" maxWidth="Infinity" spacing="5.0">
-                <Label onMouseClicked="#handleBackToRole" text="← Back"
-                       style="-fx-cursor: hand; -fx-text-fill: #94A3B8; -fx-font-size: 14px; -fx-font-weight: bold;" />
 
-                <Label text="Patient Login"
-                       style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #26463D;" />
+                <Label style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #26463D;" text="Patient Login" />
 
                 <!--<Label text="Enter your details to access records."
                        style="-fx-font-size: 14px; -fx-text-fill: #7DBFA6;" /> -->
@@ -51,22 +38,20 @@
 
             <VBox maxWidth="Infinity" spacing="15.0">
                 <VBox spacing="5.0">
-                    <Label text="Patient ID" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #26463D;" />
-                    <TextField fx:id="usernameField" promptText="Enter your username"
-                               style="-fx-background-color: #F5F7F6; -fx-border-color: #26463D; -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 12;" />
+                    <Label style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #26463D;" text="Patient ID" />
+                    <TextField fx:id="usernameField" promptText="Enter your username" style="-fx-background-color: #F5F7F6; -fx-border-color: #26463D; -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 12;" />
                 </VBox>
 
                 <VBox spacing="5.0">
-                    <Label text="Password" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #26463D;" />
-                    <PasswordField fx:id="passwordField" promptText="Enter your password"
-                                   style="-fx-background-color: #F5F7F6; -fx-border-color: #26463D; -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 12;" />
+                    <Label style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #26463D;" text="Password" />
+                    <PasswordField fx:id="passwordField" promptText="Enter your password" style="-fx-background-color: #F5F7F6; -fx-border-color: #26463D; -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 12;" />
                 </VBox>
 
 
             </VBox>
 
-            <Button maxWidth="Infinity" onAction="#handleLogin" text="Log In"
-                    style="-fx-background-color: #26463D; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 12 20; -fx-background-radius: 10; -fx-cursor: hand; -fx-effect: dropshadow(three-pass-box, rgba(125, 191, 166, 0.4), 10, 0, 0, 4);" />
+            <Button maxWidth="Infinity" onAction="#handleLogin" style="-fx-background-color: #26463D; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 12 20; -fx-background-radius: 10; -fx-cursor: hand; -fx-effect: dropshadow(three-pass-box, rgba(125, 191, 166, 0.4), 10, 0, 0, 4);" text="Log In" />
+             <Label alignment="BOTTOM_RIGHT" onMouseClicked="#handleBackToRole" style="-fx-cursor: hand; -fx-text-fill: #94A3B8; -fx-font-size: 14px; -fx-font-weight: bold;" text="← Back" textAlignment="CENTER" />
 
         </VBox>
 

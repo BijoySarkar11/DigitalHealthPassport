@@ -1,81 +1,66 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.effect.BoxBlur?>
-<?import javafx.scene.image.Image?>
-<?import javafx.scene.image.ImageView?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.StackPane?>
-<?import javafx.scene.layout.VBox?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.effect.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
 
-<StackPane fx:id="rootPane" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.healthpassport.ui.login.RoleSelectionController">
+<StackPane fx:id="rootPane" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.healthpassport.ui.login.RoleSelectionController">
 
-    <ImageView fitWidth="${rootPane.width}" fitHeight="${rootPane.height}" pickOnBounds="true" preserveRatio="false">
+    <ImageView fitHeight="${rootPane.height}" fitWidth="${rootPane.width}" pickOnBounds="true" preserveRatio="false">
         <image>
             <Image url="@../icons/bg.png" />
         </image>
         <effect>
-            <BoxBlur height="15.0" width="15.0" iterations="3" />
+            <BoxBlur height="15.0" iterations="3" width="15.0" />
         </effect>
+      <cursor>
+         <Cursor fx:constant="WAIT" />
+      </cursor>
     </ImageView>
 
     <VBox alignment="CENTER" spacing="30.0" style="-fx-padding: 40;">
 
         <HBox alignment="CENTER" spacing="10.0">
-            <Label text="✚" style="-fx-font-size: 40px; -fx-text-fill: #1E4D45; -fx-font-weight: bold;" />
+            <Label style="-fx-font-size: 40px; -fx-text-fill: #1E4D45; -fx-font-weight: bold;" text="✚" />
             <VBox alignment="CENTER_LEFT">
-                <Label text="DIGITAL HEALTH" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2F4F4F;" />
-                <Label text="PASSPORT" style="-fx-font-size: 28px; -fx-font-weight: 900; -fx-text-fill: #1E4D45;" />
+                <Label style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2F4F4F;" text="DIGITAL HEALTH" />
+                <Label style="-fx-font-size: 28px; -fx-font-weight: 900; -fx-text-fill: #1E4D45;" text="PASSPORT" />
             </VBox>
         </HBox>
 
-        <VBox alignment="CENTER" spacing="20.0" maxWidth="600.0">
+        <VBox alignment="CENTER" maxWidth="600.0" spacing="20.0">
 
-            <HBox alignment="CENTER" spacing="15.0"
-                  onMouseClicked="#handleDoctorLogin"
-                  onMouseEntered="#handleMouseEnter"
-                  onMouseExited="#handleMouseExit"
-                  style="-fx-background-color: #26463D; -fx-background-radius: 30; -fx-padding: 25 35; -fx-cursor: hand; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 10, 0, 0, 5);">
+            <HBox alignment="CENTER" onMouseClicked="#handleDoctorLogin" onMouseEntered="#handleMouseEnter" onMouseExited="#handleMouseExit" spacing="15.0" style="-fx-background-color: #26463D; -fx-background-radius: 30; -fx-padding: 25 35; -fx-cursor: hand; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 10, 0, 0, 5);">
 
                 <VBox alignment="CENTER" spacing="2.0">
-                    <Label text="Doctor Portal" style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: white;" />
-                    <Label text="Manage patients and tests" style="-fx-font-size: 14px; -fx-text-fill: #A3CFC0;" />
+                    <Label style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: white;" text="Doctor Portal" />
+                    <Label style="-fx-font-size: 14px; -fx-text-fill: #A3CFC0;" text="Manage patients and tests" />
                 </VBox>
             </HBox>
 
-            <HBox alignment="CENTER" spacing="15.0"
-                  onMouseClicked="#handlePatientLogin"
-                  onMouseEntered="#handleMouseEnter"
-                  onMouseExited="#handleMouseExit"
-                  style="-fx-background-color: #7DBFA6; -fx-background-radius: 30; -fx-padding: 25 35; -fx-cursor: hand; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 10, 0, 0, 5);">
+            <HBox alignment="CENTER" onMouseClicked="#handlePatientLogin" onMouseEntered="#handleMouseEnter" onMouseExited="#handleMouseExit" spacing="15.0" style="-fx-background-color: #7DBFA6; -fx-background-radius: 30; -fx-padding: 25 35; -fx-cursor: hand; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 10, 0, 0, 5);">
 
                 <VBox alignment="CENTER" spacing="2.0">
-                    <Label text="Patient Portal" style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: white;" />
-                    <Label text="View health records and prescriptions" style="-fx-font-size: 14px; -fx-text-fill: #E0F2F1;" />
+                    <Label style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: white;" text="Patient Portal" />
+                    <Label style="-fx-font-size: 14px; -fx-text-fill: #E0F2F1;" text="View health records and prescriptions" />
                 </VBox>
             </HBox>
 
-            <HBox alignment="CENTER" spacing="15.0"
-                  onMouseClicked="#handleAdminLogin"
-                  onMouseEntered="#handleMouseEnter"
-                  onMouseExited="#handleMouseExit"
-                  style="-fx-background-color: #E8F3EE; -fx-background-radius: 30; -fx-padding: 25 35; -fx-cursor: hand; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);">
+            <HBox alignment="CENTER" onMouseClicked="#handleAdminLogin" onMouseEntered="#handleMouseEnter" onMouseExited="#handleMouseExit" spacing="15.0" style="-fx-background-color: #E8F3EE; -fx-background-radius: 30; -fx-padding: 25 35; -fx-cursor: hand; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);">
 
                 <VBox alignment="CENTER" spacing="2.0">
-                    <Label text="Admin Portal" style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #26463D;" />
-                    <Label text="Manage system users and data" style="-fx-font-size: 14px; -fx-text-fill: #5C8D7D;" />
+                    <Label style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #26463D;" text="Admin Portal" />
+                    <Label style="-fx-font-size: 14px; -fx-text-fill: #5C8D7D;" text="Manage system users and data" />
                 </VBox>
             </HBox>
 
         </VBox>
     </VBox>
 
-    <Button text="Request for Admin Status"
-            onAction="#handleRequestAdminStatus"
-            onMouseEntered="#handleButtonEnter"   onMouseExited="#handleButtonExit"     StackPane.alignment="BOTTOM_RIGHT"
-            style="-fx-background-color: #26463D; -fx-text-fill: #FFFFFF; -fx-background-radius: 10; -fx-font-weight: bold; -fx-padding: 10 20; -fx-cursor: hand; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2); -fx-font-size: 13px;">
+    <Button onAction="#handleRequestAdminStatus" onMouseEntered="#handleButtonEnter" onMouseExited="#handleButtonExit" style="-fx-background-color: #26463D; -fx-text-fill: #FFFFFF; -fx-background-radius: 10; -fx-font-weight: bold; -fx-padding: 10 20; -fx-cursor: hand; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2); -fx-font-size: 13px;" text="Request for Admin Status" StackPane.alignment="BOTTOM_RIGHT">
         <StackPane.margin>
             <Insets bottom="30.0" right="30.0" />
         </StackPane.margin>
