@@ -12,15 +12,11 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) {
         try {
-            // This loads your "Role Selection" screen first
-// Correct: Start at the beginning
             Parent root = FXMLLoader.load(getClass().getResource("/fxml/RoleSelection.fxml"));            // Sets the window title
             primaryStage.setTitle("Digital Health Passport");
 
-            // Sets the window size (Width: 1000, Height: 700)
             primaryStage.setScene(new Scene(root, 1000, 700));
 
-            // Shows the window
             primaryStage.show();
 
         } catch (IOException e) {
@@ -30,7 +26,6 @@ public class Main extends Application {
     }
 
     public static void main(String[] args) {
-        // This launches the JavaFX application
         launch(args);
     }
 }
