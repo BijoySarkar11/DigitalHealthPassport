@@ -1,5 +1,6 @@
 package com.healthpassport.ui.login;
 
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -20,17 +21,26 @@ public class AdminLoginController {
     private PasswordField passwordField;
 
     @FXML
-    private void handleLogin() {
-        String username = usernameField.getText();
-        String password = passwordField.getText();
+    private void handleLogin(ActionEvent event) {
+        // BYPASS: Validation removed for demo. Directly loading Admin Dashboard.
+        System.out.println("Bypassing Admin Login... Redirecting to Dashboard.");
 
-        if (username.isEmpty() || password.isEmpty()) {
-            System.out.println("Validation Error: Fields cannot be empty");
-            return;
+        try {
+            // Load the Admin Dashboard FXML
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/AdminDashboard.fxml"));
+            Parent root = loader.load();
+
+            // Get the current stage from the event source
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+
+            // Switch the scene
+            stage.getScene().setRoot(root);
+            stage.setTitle("Digital Health Passport - Admin Dashboard");
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.err.println("Error loading AdminDashboard.fxml. Please check the file path.");
         }
-
-        System.out.println("Attempting Admin Login for: " + username);
-
     }
 
     @FXML
@@ -40,7 +50,6 @@ public class AdminLoginController {
             Parent root = loader.load();
 
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-
 
             stage.getScene().setRoot(root);
             stage.setTitle("Digital Health Passport - Role Selection");
