@@ -6,103 +6,88 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+
 import java.io.IOException;
 
 public class PatientDashboardController {
 
-    // --- FXML UI Components ---
-    @FXML private Label patientNameLabel;
-    @FXML private Label dobLabel;
-    @FXML private Label ageLabel;
-
-    // --- Navigation Buttons (5 Tabs) ---
-    @FXML private Button btnHealthRecords;
+    @FXML private Button btnDashboard;
+    @FXML private Button btnAppointments;
     @FXML private Button btnPrescriptions;
     @FXML private Button btnTestReports;
-    @FXML private Button btnDailyReminders; // New
-    @FXML private Button btnSearchDoctors;  // New
 
-    // --- Content Views (The 5 Sections) ---
-    @FXML private VBox viewHealthRecords;
+    // The main views inside the StackPane
+    @FXML private VBox viewDashboard;
+    @FXML private VBox viewAppointments;
     @FXML private VBox viewPrescriptions;
     @FXML private VBox viewTestReports;
-    @FXML private VBox viewDailyReminders; // New
-    @FXML private VBox viewSearchDoctors;  // New
 
-    // --- Styling Constants ---
-    private final String ACTIVE_STYLE = "-fx-background-color: #26463D; -fx-text-fill: white; -fx-background-radius: 10; -fx-padding: 8 20; -fx-font-weight: bold; -fx-cursor: hand;";
-    private final String INACTIVE_STYLE = "-fx-background-color: transparent; -fx-text-fill: #5C8D7D; -fx-font-weight: bold; -fx-cursor: hand;";
+    // CSS Styles matching the Deep Green (#26463D) floating sidebar theme
+    private final String ACTIVE_STYLE = "-fx-background-color: #1B362F; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 12 15; -fx-background-radius: 12; -fx-cursor: hand; -fx-font-family: 'Segoe UI Emoji', 'System';";
+    private final String INACTIVE_STYLE = "-fx-background-color: transparent; -fx-text-fill: #A3CFC0; -fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 12 15; -fx-background-radius: 12; -fx-cursor: hand; -fx-font-family: 'Segoe UI Emoji', 'System';";
 
     @FXML
     public void initialize() {
-        // Init Data
-        patientNameLabel.setText("Pranty");
-        dobLabel.setText("04/01/2005");
-        ageLabel.setText("21 Yrs");
-
-        // Ensure only Health Records is visible at start
-        showHealthRecords(null);
+        showDashboard(null); // Load Dashboard as default
     }
 
-    // --- Navigation Logic ---
+    @FXML
+    private void showDashboard(ActionEvent event) {
+        hideAllViews();
+        if (viewDashboard != null) {
+            viewDashboard.setVisible(true);
+            viewDashboard.setManaged(true);
+        }
+        if (btnDashboard != null) btnDashboard.setStyle(ACTIVE_STYLE);
+    }
 
     @FXML
-    private void showHealthRecords(ActionEvent event) {
-        setViewVisible(viewHealthRecords, btnHealthRecords);
+    private void showAppointments(ActionEvent event) {
+        hideAllViews();
+        if (viewAppointments != null) {
+            viewAppointments.setVisible(true);
+            viewAppointments.setManaged(true);
+        }
+        if (btnAppointments != null) btnAppointments.setStyle(ACTIVE_STYLE);
     }
 
     @FXML
     private void showPrescriptions(ActionEvent event) {
-        setViewVisible(viewPrescriptions, btnPrescriptions);
+        hideAllViews();
+        if (viewPrescriptions != null) {
+            viewPrescriptions.setVisible(true);
+            viewPrescriptions.setManaged(true);
+        }
+        if (btnPrescriptions != null) btnPrescriptions.setStyle(ACTIVE_STYLE);
     }
 
     @FXML
     private void showTestReports(ActionEvent event) {
-        setViewVisible(viewTestReports, btnTestReports);
-    }
-
-    @FXML
-    private void showDailyReminders(ActionEvent event) {
-        setViewVisible(viewDailyReminders, btnDailyReminders);
-    }
-
-    @FXML
-    private void showSearchDoctors(ActionEvent event) {
-        setViewVisible(viewSearchDoctors, btnSearchDoctors);
-    }
-
-    // --- Helper Method to Handle View Switching ---
-    private void setViewVisible(VBox activeView, Button activeButton) {
-        // 1. Hide All Views
-        viewHealthRecords.setVisible(false);  viewHealthRecords.setManaged(false);
-        viewPrescriptions.setVisible(false);  viewPrescriptions.setManaged(false);
-        viewTestReports.setVisible(false);    viewTestReports.setManaged(false);
-        viewDailyReminders.setVisible(false); viewDailyReminders.setManaged(false);
-        viewSearchDoctors.setVisible(false);  viewSearchDoctors.setManaged(false);
-
-        // 2. Show Active View
-        if (activeView != null) {
-            activeView.setVisible(true);
-            activeView.setManaged(true);
+        hideAllViews();
+        if (viewTestReports != null) {
+            viewTestReports.setVisible(true);
+            viewTestReports.setManaged(true);
         }
-
-        // 3. Reset All Button Styles
-        btnHealthRecords.setStyle(INACTIVE_STYLE);
-        btnPrescriptions.setStyle(INACTIVE_STYLE);
-        btnTestReports.setStyle(INACTIVE_STYLE);
-        btnDailyReminders.setStyle(INACTIVE_STYLE);
-        btnSearchDoctors.setStyle(INACTIVE_STYLE);
-
-        // 4. Highlight Active Button
-        if (activeButton != null) {
-            activeButton.setStyle(ACTIVE_STYLE);
-        }
+        if (btnTestReports != null) btnTestReports.setStyle(ACTIVE_STYLE);
     }
 
-    // --- Logout Logic ---
+    private void hideAllViews() {
+        if (viewDashboard != null) { viewDashboard.setVisible(false); viewDashboard.setManaged(false); }
+        if (viewAppointments != null) { viewAppointments.setVisible(false); viewAppointments.setManaged(false); }
+        if (viewPrescriptions != null) { viewPrescriptions.setVisible(false); viewPrescriptions.setManaged(false); }
+        if (viewTestReports != null) { viewTestReports.setVisible(false); viewTestReports.setManaged(false); }
+        resetButtons();
+    }
+
+    private void resetButtons() {
+        if (btnDashboard != null) btnDashboard.setStyle(INACTIVE_STYLE);
+        if (btnAppointments != null) btnAppointments.setStyle(INACTIVE_STYLE);
+        if (btnPrescriptions != null) btnPrescriptions.setStyle(INACTIVE_STYLE);
+        if (btnTestReports != null) btnTestReports.setStyle(INACTIVE_STYLE);
+    }
+
     @FXML
     private void handleLogout(ActionEvent event) {
         try {

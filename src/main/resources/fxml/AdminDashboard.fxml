@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.DatePicker?>
@@ -7,178 +8,196 @@
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
-<?import javafx.scene.effect.BoxBlur?>
-<?import javafx.scene.image.Image?>
-<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.shape.Line?>
 
-<StackPane fx:id="rootPane" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.healthpassport.ui.admin.AdminDashboardController">
+<BorderPane fx:id="rootPane" style="-fx-background-color: linear-gradient(to right, #A3CFC0, #F8FAFC);" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.healthpassport.ui.admin.AdminDashboardController">
 
-    <ImageView fitWidth="${rootPane.width}" fitHeight="${rootPane.height}" pickOnBounds="true" preserveRatio="false">
-        <image>
-            <Image url="@../icons/bg.png" />
-        </image>
-        <effect>
-            <BoxBlur height="15.0" width="15.0" iterations="3" />
-        </effect>
-    </ImageView>
+    <left>
+        <VBox spacing="10.0" prefWidth="260.0" style="-fx-background-color: #26463D; -fx-background-radius: 25; -fx-padding: 30 20; -fx-effect: dropshadow(three-pass-box, rgba(38, 70, 61, 0.25), 30, 0, 5, 5);">
+            <BorderPane.margin><Insets top="25.0" bottom="25.0" left="25.0" right="10.0" /></BorderPane.margin>
 
-    <VBox alignment="TOP_CENTER" spacing="20.0" style="-fx-padding: 30;">
-
-        <HBox alignment="CENTER" spacing="10.0">
-            <Label text="🛡️" style="-fx-font-size: 30px;" />
-            <Label text="HOSPITAL ADMIN PORTAL" style="-fx-font-size: 24px; -fx-font-weight: 900; -fx-text-fill: #1E4D45; -fx-letter-spacing: 2;" />
-        </HBox>
-
-        <HBox alignment="CENTER" spacing="30.0" VBox.vgrow="ALWAYS">
-
-            <VBox alignment="TOP_CENTER" minWidth="300.0" maxWidth="300.0" spacing="20.0"
-                  style="-fx-background-color: #E8F3EE; -fx-background-radius: 30; -fx-padding: 30; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);">
-
-                <VBox prefHeight="20.0" />
-                <VBox alignment="CENTER" spacing="5.0">
-                    <Label text="City General" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #1E4D45;" />
-                    <Label text="Hospital Admin" style="-fx-font-size: 16px; -fx-text-fill: #5C8D7D;" />
-                    <Label text="Code: CGH-001" style="-fx-font-size: 12px; -fx-text-fill: #94A3B8;" />
+            <HBox alignment="CENTER_LEFT" spacing="10.0" style="-fx-padding: 0 0 30 0;">
+                <Label text="✚" style="-fx-text-fill: #A3CFC0; -fx-font-size: 28px; -fx-font-weight: bold;" />
+                <VBox alignment="CENTER_LEFT" spacing="0">
+                    <Label text="DIGITAL HEALTH" style="-fx-text-fill: #A3CFC0; -fx-font-size: 11px; -fx-font-weight: bold; -fx-letter-spacing: 1;" />
+                    <Label text="PASSPORT" style="-fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: 900; -fx-letter-spacing: 1;" />
                 </VBox>
-                <Line endX="200.0" stroke="#7DBFA6" strokeWidth="0.5" />
+            </HBox>
 
-                <VBox spacing="10.0">
-                    <Button fx:id="btnSearch" text="🔍 Search Records" onAction="#showSearch" maxWidth="Infinity"
-                            style="-fx-background-color: #26463D; -fx-text-fill: white; -fx-background-radius: 15; -fx-padding: 12; -fx-font-weight: bold; -fx-cursor: hand;" />
-
-                    <Button fx:id="btnNewPatient" text="👤 Register Patient" onAction="#showNewPatient" maxWidth="Infinity"
-                            style="-fx-background-color: transparent; -fx-text-fill: #5C8D7D; -fx-background-radius: 15; -fx-padding: 12; -fx-font-weight: bold; -fx-cursor: hand;" />
-
-                    <Button fx:id="btnNewDoctor" text="👨‍⚕️ Register Doctor" onAction="#showNewDoctor" maxWidth="Infinity"
-                            style="-fx-background-color: transparent; -fx-text-fill: #5C8D7D; -fx-background-radius: 15; -fx-padding: 12; -fx-font-weight: bold; -fx-cursor: hand;" />
-
-                    <Button fx:id="btnAddTestReport" text="📄 Add Test Report" onAction="#showAddTestReport" maxWidth="Infinity"
-                            style="-fx-background-color: transparent; -fx-text-fill: #5C8D7D; -fx-background-radius: 15; -fx-padding: 12; -fx-font-weight: bold; -fx-cursor: hand;" />
+            <HBox spacing="12.0" alignment="CENTER_LEFT" style="-fx-padding: 0 0 20 0;">
+                <VBox alignment="CENTER" style="-fx-background-color: #A3CFC0; -fx-background-radius: 50; -fx-min-width: 45; -fx-min-height: 45;">
+                    <Label text="🛡️" style="-fx-font-size: 24px; -fx-font-family: 'Segoe UI Emoji';" />
                 </VBox>
+                <VBox spacing="2.0">
+                    <Label text="System Admin" style="-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 15px;" />
+                    <Label text="City General Hosp." style="-fx-text-fill: #A3CFC0; -fx-font-size: 11px;" />
+                </VBox>
+            </HBox>
 
-                <VBox VBox.vgrow="ALWAYS" />
-                <Button text="LOG OUT" maxWidth="Infinity" onAction="#handleLogout" style="-fx-background-color: transparent; -fx-text-fill: #26463D; -fx-font-weight: bold; -fx-border-color: #26463D; -fx-border-radius: 15; -fx-padding: 10; -fx-cursor: hand;" />
-            </VBox>
+            <Button fx:id="btnSearch" text="🔍   Search Records" alignment="BASELINE_LEFT" maxWidth="Infinity" onAction="#showSearch" style="-fx-background-color: #1B362F; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 12 15; -fx-background-radius: 12; -fx-cursor: hand; -fx-font-family: 'Segoe UI Emoji', 'System';" />
+            <Button fx:id="btnNewPatient" text="👤   Register Patient" alignment="BASELINE_LEFT" maxWidth="Infinity" onAction="#showNewPatient" style="-fx-background-color: transparent; -fx-text-fill: #A3CFC0; -fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 12 15; -fx-background-radius: 12; -fx-cursor: hand; -fx-font-family: 'Segoe UI Emoji', 'System';" />
+            <Button fx:id="btnNewDoctor" text="👨‍⚕️   Register Doctor" alignment="BASELINE_LEFT" maxWidth="Infinity" onAction="#showNewDoctor" style="-fx-background-color: transparent; -fx-text-fill: #A3CFC0; -fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 12 15; -fx-background-radius: 12; -fx-cursor: hand; -fx-font-family: 'Segoe UI Emoji', 'System';" />
+            <Button fx:id="btnAddTestReport" text="📄   Add Test Report" alignment="BASELINE_LEFT" maxWidth="Infinity" onAction="#showAddTestReport" style="-fx-background-color: transparent; -fx-text-fill: #A3CFC0; -fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 12 15; -fx-background-radius: 12; -fx-cursor: hand; -fx-font-family: 'Segoe UI Emoji', 'System';" />
 
-            <VBox spacing="20.0" HBox.hgrow="ALWAYS" maxWidth="900.0"
-                  style="-fx-background-color: rgba(255,255,255,0.9); -fx-background-radius: 30; -fx-padding: 30; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);">
+            <VBox VBox.vgrow="ALWAYS" />
 
-                <ScrollPane fitToWidth="true" vbarPolicy="NEVER" hbarPolicy="NEVER" style="-fx-background-color: transparent; -fx-background: transparent;">
-                    <StackPane>
+            <Button text="⚙️   Settings" alignment="BASELINE_LEFT" maxWidth="Infinity" style="-fx-background-color: transparent; -fx-text-fill: #A3CFC0; -fx-font-size: 13px; -fx-font-weight: bold; -fx-padding: 10 15; -fx-cursor: hand; -fx-font-family: 'Segoe UI Emoji', 'System';" />
+            <Button fx:id="btnLogout" text="🚪   Logout" alignment="BASELINE_LEFT" maxWidth="Infinity" onAction="#handleLogout" style="-fx-background-color: transparent; -fx-text-fill: #FCA5A5; -fx-font-size: 13px; -fx-font-weight: bold; -fx-padding: 10 15; -fx-cursor: hand; -fx-font-family: 'Segoe UI Emoji', 'System';" />
+        </VBox>
+    </left>
 
-                        <VBox fx:id="viewSearch" spacing="25.0">
-                            <Label text="Database Search" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #1E4D45;" />
+    <center>
+        <VBox>
+            <HBox alignment="CENTER_LEFT" spacing="20.0" style="-fx-padding: 25 35 10 25;">
+                <HBox HBox.hgrow="ALWAYS" />
+                <HBox alignment="CENTER_LEFT" prefWidth="300.0" style="-fx-background-color: white; -fx-background-radius: 20; -fx-padding: 8 15; -fx-effect: dropshadow(three-pass-box, rgba(38,70,61,0.05), 10, 0, 0, 2);">
+                    <Label text="🔍" style="-fx-text-fill: #9CA3AF; -fx-font-family: 'Segoe UI Emoji';" />
+                    <TextField promptText="Quick search system ID..." style="-fx-background-color: transparent; -fx-border-color: transparent; -fx-prompt-text-fill: #9CA3AF;" HBox.hgrow="ALWAYS" />
+                </HBox>
+                <Label text="🔔" style="-fx-font-size: 18px; -fx-text-fill: #26463D; -fx-cursor: hand; -fx-font-family: 'Segoe UI Emoji';" />
+            </HBox>
 
-                            <HBox spacing="10.0" alignment="CENTER_LEFT" style="-fx-background-color: white; -fx-background-radius: 15; -fx-padding: 15; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 5, 0, 0, 2);">
-                                <TextField promptText="Search by ID (Patient/Doctor)..." style="-fx-background-color: transparent; -fx-font-size: 14px;" HBox.hgrow="ALWAYS" />
-                                <ComboBox promptText="Filter: All" style="-fx-background-color: #F1F5F9; -fx-background-radius: 10;" />
-                                <Button text="Search" style="-fx-background-color: #26463D; -fx-text-fill: white; -fx-background-radius: 10; -fx-font-weight: bold; -fx-padding: 8 20; -fx-cursor: hand;" />
+            <ScrollPane fitToWidth="true" fitToHeight="true" vbarPolicy="NEVER" hbarPolicy="NEVER" style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;" VBox.vgrow="ALWAYS">
+                <StackPane style="-fx-background-color: transparent;">
+
+                    <VBox fx:id="viewSearch" spacing="25.0" style="-fx-padding: 10 35 35 25; -fx-background-color: transparent;">
+                        <VBox spacing="5.0">
+                            <Label text="Database Search" style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 32px;" />
+                            <Label text="Manage and edit patient or doctor records." style="-fx-text-fill: #4A7A68; -fx-font-size: 16px; -fx-font-weight: bold;" />
+                        </VBox>
+
+                        <VBox spacing="20.0" VBox.vgrow="ALWAYS">
+                            <HBox spacing="15.0" alignment="CENTER_LEFT" style="-fx-background-color: white; -fx-background-radius: 15; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(38,70,61,0.08), 20, 0, 5, 5);">
+                                <TextField promptText="Search by Name or ID..." style="-fx-background-color: #F8FAFC; -fx-background-radius: 8; -fx-padding: 12; -fx-border-color: #E2E8F0; -fx-border-radius: 8;" HBox.hgrow="ALWAYS" />
+                                <ComboBox promptText="Filter: All" style="-fx-background-color: #F8FAFC; -fx-background-radius: 8; -fx-padding: 4; -fx-border-color: #E2E8F0; -fx-border-radius: 8;" />
+                                <Button text="Search" style="-fx-background-color: #115E59; -fx-text-fill: white; -fx-background-radius: 8; -fx-font-weight: bold; -fx-padding: 12 30; -fx-cursor: hand;" />
                             </HBox>
 
-                            <VBox spacing="10.0">
-                                <Label text="Recent Registrations" style="-fx-font-size: 14px; -fx-text-fill: #5C8D7D; -fx-font-weight: bold;" />
+                            <Label text="Recent Registrations" style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 18px; -fx-padding: 10 0 0 0;" />
 
-                                <HBox spacing="15.0" alignment="CENTER_LEFT" style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 15; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 5, 0, 0, 2);">
-                                    <Label text="👨‍⚕️" style="-fx-font-size: 20px;" />
-                                    <VBox>
-                                        <Label text="Dr. Sarah Johnson" style="-fx-font-weight: bold; -fx-text-fill: #1E4D45;" />
-                                        <Label text="ID: DOC-001 • Cardiology" style="-fx-font-size: 12px; -fx-text-fill: #5C8D7D;" />
+                            <VBox spacing="15.0" VBox.vgrow="ALWAYS">
+                                <HBox alignment="CENTER_LEFT" spacing="20.0" style="-fx-background-color: white; -fx-background-radius: 15; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(38,70,61,0.08), 15, 0, 5, 5);">
+                                    <VBox alignment="CENTER" minWidth="60.0" minHeight="60.0" style="-fx-background-color: #E8F3EE; -fx-background-radius: 50;"><Label text="👨‍⚕️" style="-fx-font-size: 30px; -fx-font-family: 'Segoe UI Emoji';" /></VBox>
+                                    <VBox spacing="3.0" HBox.hgrow="ALWAYS">
+                                        <HBox alignment="CENTER_LEFT" spacing="10.0"><Label text="Dr. S. Johnson" style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 18px;" /><Label text="Doctor" style="-fx-background-color: #D1FAE5; -fx-text-fill: #065F46; -fx-padding: 3 8; -fx-background-radius: 5; -fx-font-size: 10px; -fx-font-weight: bold;" /></HBox>
+                                        <Label text="Cardiology • ID: DOC-001" style="-fx-text-fill: #6B7280; -fx-font-size: 13px;" />
                                     </VBox>
-                                    <VBox HBox.hgrow="ALWAYS" />
-                                    <Button text="Edit" style="-fx-background-color: #E8F3EE; -fx-text-fill: #26463D; -fx-background-radius: 5;" />
+                                    <Button text="Edit Record" style="-fx-background-color: #F8FAFC; -fx-text-fill: #26463D; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 15; -fx-cursor: hand; -fx-border-color: #E2E8F0; -fx-border-radius: 8;" />
                                 </HBox>
 
-                                <HBox spacing="15.0" alignment="CENTER_LEFT" style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 15; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 5, 0, 0, 2);">
-                                    <Label text="👤" style="-fx-font-size: 20px;" />
-                                    <VBox>
-                                        <Label text="Pranty" style="-fx-font-weight: bold; -fx-text-fill: #1E4D45;" />
-                                        <Label text="ID: PT-0025235 • Patient" style="-fx-font-size: 12px; -fx-text-fill: #5C8D7D;" />
+                                <HBox alignment="CENTER_LEFT" spacing="20.0" style="-fx-background-color: white; -fx-background-radius: 15; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(38,70,61,0.08), 15, 0, 5, 5);">
+                                    <VBox alignment="CENTER" minWidth="60.0" minHeight="60.0" style="-fx-background-color: #F0F9FF; -fx-background-radius: 50;"><Label text="👤" style="-fx-font-size: 30px; -fx-font-family: 'Segoe UI Emoji';" /></VBox>
+                                    <VBox spacing="3.0" HBox.hgrow="ALWAYS">
+                                        <HBox alignment="CENTER_LEFT" spacing="10.0"><Label text="Pranty" style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 18px;" /><Label text="Patient" style="-fx-background-color: #DBEAFE; -fx-text-fill: #1E3A8A; -fx-padding: 3 8; -fx-background-radius: 5; -fx-font-size: 10px; -fx-font-weight: bold;" /></HBox>
+                                        <Label text="Registered: Oct 20, 2026 • ID: PT-0025235" style="-fx-text-fill: #6B7280; -fx-font-size: 13px;" />
                                     </VBox>
-                                    <VBox HBox.hgrow="ALWAYS" />
-                                    <Button text="Edit" style="-fx-background-color: #E8F3EE; -fx-text-fill: #26463D; -fx-background-radius: 5;" />
+                                    <Button text="Edit Record" style="-fx-background-color: #F8FAFC; -fx-text-fill: #26463D; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 15; -fx-cursor: hand; -fx-border-color: #E2E8F0; -fx-border-radius: 8;" />
                                 </HBox>
                             </VBox>
                         </VBox>
+                    </VBox>
 
-                        <VBox fx:id="viewNewPatient" spacing="25.0" visible="false">
-                            <Label text="Register New Patient" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #1E4D45;" />
-
-                            <VBox spacing="15.0" maxWidth="600.0" style="-fx-background-color: white; -fx-background-radius: 15; -fx-padding: 30; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 10, 0, 0, 5);">
-                                <Label text="Personal Information" style="-fx-font-size: 14px; -fx-text-fill: #26463D; -fx-font-weight: bold;" />
-                                <TextField promptText="Full Name" style="-fx-background-radius: 10; -fx-padding: 10;" />
-                                <HBox spacing="15.0">
-                                    <DatePicker promptText="Date of Birth" maxWidth="Infinity" HBox.hgrow="ALWAYS" style="-fx-background-radius: 10;" />
-                                    <ComboBox promptText="Gender" maxWidth="Infinity" HBox.hgrow="ALWAYS" style="-fx-background-radius: 10;" />
-                                </HBox>
-                                <Label text="Contact &amp; Medical" style="-fx-font-size: 14px; -fx-text-fill: #26463D; -fx-font-weight: bold;" />
-                                <TextField promptText="Phone Number" style="-fx-background-radius: 10; -fx-padding: 10;" />
-                                <TextField promptText="Address" style="-fx-background-radius: 10; -fx-padding: 10;" />
-                                <HBox spacing="15.0">
-                                    <ComboBox promptText="Blood Group" maxWidth="Infinity" HBox.hgrow="ALWAYS" style="-fx-background-radius: 10;" />
-                                    <TextField promptText="Emergency Contact" HBox.hgrow="ALWAYS" style="-fx-background-radius: 10; -fx-padding: 10;" />
-                                </HBox>
-                                <Button text="Create Patient Record" maxWidth="Infinity"
-                                        style="-fx-background-color: #26463D; -fx-text-fill: white; -fx-background-radius: 10; -fx-padding: 12; -fx-font-weight: bold; -fx-cursor: hand;" />
-                            </VBox>
+                    <VBox fx:id="viewNewPatient" visible="false" managed="false" spacing="25.0" style="-fx-padding: 10 35 35 25; -fx-background-color: transparent;">
+                        <VBox spacing="5.0">
+                            <Label text="Register New Patient" style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 32px;" />
+                            <Label text="Create a new Digital Health Passport for a patient." style="-fx-text-fill: #4A7A68; -fx-font-size: 16px; -fx-font-weight: bold;" />
                         </VBox>
 
-                        <VBox fx:id="viewNewDoctor" spacing="25.0" visible="false">
-                            <Label text="Onboard New Doctor" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #1E4D45;" />
-                            <VBox spacing="15.0" maxWidth="600.0" style="-fx-background-color: white; -fx-background-radius: 15; -fx-padding: 30; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 10, 0, 0, 5);">
-                                <Label text="Professional Details" style="-fx-font-size: 14px; -fx-text-fill: #26463D; -fx-font-weight: bold;" />
-                                <TextField promptText="Doctor Name (e.g. Dr. John Doe)" style="-fx-background-radius: 10; -fx-padding: 10;" />
-                                <HBox spacing="15.0">
-                                    <TextField promptText="Specialty (e.g. Cardiology)" HBox.hgrow="ALWAYS" style="-fx-background-radius: 10; -fx-padding: 10;" />
-                                    <TextField promptText="License Number" HBox.hgrow="ALWAYS" style="-fx-background-radius: 10; -fx-padding: 10;" />
-                                </HBox>
-                                <Label text="Qualifications" style="-fx-font-size: 14px; -fx-text-fill: #26463D; -fx-font-weight: bold;" />
-                                <TextField promptText="Degrees (e.g. MBBS, FCPS, MD)" style="-fx-background-radius: 10; -fx-padding: 10;" />
-                                <Label text="Account Credentials" style="-fx-font-size: 14px; -fx-text-fill: #26463D; -fx-font-weight: bold;" />
-                                <TextField promptText="Hospital Email" style="-fx-background-radius: 10; -fx-padding: 10;" />
-                                <TextField promptText="Assign Temporary Password" style="-fx-background-radius: 10; -fx-padding: 10;" />
-                                <Button text="Register Doctor" maxWidth="Infinity"
-                                        style="-fx-background-color: #26463D; -fx-text-fill: white; -fx-background-radius: 10; -fx-padding: 12; -fx-font-weight: bold; -fx-cursor: hand;" />
-                            </VBox>
+                        <VBox spacing="25.0" VBox.vgrow="ALWAYS" style="-fx-background-color: white; -fx-background-radius: 20; -fx-padding: 35; -fx-effect: dropshadow(three-pass-box, rgba(38,70,61,0.08), 20, 0, 5, 5);">
+                            <HBox spacing="30.0" VBox.vgrow="ALWAYS">
+                                <VBox spacing="15.0" HBox.hgrow="ALWAYS">
+                                    <Label text="Personal Information" style="-fx-font-size: 16px; -fx-text-fill: #111827; -fx-font-weight: bold;" />
+                                    <TextField promptText="Full Name" style="-fx-background-color: #F8FAFC; -fx-background-radius: 8; -fx-padding: 12; -fx-border-color: #E2E8F0; -fx-border-radius: 8;" />
+                                    <HBox spacing="15.0">
+                                        <DatePicker promptText="Date of Birth" maxWidth="Infinity" HBox.hgrow="ALWAYS" />
+                                        <ComboBox promptText="Gender" maxWidth="Infinity" HBox.hgrow="ALWAYS" />
+                                    </HBox>
+                                    <TextField promptText="Phone Number" style="-fx-background-color: #F8FAFC; -fx-background-radius: 8; -fx-padding: 12;" />
+                                    <ComboBox promptText="Blood Group" maxWidth="Infinity" />
+                                    <Label text="Residential Address" style="-fx-font-weight: bold; -fx-padding: 10 0 0 0;" />
+                                    <TextArea prefRowCount="3" wrapText="true" style="-fx-background-color: #F8FAFC;" VBox.vgrow="ALWAYS" />
+                                </VBox>
+                                <VBox spacing="15.0" HBox.hgrow="ALWAYS">
+                                    <Label text="System Credentials" style="-fx-font-size: 16px; -fx-text-fill: #111827; -fx-font-weight: bold;" />
+                                    <VBox spacing="5.0">
+                                        <Label text="Assigned Patient ID / Email" style="-fx-text-fill: #5C8D7D; -fx-font-weight: bold; -fx-font-size: 12px;" />
+                                        <TextField promptText="e.g. PT-2026-0001" style="-fx-background-color: #F8FAFC; -fx-border-color: #115E59; -fx-border-radius: 8; -fx-padding: 12; -fx-font-weight: bold;" />
+                                    </VBox>
+                                    <VBox spacing="5.0">
+                                        <Label text="Temporary System Password" style="-fx-text-fill: #5C8D7D; -fx-font-weight: bold; -fx-font-size: 12px;" />
+                                        <TextField promptText="Assign Password" style="-fx-background-color: #F8FAFC; -fx-padding: 12; -fx-border-radius: 8;" />
+                                    </VBox>
+                                    <TextField promptText="Emergency Contact Person" style="-fx-background-color: #F8FAFC; -fx-padding: 12;" />
+                                    <TextField promptText="Emergency phone number" style="-fx-background-color: #F8FAFC; -fx-padding: 12;" />
+                                </VBox>
+                            </HBox>
+                            <HBox alignment="CENTER_RIGHT"><Button text="Confirm &amp; Register Patient" style="-fx-background-color: #115E59; -fx-text-fill: white; -fx-background-radius: 10; -fx-padding: 15 40; -fx-font-weight: bold;" /></HBox>
+                        </VBox>
+                    </VBox>
+
+                    <VBox fx:id="viewNewDoctor" visible="false" managed="false" spacing="25.0" style="-fx-padding: 10 35 35 25; -fx-background-color: transparent;">
+                        <VBox spacing="5.0">
+                            <Label text="Onboard New Doctor" style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 32px;" />
+                            <Label text="Add a new physician to the hospital roster." style="-fx-text-fill: #4A7A68; -fx-font-size: 16px; -fx-font-weight: bold;" />
                         </VBox>
 
-                        <VBox fx:id="viewAddTestReport" spacing="25.0" visible="false">
-                            <Label text="Upload Laboratory Report" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #1E4D45;" />
+                        <VBox spacing="25.0" VBox.vgrow="ALWAYS" style="-fx-background-color: white; -fx-background-radius: 20; -fx-padding: 35; -fx-effect: dropshadow(three-pass-box, rgba(38,70,61,0.08), 20, 0, 5, 5);">
+                            <HBox spacing="30.0" VBox.vgrow="ALWAYS">
+                                <VBox spacing="15.0" HBox.hgrow="ALWAYS">
+                                    <Label text="Professional Details" style="-fx-font-size: 16px; -fx-text-fill: #111827; -fx-font-weight: bold;" />
+                                    <TextField promptText="Doctor Name (Full Legal Name)" style="-fx-background-color: #F8FAFC; -fx-background-radius: 8; -fx-padding: 12; -fx-border-color: #E2E8F0; -fx-border-radius: 8;" />
+                                    <HBox spacing="15.0">
+                                        <TextField promptText="Specialty (e.g. Cardiology)" HBox.hgrow="ALWAYS" style="-fx-background-color: #F8FAFC; -fx-padding: 12;" />
+                                        <TextField promptText="License Number" HBox.hgrow="ALWAYS" style="-fx-background-color: #F8FAFC; -fx-padding: 12;" />
+                                    </HBox>
+                                    <TextField promptText="Degrees (MBBS, MD, etc.)" style="-fx-background-color: #F8FAFC; -fx-padding: 12;" />
+                                </VBox>
+                                <VBox spacing="15.0" HBox.hgrow="ALWAYS">
+                                    <Label text="System Credentials" style="-fx-font-size: 16px; -fx-text-fill: #111827; -fx-font-weight: bold;" />
+                                    <VBox spacing="5.0">
+                                        <Label text="Assigned System ID / Doctor Email" style="-fx-text-fill: #5C8D7D; -fx-font-weight: bold; -fx-font-size: 12px;" />
+                                        <TextField promptText="e.g. DOC-2026-0001" style="-fx-background-color: #F8FAFC; -fx-border-color: #115E59; -fx-border-radius: 8; -fx-padding: 12; -fx-font-weight: bold;" />
+                                    </VBox>
+                                    <VBox spacing="5.0">
+                                        <Label text="Temporary System Password" style="-fx-text-fill: #5C8D7D; -fx-font-weight: bold; -fx-font-size: 12px;" />
+                                        <TextField promptText="Auto-generated or Manual" style="-fx-background-color: #F8FAFC; -fx-padding: 12;" />
+                                    </VBox>
+                                </VBox>
+                            </HBox>
+                            <HBox alignment="CENTER_RIGHT"><Button text="Register Doctor to System" style="-fx-background-color: #115E59; -fx-text-fill: white; -fx-background-radius: 10; -fx-padding: 15 40; -fx-font-weight: bold;" /></HBox>
+                        </VBox>
+                    </VBox>
 
-                            <VBox spacing="15.0" maxWidth="600.0" style="-fx-background-color: white; -fx-background-radius: 15; -fx-padding: 30; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 10, 0, 0, 5);">
-
-                                <Label text="Patient &amp; Test Details" style="-fx-font-size: 14px; -fx-text-fill: #26463D; -fx-font-weight: bold;" />
-
-                                <HBox spacing="15.0">
-                                    <TextField promptText="Patient ID (e.g. PT-0025235)" HBox.hgrow="ALWAYS" style="-fx-background-radius: 10; -fx-padding: 10;" />
-                                    <Button text="Verify" style="-fx-background-color: #E8F3EE; -fx-text-fill: #26463D; -fx-background-radius: 10;" />
-                                </HBox>
-
-                                <HBox spacing="15.0">
-                                    <ComboBox promptText="Select Test Type" HBox.hgrow="ALWAYS" maxWidth="Infinity" style="-fx-background-radius: 10;" />
-                                    <DatePicker promptText="Test Date" HBox.hgrow="ALWAYS" maxWidth="Infinity" style="-fx-background-radius: 10;" />
-                                </HBox>
-
-                                <Label text="Report Content" style="-fx-font-size: 14px; -fx-text-fill: #26463D; -fx-font-weight: bold;" />
-
-                                <TextArea promptText="Enter Brief Summary / Results / Remarks..." prefRowCount="4" wrapText="true" style="-fx-background-radius: 10;" />
-
-                                <HBox spacing="15.0" alignment="CENTER_LEFT" style="-fx-background-color: #F8FAFC; -fx-background-radius: 10; -fx-padding: 15; -fx-border-color: #E2E8F0; -fx-border-style: dashed; -fx-border-radius: 10;">
-                                    <Label text="📄 No file selected" style="-fx-text-fill: #94A3B8;" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
-                                    <Button text="Upload PDF" style="-fx-background-color: #64748B; -fx-text-fill: white; -fx-background-radius: 8; -fx-cursor: hand;" />
-                                </HBox>
-
-                                <Button text="Submit Report to System" maxWidth="Infinity"
-                                        style="-fx-background-color: #26463D; -fx-text-fill: white; -fx-background-radius: 10; -fx-padding: 12; -fx-font-weight: bold; -fx-cursor: hand;" />
-                            </VBox>
+                    <VBox fx:id="viewAddTestReport" visible="false" managed="false" spacing="25.0" style="-fx-padding: 10 35 35 25; -fx-background-color: transparent;">
+                        <VBox spacing="5.0">
+                            <Label text="Upload Test Report" style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 32px;" />
+                            <Label text="Attach verified lab results to a patient's passport." style="-fx-text-fill: #4A7A68; -fx-font-size: 16px; -fx-font-weight: bold;" />
                         </VBox>
 
-                    </StackPane>
-                </ScrollPane>
-            </VBox>
-        </HBox>
-    </VBox>
-</StackPane>
+                        <VBox spacing="20.0" VBox.vgrow="ALWAYS" style="-fx-background-color: white; -fx-background-radius: 20; -fx-padding: 35; -fx-effect: dropshadow(three-pass-box, rgba(38,70,61,0.08), 20, 0, 5, 5);">
+                            <HBox spacing="15.0">
+                                <TextField promptText="Verify Patient ID (e.g. PT-0025235)" HBox.hgrow="ALWAYS" style="-fx-background-color: #F8FAFC; -fx-padding: 12;" />
+                                <Button text="Verify ID" style="-fx-background-color: #E8F3EE; -fx-text-fill: #115E59; -fx-font-weight: bold; -fx-padding: 0 25; -fx-min-height: 45;" />
+                            </HBox>
+                            <HBox spacing="15.0">
+                                <ComboBox promptText="Select Test Type" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
+                                <DatePicker promptText="Date of Test" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
+                            </HBox>
+                            <TextArea promptText="Enter Brief Results / Summary..." prefRowCount="5" style="-fx-background-color: #F8FAFC;" VBox.vgrow="ALWAYS" />
+                            <HBox spacing="15.0" alignment="CENTER_LEFT" style="-fx-background-color: #F8FAFC; -fx-border-style: dashed; -fx-border-color: #CBD5E1; -fx-border-radius: 10; -fx-padding: 20;">
+                                <Label text="📄" style="-fx-font-size: 24px; -fx-font-family: 'Segoe UI Emoji';" />
+                                <VBox HBox.hgrow="ALWAYS"><Label text="No PDF selected" style="-fx-font-weight: bold;" /><Label text="Max file size: 10MB" style="-fx-text-fill: #94A3B8; -fx-font-size: 11px;" /></VBox>
+                                <Button text="Browse Files" style="-fx-background-color: white; -fx-border-color: #E2E8F0; -fx-border-radius: 8; -fx-padding: 10 25;" />
+                            </HBox>
+                            <Button text="Submit Report to Passport" maxWidth="Infinity" style="-fx-background-color: #115E59; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 15; -fx-font-size: 14px;" />
+                        </VBox>
+                    </VBox>
+
+                </StackPane>
+            </ScrollPane>
+        </VBox>
+    </center>
+</BorderPane>

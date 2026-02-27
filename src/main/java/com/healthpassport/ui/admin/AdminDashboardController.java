@@ -12,50 +12,20 @@ import java.io.IOException;
 
 public class AdminDashboardController {
 
-    // Buttons
-    @FXML private Button btnSearch;
-    @FXML private Button btnNewPatient;
-    @FXML private Button btnNewDoctor;
-    @FXML private Button btnAddTestReport; // NEW
+    @FXML private Button btnSearch, btnNewPatient, btnNewDoctor, btnAddTestReport;
+    @FXML private VBox viewSearch, viewNewPatient, viewNewDoctor, viewAddTestReport;
 
-    // Views
-    @FXML private VBox viewSearch;
-    @FXML private VBox viewNewPatient;
-    @FXML private VBox viewNewDoctor;
-    @FXML private VBox viewAddTestReport; // NEW
+    private final String ACTIVE = "-fx-background-color: #1B362F; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 12 15; -fx-background-radius: 12; -fx-cursor: hand; -fx-font-family: 'Segoe UI Emoji', 'System';";
+    private final String INACTIVE = "-fx-background-color: transparent; -fx-text-fill: #A3CFC0; -fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 12 15; -fx-background-radius: 12; -fx-cursor: hand; -fx-font-family: 'Segoe UI Emoji', 'System';";
 
-    // Styles
-    private final String ACTIVE_STYLE = "-fx-background-color: #26463D; -fx-text-fill: white; -fx-background-radius: 15; -fx-padding: 12; -fx-font-weight: bold; -fx-cursor: hand;";
-    private final String INACTIVE_STYLE = "-fx-background-color: transparent; -fx-text-fill: #5C8D7D; -fx-background-radius: 15; -fx-padding: 12; -fx-font-weight: bold; -fx-cursor: hand;";
+    @FXML public void initialize() { showSearch(null); }
 
-    @FXML
-    public void initialize() {
-        showSearch(null); // Default view
-    }
+    @FXML private void showSearch(ActionEvent e) { switchView(viewSearch, btnSearch); }
+    @FXML private void showNewPatient(ActionEvent e) { switchView(viewNewPatient, btnNewPatient); }
+    @FXML private void showNewDoctor(ActionEvent e) { switchView(viewNewDoctor, btnNewDoctor); }
+    @FXML private void showAddTestReport(ActionEvent e) { switchView(viewAddTestReport, btnAddTestReport); }
 
-    // --- Navigation Logic ---
-
-    @FXML
-    private void showSearch(ActionEvent event) {
-        switchView(viewSearch, btnSearch);
-    }
-
-    @FXML
-    private void showNewPatient(ActionEvent event) {
-        switchView(viewNewPatient, btnNewPatient);
-    }
-
-    @FXML
-    private void showNewDoctor(ActionEvent event) {
-        switchView(viewNewDoctor, btnNewDoctor);
-    }
-
-    @FXML
-    private void showAddTestReport(ActionEvent event) {
-        switchView(viewAddTestReport, btnAddTestReport);
-    }
-
-    private void switchView(VBox activeView, Button activeButton) {
+    private void switchView(VBox view, Button btn) {
         // Hide all
         viewSearch.setVisible(false); viewSearch.setManaged(false);
         viewNewPatient.setVisible(false); viewNewPatient.setManaged(false);
@@ -63,30 +33,21 @@ public class AdminDashboardController {
         viewAddTestReport.setVisible(false); viewAddTestReport.setManaged(false);
 
         // Show active
-        activeView.setVisible(true);
-        activeView.setManaged(true);
+        view.setVisible(true); view.setManaged(true);
 
-        // Reset Styles
-        btnSearch.setStyle(INACTIVE_STYLE);
-        btnNewPatient.setStyle(INACTIVE_STYLE);
-        btnNewDoctor.setStyle(INACTIVE_STYLE);
-        btnAddTestReport.setStyle(INACTIVE_STYLE);
-
-        // Highlight Active
-        activeButton.setStyle(ACTIVE_STYLE);
+        // Style buttons
+        btnSearch.setStyle(INACTIVE); btnNewPatient.setStyle(INACTIVE);
+        btnNewDoctor.setStyle(INACTIVE); btnAddTestReport.setStyle(INACTIVE);
+        btn.setStyle(ACTIVE);
     }
 
-    // --- Logout Logic ---
-    @FXML
-    private void handleLogout(ActionEvent event) {
+    @FXML private void handleLogout(ActionEvent event) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/RoleSelection.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.getScene().setRoot(root);
             stage.setTitle("Digital Health Passport - Role Selection");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        } catch (IOException e) { e.printStackTrace(); }
     }
 }

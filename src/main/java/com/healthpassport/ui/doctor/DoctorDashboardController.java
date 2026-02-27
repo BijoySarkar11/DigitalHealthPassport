@@ -1,86 +1,120 @@
 package com.healthpassport.ui.doctor;
 
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
+import javafx.scene.chart.AreaChart;
+import javafx.scene.chart.XYChart;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
+import javafx.scene.layout.Background;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Path;
 import javafx.stage.Stage;
+
 import java.io.IOException;
 
 public class DoctorDashboardController {
 
-    // --- FXML UI Components ---
-    @FXML private Label doctorNameLabel;
+    @FXML private Button btnDashboard;
+    @FXML private Button btnPatients;
+    @FXML private Button btnAppointments;
+    @FXML private Button btnLogout;
 
-    // Navigation Buttons
-    @FXML private Button btnSearchPatient;
-    @FXML private Button btnAddPatient;
+    @FXML private VBox viewDashboard;
+    @FXML private VBox viewPatients;
+    @FXML private VBox viewAppointments;
 
-    // Views
-    @FXML private VBox viewSearchPatient;
-    @FXML private VBox viewAddPatient;
+    @FXML private AreaChart<String, Number> trendChart;
 
-    // Search Logic Components
-    @FXML private TextField searchField;
-    @FXML private VBox patientDetailsContainer; // The hidden result area
-    @FXML private Label resultName;
-    @FXML private Label resultId;
-
-    // Styles
-    private final String ACTIVE_STYLE = "-fx-background-color: #26463D; -fx-text-fill: white; -fx-background-radius: 10; -fx-padding: 8 20; -fx-font-weight: bold; -fx-cursor: hand;";
-    private final String INACTIVE_STYLE = "-fx-background-color: transparent; -fx-text-fill: #5C8D7D; -fx-font-weight: bold; -fx-cursor: hand;";
+    // Matches the Deep Green (#26463D) floating sidebar theme
+    private final String ACTIVE_STYLE = "-fx-background-color: #1B362F; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 12 15; -fx-background-radius: 12; -fx-cursor: hand; -fx-font-family: 'Segoe UI Emoji', 'System';";
+    private final String INACTIVE_STYLE = "-fx-background-color: transparent; -fx-text-fill: #A3CFC0; -fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 12 15; -fx-background-radius: 12; -fx-cursor: hand; -fx-font-family: 'Segoe UI Emoji', 'System';";
 
     @FXML
     public void initialize() {
-        // Init logic if needed
-        showSearchPatient(null);
+        setupCharts();
+        showDashboard(null);
     }
 
-    // --- Navigation Logic ---
-    @FXML
-    private void showSearchPatient(ActionEvent event) {
-        viewSearchPatient.setVisible(true);
-        viewSearchPatient.setManaged(true);
-        viewAddPatient.setVisible(false);
-        viewAddPatient.setManaged(false);
+    private void setupCharts() {
+        if (trendChart != null) {
+            trendChart.setBackground(Background.EMPTY);
 
-        btnSearchPatient.setStyle(ACTIVE_STYLE);
-        btnAddPatient.setStyle(INACTIVE_STYLE);
-    }
+            XYChart.Series<String, Number> trendSeries = new XYChart.Series<>();
+            trendSeries.getData().add(new XYChart.Data<>("Mon", 120));
+            trendSeries.getData().add(new XYChart.Data<>("Tue", 145));
+            trendSeries.getData().add(new XYChart.Data<>("Wed", 130));
+            trendSeries.getData().add(new XYChart.Data<>("Thu", 180));
+            trendSeries.getData().add(new XYChart.Data<>("Fri", 150));
+            trendSeries.getData().add(new XYChart.Data<>("Sat", 170));
+            trendSeries.getData().add(new XYChart.Data<>("Sun", 140));
 
-    @FXML
-    private void showAddPatient(ActionEvent event) {
-        viewSearchPatient.setVisible(false);
-        viewSearchPatient.setManaged(false);
-        viewAddPatient.setVisible(true);
-        viewAddPatient.setManaged(true);
+            trendChart.getData().add(trendSeries);
 
-        btnSearchPatient.setStyle(INACTIVE_STYLE);
-        btnAddPatient.setStyle(ACTIVE_STYLE);
-    }
+            // Turn the line chart into the Sage Green theme natively
+            Platform.runLater(() -> {
+                Node line = trendChart.lookup(".chart-series-line");
+                Node fill = trendChart.lookup(".chart-series-area-fill");
 
-    // --- Search Logic ---
-    @FXML
-    private void handleSearch(ActionEvent event) {
-        String query = searchField.getText();
+                if (line instanceof Path) {
+                    ((Path) line).setStroke(Color.web("#5C8D7D"));
+                    ((Path) line).setStrokeWidth(3);
+                }
 
-        // Simple mock logic: If text is not empty, show the "Pranty" mock result
-        if (query != null && !query.trim().isEmpty()) {
-            patientDetailsContainer.setVisible(true);
-            patientDetailsContainer.setManaged(true);
-
-            // In a real app, you would fetch data from DB here
-            resultName.setText("Pranty");
-            resultId.setText("Patient ID: " + query.toUpperCase());
+                if (fill instanceof Path) {
+                    ((Path) fill).setFill(Color.web("#5C8D7D").deriveColor(0, 1, 1, 0.2));
+                }
+            });
         }
     }
 
-    // --- Logout Logic ---
+    @FXML
+    private void showDashboard(ActionEvent event) {
+        hideAllViews();
+        if (viewDashboard != null) {
+            viewDashboard.setVisible(true);
+            viewDashboard.setManaged(true);
+        }
+        if (btnDashboard != null) btnDashboard.setStyle(ACTIVE_STYLE);
+    }
+
+    @FXML
+    private void showPatients(ActionEvent event) {
+        hideAllViews();
+        if (viewPatients != null) {
+            viewPatients.setVisible(true);
+            viewPatients.setManaged(true);
+        }
+        if (btnPatients != null) btnPatients.setStyle(ACTIVE_STYLE);
+    }
+
+    @FXML
+    private void showAppointments(ActionEvent event) {
+        hideAllViews();
+        if (viewAppointments != null) {
+            viewAppointments.setVisible(true);
+            viewAppointments.setManaged(true);
+        }
+        if (btnAppointments != null) btnAppointments.setStyle(ACTIVE_STYLE);
+    }
+
+    private void hideAllViews() {
+        if (viewDashboard != null) { viewDashboard.setVisible(false); viewDashboard.setManaged(false); }
+        if (viewPatients != null) { viewPatients.setVisible(false); viewPatients.setManaged(false); }
+        if (viewAppointments != null) { viewAppointments.setVisible(false); viewAppointments.setManaged(false); }
+        resetButtons();
+    }
+
+    private void resetButtons() {
+        if (btnDashboard != null) btnDashboard.setStyle(INACTIVE_STYLE);
+        if (btnPatients != null) btnPatients.setStyle(INACTIVE_STYLE);
+        if (btnAppointments != null) btnAppointments.setStyle(INACTIVE_STYLE);
+    }
+
     @FXML
     private void handleLogout(ActionEvent event) {
         try {
