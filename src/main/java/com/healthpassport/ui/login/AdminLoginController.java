@@ -1,12 +1,12 @@
 package com.healthpassport.ui.login;
 
-import com.healthpassport.MODEL.service.AdminService; // Updated import
+import com.healthpassport.MODEL.service.AdminService;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
-import javafx.scene.control.Alert;
+import javafx.scene.control.Label; // Added Label import
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
@@ -18,6 +18,7 @@ public class AdminLoginController {
 
     @FXML private TextField usernameField;
     @FXML private PasswordField passwordField;
+    @FXML private Label errorLabel; // Added errorLabel injection
 
     private final AdminService adminService = new AdminService();
 
@@ -25,6 +26,9 @@ public class AdminLoginController {
     private void handleLogin(ActionEvent event) {
         String username = usernameField.getText();
         String password = passwordField.getText();
+
+        // Clear any previous error message before checking
+        errorLabel.setText("");
 
         if (adminService.login(username, password)) {
             try {
@@ -37,11 +41,8 @@ public class AdminLoginController {
                 e.printStackTrace();
             }
         } else {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Login Failed");
-            alert.setHeaderText(null);
-            alert.setContentText("Invalid username or password.");
-            alert.showAndWait();
+            // Display error text directly on the UI instead of a popup
+            errorLabel.setText("Invalid Admin ID or password.");
         }
     }
 
