@@ -36,8 +36,8 @@
                     <Label text="👨‍⚕️" style="-fx-font-size: 24px; -fx-font-family: 'Segoe UI Emoji';" />
                 </VBox>
                 <VBox spacing="2.0">
-                    <Label fx:id="doctorNameLabel" text="Dr. S. Johnson" style="-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 15px;" />
-                    <Label fx:id="doctorIdLabel" text="ID: DOC-001" style="-fx-text-fill: #A3CFC0; -fx-font-size: 11px;" />
+                    <Label fx:id="doctorNameLabel" text="Loading..." style="-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 15px;" />
+                    <Label fx:id="doctorIdLabel" text="ID: ---" style="-fx-text-fill: #A3CFC0; -fx-font-size: 11px;" />
                 </VBox>
             </HBox>
 
@@ -85,10 +85,10 @@
                                     <HBox HBox.hgrow="ALWAYS" />
                                     <Label text="👥" alignment="CENTER" style="-fx-text-fill: #10B981; -fx-background-color: #ECFDF5; -fx-background-radius: 12; -fx-min-width: 45; -fx-min-height: 45; -fx-font-size: 20px; -fx-font-family: 'Segoe UI Emoji';" />
                                 </HBox>
-                                <Label text="178" style="-fx-text-fill: #111827; -fx-font-weight: 900; -fx-font-size: 38px; -fx-padding: -10 0 0 0;" />
+                                <Label fx:id="totalPatientsLabel" text="0" style="-fx-text-fill: #111827; -fx-font-weight: 900; -fx-font-size: 38px; -fx-padding: -10 0 0 0;" />
                                 <HBox alignment="CENTER_LEFT" spacing="5.0">
                                     <Label text="📈" style="-fx-text-fill: #10B981; -fx-font-size: 12px; -fx-font-family: 'Segoe UI Emoji';"/>
-                                    <Label text="142 Active • 36 Recovered" style="-fx-text-fill: #047857; -fx-font-size: 12px; -fx-font-weight: bold;" />
+                                    <Label fx:id="totalPatientsSubLabel" text="0 Active • 0 Recovered" style="-fx-text-fill: #047857; -fx-font-size: 12px; -fx-font-weight: bold;" />
                                 </HBox>
                             </VBox>
 
@@ -101,10 +101,10 @@
                                     <HBox HBox.hgrow="ALWAYS" />
                                     <Label text="🏥" alignment="CENTER" style="-fx-text-fill: #EF4444; -fx-background-color: #FEF2F2; -fx-background-radius: 12; -fx-min-width: 45; -fx-min-height: 45; -fx-font-size: 20px; -fx-font-family: 'Segoe UI Emoji';" />
                                 </HBox>
-                                <Label text="33" style="-fx-text-fill: #111827; -fx-font-weight: 900; -fx-font-size: 38px; -fx-padding: -10 0 0 0;" />
+                                <Label fx:id="activeCasesLabel" text="0" style="-fx-text-fill: #111827; -fx-font-weight: 900; -fx-font-size: 38px; -fx-padding: -10 0 0 0;" />
                                 <HBox alignment="CENTER_LEFT" spacing="5.0">
                                     <Label text="⚠️" style="-fx-text-fill: #B91C1C; -fx-font-size: 12px; -fx-font-family: 'Segoe UI Emoji';"/>
-                                    <Label text="2 Critical cases flagged" style="-fx-text-fill: #B91C1C; -fx-font-size: 12px; -fx-font-weight: bold;" />
+                                    <Label fx:id="activeCasesSubLabel" text="0 Critical cases flagged" style="-fx-text-fill: #B91C1C; -fx-font-size: 12px; -fx-font-weight: bold;" />
                                 </HBox>
                             </VBox>
 
@@ -117,10 +117,10 @@
                                     <HBox HBox.hgrow="ALWAYS" />
                                     <Label text="📅" alignment="CENTER" style="-fx-text-fill: #F59E0B; -fx-background-color: #FFFBEB; -fx-background-radius: 12; -fx-min-width: 45; -fx-min-height: 45; -fx-font-size: 20px; -fx-font-family: 'Segoe UI Emoji';" />
                                 </HBox>
-                                <Label text="76" style="-fx-text-fill: #111827; -fx-font-weight: 900; -fx-font-size: 38px; -fx-padding: -10 0 0 0;" />
+                                <Label fx:id="todaysApptsLabel" text="0" style="-fx-text-fill: #111827; -fx-font-weight: 900; -fx-font-size: 38px; -fx-padding: -10 0 0 0;" />
                                 <HBox alignment="CENTER_LEFT" spacing="5.0">
                                     <Label text="⏳" style="-fx-text-fill: #D97706; -fx-font-size: 12px; -fx-font-family: 'Segoe UI Emoji';"/>
-                                    <Label text="54 Completed • 22 Upcoming" style="-fx-text-fill: #D97706; -fx-font-size: 12px; -fx-font-weight: bold;" />
+                                    <Label fx:id="todaysApptsSubLabel" text="0 Completed • 0 Upcoming" style="-fx-text-fill: #D97706; -fx-font-size: 12px; -fx-font-weight: bold;" />
                                 </HBox>
                             </VBox>
                         </HBox>
@@ -173,6 +173,7 @@
                             </VBox>
 
                             <VBox minWidth="400.0" maxWidth="400.0" spacing="20.0" style="-fx-background-color: white; -fx-background-radius: 20; -fx-padding: 25; -fx-effect: dropshadow(three-pass-box, rgba(38,70,61,0.08), 20, 0, 5, 5);">
+
                                 <VBox spacing="5.0">
                                     <Label text="Quick Prescribe" style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 18px;" />
                                     <Label text="Issue a new prescription for first-time or walk-in consultations." style="-fx-text-fill: #6B7280; -fx-font-size: 12px;" wrapText="true" />

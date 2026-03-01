@@ -10,19 +10,26 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.chart.AreaChart;
+import javafx.scene.chart.XYChart;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.layout.Background;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Path;
 import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class DoctorDashboardController {
 
@@ -35,6 +42,13 @@ public class DoctorDashboardController {
     @FXML private VBox viewPatients;
     @FXML private VBox viewAppointments;
 
+    // --- Overview Stat Labels ---
+    @FXML private Label totalPatientsLabel;
+    @FXML private Label totalPatientsSubLabel;
+    @FXML private Label activeCasesLabel;
+    @FXML private Label activeCasesSubLabel;
+    @FXML private Label todaysApptsLabel;
+    @FXML private Label todaysApptsSubLabel;
     @FXML private AreaChart<String, Number> trendChart;
 
     @FXML private Label doctorNameLabel;
@@ -49,10 +63,10 @@ public class DoctorDashboardController {
 
     @FXML
     public void initialize() {
-        setupCharts();
         showDashboard(null);
 
         loadDoctorProfile();
+        loadDashboardStatistics(); // Loads the top cards & chart dynamically
         loadTodaysSchedule();
         loadPatientRoster();
         loadAppointments();
@@ -64,6 +78,114 @@ public class DoctorDashboardController {
             if (doctorNameLabel != null) doctorNameLabel.setText(currentUser.getFullName());
             if (doctorIdLabel != null) doctorIdLabel.setText("ID: " + currentUser.getNationalId());
         }
+    }
+
+    private void loadDashboardStatistics() {
+        User currentUser = UserSession.getInstance().getCurrentUser();
+        if (currentUser == null) return;
+        int userId = currentUser.getId();
+
+        try (Connection conn = DBConnection.getConnection()) {
+
+            // 1. Total Patients Calculation
+            String totalQuery = "SELECT COUNT(DISTINCT a.patient_id) AS total FROM Appointments a JOIN Doctors d ON a.doctor_id = d.id WHERE d.user_id = ?";
+            try (PreparedStatement stmt = conn.prepareStatement(totalQuery)) {
+                stmt.setInt(1, userId);
+                ResultSet rs = stmt.executeQuery();
+                if (rs.next()) {
+                    int total = rs.getInt("total");
+                    if (totalPatientsLabel != null) totalPatientsLabel.setText(String.valueOf(total));
+                    if (totalPatientsSubLabel != null) totalPatientsSubLabel.setText(total + " Active • 0 Recovered");
+                }
+            }
+
+            // 2. Active Cases (Patients with upcoming scheduled appointments)
+            String activeQuery = "SELECT COUNT(DISTINCT a.patient_id) AS active FROM Appointments a JOIN Doctors d ON a.doctor_id = d.id WHERE d.user_id = ? AND a.appointment_date >= CURDATE()";
+            try (PreparedStatement stmt = conn.prepareStatement(activeQuery)) {
+                stmt.setInt(1, userId);
+                ResultSet rs = stmt.executeQuery();
+                if (rs.next()) {
+                    int active = rs.getInt("active");
+                    if (activeCasesLabel != null) activeCasesLabel.setText(String.valueOf(active));
+                    if (activeCasesSubLabel != null) activeCasesSubLabel.setText("Currently managing " + active + " cases");
+                }
+            }
+
+            // 3. Today's Appointments (Completed vs Upcoming)
+            String todayQuery = "SELECT COUNT(*) AS total, SUM(CASE WHEN a.status='COMPLETED' THEN 1 ELSE 0 END) AS completed, SUM(CASE WHEN a.status='SCHEDULED' THEN 1 ELSE 0 END) AS upcoming FROM Appointments a JOIN Doctors d ON a.doctor_id = d.id WHERE d.user_id = ? AND DATE(a.appointment_date) = CURDATE()";
+            try (PreparedStatement stmt = conn.prepareStatement(todayQuery)) {
+                stmt.setInt(1, userId);
+                ResultSet rs = stmt.executeQuery();
+                if (rs.next()) {
+                    int total = rs.getInt("total");
+                    int completed = rs.getInt("completed");
+                    int upcoming = rs.getInt("upcoming");
+                    if (todaysApptsLabel != null) todaysApptsLabel.setText(String.valueOf(total));
+                    if (todaysApptsSubLabel != null) todaysApptsSubLabel.setText(completed + " Completed • " + upcoming + " Upcoming");
+                }
+            }
+
+            // 4. Setup Dynamic Chart
+            setupDynamicChart(conn, userId);
+
+        } catch (Exception e) { e.printStackTrace(); }
+    }
+
+    private void setupDynamicChart(Connection conn, int userId) {
+        if (trendChart == null) return;
+        trendChart.getData().clear();
+        trendChart.setBackground(Background.EMPTY);
+
+        XYChart.Series<String, Number> trendSeries = new XYChart.Series<>();
+
+        // Create a map to ensure all 7 upcoming days are displayed on the chart, even if 0
+        Map<String, Integer> weekData = new LinkedHashMap<>();
+        LocalDate today = LocalDate.now();
+        DateTimeFormatter dayFormatter = DateTimeFormatter.ofPattern("E"); // e.g., Mon, Tue
+
+        for (int i = 0; i < 7; i++) {
+            weekData.put(today.plusDays(i).format(dayFormatter), 0);
+        }
+
+        // Query the database for the upcoming week's appointment volume
+        String chartQuery = """
+            SELECT DATE(a.appointment_date) as appt_date, COUNT(a.id) as appt_count 
+            FROM Appointments a
+            JOIN Doctors d ON a.doctor_id = d.id
+            WHERE d.user_id = ? AND DATE(a.appointment_date) BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 6 DAY)
+            GROUP BY DATE(a.appointment_date)
+            ORDER BY DATE(a.appointment_date) ASC
+        """;
+
+        try (PreparedStatement stmt = conn.prepareStatement(chartQuery)) {
+            stmt.setInt(1, userId);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                String dayName = rs.getDate("appt_date").toLocalDate().format(dayFormatter);
+                int count = rs.getInt("appt_count");
+                weekData.put(dayName, count); // Overwrite the 0 with the actual count
+            }
+        } catch (Exception e) { e.printStackTrace(); }
+
+        // Feed data to chart
+        for (Map.Entry<String, Integer> entry : weekData.entrySet()) {
+            trendSeries.getData().add(new XYChart.Data<>(entry.getKey(), entry.getValue()));
+        }
+
+        trendChart.getData().add(trendSeries);
+
+        // Apply native color styling to line chart
+        Platform.runLater(() -> {
+            Node line = trendChart.lookup(".chart-series-line");
+            Node fill = trendChart.lookup(".chart-series-area-fill");
+            if (line instanceof Path) {
+                ((Path) line).setStroke(Color.web("#5C8D7D"));
+                ((Path) line).setStrokeWidth(3);
+            }
+            if (fill instanceof Path) {
+                ((Path) fill).setFill(Color.web("#5C8D7D").deriveColor(0, 1, 1, 0.2));
+            }
+        });
     }
 
     private void loadTodaysSchedule() {
@@ -116,7 +238,6 @@ public class DoctorDashboardController {
         User currentUser = UserSession.getInstance().getCurrentUser();
         if (currentUser == null) return;
 
-        // Note: I added p.gender to the query to pick the right emoji!
         String query = """
             SELECT DISTINCT p.full_name, p.national_id, p.gender 
             FROM Patients p
@@ -215,7 +336,6 @@ public class DoctorDashboardController {
         HBox card = new HBox();
         card.setStyle("-fx-background-color: white; -fx-background-radius: 20; -fx-padding: 25; -fx-effect: dropshadow(three-pass-box, rgba(38,70,61,0.08), 20, 0, 5, 5); -fx-alignment: center-left; -fx-spacing: 20;");
 
-        // Icon Profile
         VBox iconBox = new VBox();
         iconBox.setStyle("-fx-background-color: #E8F3EE; -fx-background-radius: 50; -fx-min-width: 60; -fx-min-height: 60; -fx-alignment: center;");
         String emoji = "MALE".equalsIgnoreCase(gender) ? "👨" : "👩";
@@ -223,7 +343,6 @@ public class DoctorDashboardController {
         icon.setStyle("-fx-font-size: 30px; -fx-font-family: 'Segoe UI Emoji';");
         iconBox.getChildren().add(icon);
 
-        // Center Patient Details
         VBox centerInfo = new VBox();
         centerInfo.setSpacing(5);
         HBox.setHgrow(centerInfo, Priority.ALWAYS);
@@ -244,7 +363,7 @@ public class DoctorDashboardController {
         currentDiag.setSpacing(3);
         Label diagTitle = new Label("Current Diagnosis (Under your care)");
         diagTitle.setStyle("-fx-text-fill: #5C8D7D; -fx-font-size: 11px; -fx-font-weight: bold;");
-        Label diagValue = new Label("Pending Assessment"); // DB Doesn't have this yet!
+        Label diagValue = new Label("Pending Assessment");
         diagValue.setStyle("-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 14px;");
         currentDiag.getChildren().addAll(diagTitle, diagValue);
 
@@ -260,7 +379,6 @@ public class DoctorDashboardController {
         diagnosisBox.getChildren().addAll(currentDiag, otherDiag);
         centerInfo.getChildren().addAll(nameIdBox, diagnosisBox);
 
-        // Action Buttons
         VBox rightButtons = new VBox();
         rightButtons.setSpacing(10);
         rightButtons.setStyle("-fx-alignment: center-right;");
@@ -311,8 +429,6 @@ public class DoctorDashboardController {
     }
 
     // --- View Navigation ---
-    private void setupCharts() { /* (Keep your chart code here) */ }
-
     @FXML private void showDashboard(ActionEvent event) { hideAllViews(); if (viewDashboard != null) { viewDashboard.setVisible(true); viewDashboard.setManaged(true); } if (btnDashboard != null) btnDashboard.setStyle(ACTIVE_STYLE); }
     @FXML private void showPatients(ActionEvent event) { hideAllViews(); if (viewPatients != null) { viewPatients.setVisible(true); viewPatients.setManaged(true); } if (btnPatients != null) btnPatients.setStyle(ACTIVE_STYLE); }
     @FXML private void showAppointments(ActionEvent event) { hideAllViews(); if (viewAppointments != null) { viewAppointments.setVisible(true); viewAppointments.setManaged(true); } if (btnAppointments != null) btnAppointments.setStyle(ACTIVE_STYLE); }
