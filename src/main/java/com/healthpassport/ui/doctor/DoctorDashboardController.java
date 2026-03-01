@@ -1,5 +1,8 @@
 package com.healthpassport.ui.doctor;
 
+import com.healthpassport.util.UserSession;
+import com.healthpassport.util.DBConnection;
+import com.healthpassport.MODEL.user.User;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -7,15 +10,19 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.chart.AreaChart;
-import javafx.scene.chart.XYChart;
 import javafx.scene.control.Button;
-import javafx.scene.layout.Background;
+import javafx.scene.control.Label;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Path;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class DoctorDashboardController {
 
@@ -30,7 +37,13 @@ public class DoctorDashboardController {
 
     @FXML private AreaChart<String, Number> trendChart;
 
-    // Matches the Deep Green (#26463D) floating sidebar theme
+    @FXML private Label doctorNameLabel;
+    @FXML private Label doctorIdLabel;
+
+    @FXML private VBox scheduleVBox;
+    @FXML private VBox patientRosterContainer;
+    @FXML private VBox appointmentsContainer;
+
     private final String ACTIVE_STYLE = "-fx-background-color: #1B362F; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 12 15; -fx-background-radius: 12; -fx-cursor: hand; -fx-font-family: 'Segoe UI Emoji', 'System';";
     private final String INACTIVE_STYLE = "-fx-background-color: transparent; -fx-text-fill: #A3CFC0; -fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 12 15; -fx-background-radius: 12; -fx-cursor: hand; -fx-font-family: 'Segoe UI Emoji', 'System';";
 
@@ -38,69 +51,271 @@ public class DoctorDashboardController {
     public void initialize() {
         setupCharts();
         showDashboard(null);
+
+        loadDoctorProfile();
+        loadTodaysSchedule();
+        loadPatientRoster();
+        loadAppointments();
     }
 
-    private void setupCharts() {
-        if (trendChart != null) {
-            trendChart.setBackground(Background.EMPTY);
-
-            XYChart.Series<String, Number> trendSeries = new XYChart.Series<>();
-            trendSeries.getData().add(new XYChart.Data<>("Mon", 120));
-            trendSeries.getData().add(new XYChart.Data<>("Tue", 145));
-            trendSeries.getData().add(new XYChart.Data<>("Wed", 130));
-            trendSeries.getData().add(new XYChart.Data<>("Thu", 180));
-            trendSeries.getData().add(new XYChart.Data<>("Fri", 150));
-            trendSeries.getData().add(new XYChart.Data<>("Sat", 170));
-            trendSeries.getData().add(new XYChart.Data<>("Sun", 140));
-
-            trendChart.getData().add(trendSeries);
-
-            // Turn the line chart into the Sage Green theme natively
-            Platform.runLater(() -> {
-                Node line = trendChart.lookup(".chart-series-line");
-                Node fill = trendChart.lookup(".chart-series-area-fill");
-
-                if (line instanceof Path) {
-                    ((Path) line).setStroke(Color.web("#5C8D7D"));
-                    ((Path) line).setStrokeWidth(3);
-                }
-
-                if (fill instanceof Path) {
-                    ((Path) fill).setFill(Color.web("#5C8D7D").deriveColor(0, 1, 1, 0.2));
-                }
-            });
+    private void loadDoctorProfile() {
+        User currentUser = UserSession.getInstance().getCurrentUser();
+        if (currentUser != null) {
+            if (doctorNameLabel != null) doctorNameLabel.setText(currentUser.getFullName());
+            if (doctorIdLabel != null) doctorIdLabel.setText("ID: " + currentUser.getNationalId());
         }
     }
 
-    @FXML
-    private void showDashboard(ActionEvent event) {
-        hideAllViews();
-        if (viewDashboard != null) {
-            viewDashboard.setVisible(true);
-            viewDashboard.setManaged(true);
-        }
-        if (btnDashboard != null) btnDashboard.setStyle(ACTIVE_STYLE);
+    private void loadTodaysSchedule() {
+        if (scheduleVBox == null) return;
+        scheduleVBox.getChildren().clear();
+
+        User currentUser = UserSession.getInstance().getCurrentUser();
+        if (currentUser == null) return;
+
+        String query = """
+            SELECT p.full_name, a.appointment_date, a.status 
+            FROM Appointments a
+            JOIN Patients p ON a.patient_id = p.id
+            JOIN Doctors d ON a.doctor_id = d.id
+            WHERE d.user_id = ? AND DATE(a.appointment_date) >= CURDATE()
+            ORDER BY a.appointment_date ASC LIMIT 3
+        """;
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setInt(1, currentUser.getId());
+            ResultSet rs = stmt.executeQuery();
+
+            DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("hh\na");
+            boolean hasData = false;
+
+            while (rs.next()) {
+                hasData = true;
+                String patientName = rs.getString("full_name");
+                LocalDateTime apptDate = rs.getTimestamp("appointment_date").toLocalDateTime();
+                String timeStr = apptDate.format(timeFormatter);
+                String status = rs.getString("status").equals("SCHEDULED") ? "Routine Checkup" : rs.getString("status");
+
+                scheduleVBox.getChildren().add(createMiniScheduleCard(timeStr, patientName, status));
+            }
+
+            if (!hasData) {
+                Label noData = new Label("No appointments scheduled for today.");
+                noData.setStyle("-fx-text-fill: #6B7280; -fx-font-style: italic; -fx-padding: 10;");
+                scheduleVBox.getChildren().add(noData);
+            }
+        } catch (Exception e) { e.printStackTrace(); }
     }
 
-    @FXML
-    private void showPatients(ActionEvent event) {
-        hideAllViews();
-        if (viewPatients != null) {
-            viewPatients.setVisible(true);
-            viewPatients.setManaged(true);
-        }
-        if (btnPatients != null) btnPatients.setStyle(ACTIVE_STYLE);
+    private void loadPatientRoster() {
+        if (patientRosterContainer == null) return;
+        patientRosterContainer.getChildren().clear();
+
+        User currentUser = UserSession.getInstance().getCurrentUser();
+        if (currentUser == null) return;
+
+        // Note: I added p.gender to the query to pick the right emoji!
+        String query = """
+            SELECT DISTINCT p.full_name, p.national_id, p.gender 
+            FROM Patients p
+            JOIN Appointments a ON p.id = a.patient_id
+            JOIN Doctors d ON a.doctor_id = d.id
+            WHERE d.user_id = ?
+        """;
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setInt(1, currentUser.getId());
+            ResultSet rs = stmt.executeQuery();
+            boolean hasData = false;
+
+            while (rs.next()) {
+                hasData = true;
+                String name = rs.getString("full_name");
+                String id = rs.getString("national_id");
+                String gender = rs.getString("gender");
+                patientRosterContainer.getChildren().add(createPatientCard(name, id, gender));
+            }
+
+            if (!hasData) {
+                Label noData = new Label("No patients assigned to you yet.");
+                noData.setStyle("-fx-text-fill: #6B7280; -fx-font-size: 14px; -fx-padding: 20;");
+                patientRosterContainer.getChildren().add(noData);
+            }
+        } catch (Exception e) { e.printStackTrace(); }
     }
 
-    @FXML
-    private void showAppointments(ActionEvent event) {
-        hideAllViews();
-        if (viewAppointments != null) {
-            viewAppointments.setVisible(true);
-            viewAppointments.setManaged(true);
-        }
-        if (btnAppointments != null) btnAppointments.setStyle(ACTIVE_STYLE);
+    private void loadAppointments() {
+        if (appointmentsContainer == null) return;
+        appointmentsContainer.getChildren().clear();
+
+        User currentUser = UserSession.getInstance().getCurrentUser();
+        if (currentUser == null) return;
+
+        String query = """
+            SELECT p.full_name, a.appointment_date, a.status 
+            FROM Appointments a
+            JOIN Patients p ON a.patient_id = p.id
+            JOIN Doctors d ON a.doctor_id = d.id
+            WHERE d.user_id = ? AND DATE(a.appointment_date) >= CURDATE()
+            ORDER BY a.appointment_date ASC
+        """;
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setInt(1, currentUser.getId());
+            ResultSet rs = stmt.executeQuery();
+
+            DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("hh:mm");
+            DateTimeFormatter amPmFormatter = DateTimeFormatter.ofPattern("a");
+            DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MMM dd, yyyy");
+            boolean hasData = false;
+
+            while (rs.next()) {
+                hasData = true;
+                String patientName = rs.getString("full_name");
+                LocalDateTime apptDate = rs.getTimestamp("appointment_date").toLocalDateTime();
+
+                String time = apptDate.format(timeFormatter);
+                String amPm = apptDate.format(amPmFormatter);
+                String dateStr = apptDate.format(dateFormatter);
+
+                appointmentsContainer.getChildren().add(createLargeAppointmentCard(time, amPm, patientName, dateStr));
+            }
+
+            if (!hasData) {
+                Label noData = new Label("No upcoming appointments.");
+                noData.setStyle("-fx-text-fill: #6B7280; -fx-font-size: 14px; -fx-padding: 20;");
+                appointmentsContainer.getChildren().add(noData);
+            }
+        } catch (Exception e) { e.printStackTrace(); }
     }
+
+    // --- EXACT UI MATCH BUILDERS ---
+
+    private HBox createMiniScheduleCard(String timeText, String nameText, String statusText) {
+        HBox card = new HBox();
+        card.setStyle("-fx-background-color: #F8FAF9; -fx-background-radius: 10; -fx-padding: 10 15; -fx-spacing: 20; -fx-alignment: center-left;");
+        VBox timeBox = new VBox(new Label(timeText.toUpperCase()));
+        timeBox.setStyle("-fx-alignment: center; -fx-background-color: white; -fx-background-radius: 8; -fx-padding: 8 12;");
+        timeBox.getChildren().get(0).setStyle("-fx-font-weight: bold; -fx-font-size: 13px; -fx-text-alignment: center; -fx-text-fill: #1B362F;");
+        VBox detailsBox = new VBox(new Label(nameText), new Label(statusText));
+        detailsBox.setStyle("-fx-spacing: 2; -fx-alignment: center-left;");
+        detailsBox.getChildren().get(0).setStyle("-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #111827;");
+        detailsBox.getChildren().get(1).setStyle("-fx-text-fill: #6B7280; -fx-font-size: 11px;");
+        card.getChildren().addAll(timeBox, detailsBox);
+        return card;
+    }
+
+    private HBox createPatientCard(String name, String id, String gender) {
+        HBox card = new HBox();
+        card.setStyle("-fx-background-color: white; -fx-background-radius: 20; -fx-padding: 25; -fx-effect: dropshadow(three-pass-box, rgba(38,70,61,0.08), 20, 0, 5, 5); -fx-alignment: center-left; -fx-spacing: 20;");
+
+        // Icon Profile
+        VBox iconBox = new VBox();
+        iconBox.setStyle("-fx-background-color: #E8F3EE; -fx-background-radius: 50; -fx-min-width: 60; -fx-min-height: 60; -fx-alignment: center;");
+        String emoji = "MALE".equalsIgnoreCase(gender) ? "👨" : "👩";
+        Label icon = new Label(emoji);
+        icon.setStyle("-fx-font-size: 30px; -fx-font-family: 'Segoe UI Emoji';");
+        iconBox.getChildren().add(icon);
+
+        // Center Patient Details
+        VBox centerInfo = new VBox();
+        centerInfo.setSpacing(5);
+        HBox.setHgrow(centerInfo, Priority.ALWAYS);
+
+        HBox nameIdBox = new HBox();
+        nameIdBox.setSpacing(10);
+        nameIdBox.setStyle("-fx-alignment: center-left;");
+        Label nameLabel = new Label(name != null ? name : "Unknown Patient");
+        nameLabel.setStyle("-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 20px;");
+        Label idLabel = new Label("ID: " + id);
+        idLabel.setStyle("-fx-text-fill: #6B7280; -fx-font-size: 12px; -fx-padding: 2 0 0 0;");
+        nameIdBox.getChildren().addAll(nameLabel, idLabel);
+
+        HBox diagnosisBox = new HBox();
+        diagnosisBox.setSpacing(20);
+
+        VBox currentDiag = new VBox();
+        currentDiag.setSpacing(3);
+        Label diagTitle = new Label("Current Diagnosis (Under your care)");
+        diagTitle.setStyle("-fx-text-fill: #5C8D7D; -fx-font-size: 11px; -fx-font-weight: bold;");
+        Label diagValue = new Label("Pending Assessment"); // DB Doesn't have this yet!
+        diagValue.setStyle("-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 14px;");
+        currentDiag.getChildren().addAll(diagTitle, diagValue);
+
+        VBox otherDiag = new VBox();
+        otherDiag.setSpacing(3);
+        otherDiag.setStyle("-fx-border-color: #E2E8F0; -fx-border-width: 0 0 0 1; -fx-padding: 0 0 0 20;");
+        Label otherTitle = new Label("Other Known Conditions");
+        otherTitle.setStyle("-fx-text-fill: #9CA3AF; -fx-font-size: 11px; -fx-font-weight: bold;");
+        Label otherValue = new Label("• No prior major conditions reported.");
+        otherValue.setStyle("-fx-text-fill: #6B7280; -fx-font-style: italic; -fx-font-size: 12px;");
+        otherDiag.getChildren().addAll(otherTitle, otherValue);
+
+        diagnosisBox.getChildren().addAll(currentDiag, otherDiag);
+        centerInfo.getChildren().addAll(nameIdBox, diagnosisBox);
+
+        // Action Buttons
+        VBox rightButtons = new VBox();
+        rightButtons.setSpacing(10);
+        rightButtons.setStyle("-fx-alignment: center-right;");
+        Button btnProfile = new Button("📄 Full Profile");
+        btnProfile.setStyle("-fx-background-color: #F8FAFC; -fx-text-fill: #26463D; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 15; -fx-cursor: hand; -fx-border-color: #E2E8F0; -fx-border-radius: 8; -fx-font-family: 'Segoe UI Emoji', 'System';");
+        Button btnPrescribe = new Button("💊 Prescribe");
+        btnPrescribe.setStyle("-fx-background-color: #115E59; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 15; -fx-cursor: hand; -fx-font-family: 'Segoe UI Emoji', 'System';");
+        rightButtons.getChildren().addAll(btnProfile, btnPrescribe);
+
+        card.getChildren().addAll(iconBox, centerInfo, rightButtons);
+        return card;
+    }
+
+    private HBox createLargeAppointmentCard(String time, String amPm, String name, String dateText) {
+        HBox card = new HBox();
+        card.setStyle("-fx-background-color: white; -fx-background-radius: 15; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(38,70,61,0.08), 15, 0, 5, 5); -fx-alignment: center-left; -fx-spacing: 20;");
+
+        VBox timeBox = new VBox();
+        timeBox.setStyle("-fx-background-color: #115E59; -fx-background-radius: 12; -fx-min-width: 65; -fx-min-height: 65; -fx-alignment: center;");
+        Label timeLabel = new Label(time);
+        timeLabel.setStyle("-fx-text-fill: white; -fx-font-weight: 900; -fx-font-size: 18px;");
+        Label amPmLabel = new Label(amPm);
+        amPmLabel.setStyle("-fx-text-fill: #A3CFC0; -fx-font-weight: bold; -fx-font-size: 12px;");
+        timeBox.getChildren().addAll(timeLabel, amPmLabel);
+
+        VBox infoBox = new VBox();
+        infoBox.setSpacing(3);
+        HBox.setHgrow(infoBox, Priority.ALWAYS);
+
+        Label nameLabel = new Label(name);
+        nameLabel.setStyle("-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 18px;");
+        Label reasonLabel = new Label("Reason: Scheduled Consultation");
+        reasonLabel.setStyle("-fx-text-fill: #5C8D7D; -fx-font-weight: bold; -fx-font-size: 13px;");
+
+        HBox dateBox = new HBox();
+        dateBox.setSpacing(5);
+        dateBox.setStyle("-fx-alignment: center-left;");
+        Label calIcon = new Label("📅");
+        calIcon.setStyle("-fx-font-family: 'Segoe UI Emoji'; -fx-text-fill: #6B7280; -fx-font-size: 11px;");
+        Label dateLabel = new Label(dateText);
+        dateLabel.setStyle("-fx-text-fill: #6B7280; -fx-font-size: 12px;");
+        dateBox.getChildren().addAll(calIcon, dateLabel);
+
+        infoBox.getChildren().addAll(nameLabel, reasonLabel, dateBox);
+
+        card.getChildren().addAll(timeBox, infoBox);
+        return card;
+    }
+
+    // --- View Navigation ---
+    private void setupCharts() { /* (Keep your chart code here) */ }
+
+    @FXML private void showDashboard(ActionEvent event) { hideAllViews(); if (viewDashboard != null) { viewDashboard.setVisible(true); viewDashboard.setManaged(true); } if (btnDashboard != null) btnDashboard.setStyle(ACTIVE_STYLE); }
+    @FXML private void showPatients(ActionEvent event) { hideAllViews(); if (viewPatients != null) { viewPatients.setVisible(true); viewPatients.setManaged(true); } if (btnPatients != null) btnPatients.setStyle(ACTIVE_STYLE); }
+    @FXML private void showAppointments(ActionEvent event) { hideAllViews(); if (viewAppointments != null) { viewAppointments.setVisible(true); viewAppointments.setManaged(true); } if (btnAppointments != null) btnAppointments.setStyle(ACTIVE_STYLE); }
 
     private void hideAllViews() {
         if (viewDashboard != null) { viewDashboard.setVisible(false); viewDashboard.setManaged(false); }
@@ -115,16 +330,13 @@ public class DoctorDashboardController {
         if (btnAppointments != null) btnAppointments.setStyle(INACTIVE_STYLE);
     }
 
-    @FXML
-    private void handleLogout(ActionEvent event) {
+    @FXML private void handleLogout(ActionEvent event) {
+        UserSession.getInstance().cleanUserSession();
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/RoleSelection.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.getScene().setRoot(root);
-            stage.setTitle("Digital Health Passport - Role Selection");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        } catch (IOException e) { e.printStackTrace(); }
     }
 }

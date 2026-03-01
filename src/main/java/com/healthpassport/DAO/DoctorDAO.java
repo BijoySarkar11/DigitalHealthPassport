@@ -1,19 +1,37 @@
 package com.healthpassport.DAO;
 
+import com.healthpassport.MODEL.user.Doctor;
 import com.healthpassport.util.DBConnection;
-import java.sql.*;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class DoctorDAO {
-    public boolean authenticate(String username, String password) {
-        String query = "SELECT * FROM doctors WHERE username = ? AND password = ?";
+
+    public Doctor getDoctorProfileByUserId(int userId) {
+        String query = "SELECT * FROM Doctors WHERE user_id = ?";
+
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
-            stmt.setString(1, username);
-            stmt.setString(2, password);
-            return stmt.executeQuery().next();
+
+            stmt.setInt(1, userId);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return new Doctor(
+                        rs.getInt("id"),
+                        rs.getInt("user_id"),
+                        rs.getInt("hospital_id"),
+                        rs.getString("specialization"),
+                        rs.getString("license_number"),
+                        rs.getInt("years_of_experience")
+                );
+            }
         } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
+            System.err.println("Error fetching doctor profile: " + e.getMessage());
         }
+        return null;
     }
 }

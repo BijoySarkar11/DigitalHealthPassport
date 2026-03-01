@@ -1,12 +1,14 @@
 package com.healthpassport.MODEL.service;
 
 import com.healthpassport.DAO.PatientDAO;
+import com.healthpassport.MODEL.user.Patient;
 
 public class PatientService {
     private final PatientDAO patientDAO = new PatientDAO();
 
-    // THIS is the method your PatientLoginController uses
-    public boolean login(String username, String password) {
-        return patientDAO.authenticate(username, password);
+    // NO authentication methods here anymore! (AuthService handles that)
+
+    public Patient getProfile(int userId) {
+        return patientDAO.getPatientProfileByUserId(userId);
     }
 }

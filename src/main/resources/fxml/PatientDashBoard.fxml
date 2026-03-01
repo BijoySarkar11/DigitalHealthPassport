@@ -29,8 +29,8 @@
                     <Label text="👩" style="-fx-font-size: 24px; -fx-font-family: 'Segoe UI Emoji';" />
                 </VBox>
                 <VBox spacing="2.0">
-                    <Label text="Pranty" style="-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 15px;" />
-                    <Label text="ID: PT-0025235" style="-fx-text-fill: #A3CFC0; -fx-font-size: 11px;" />
+                    <Label fx:id="sidebarNameLabel" text="Loading..." style="-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 15px;" />
+                    <Label fx:id="sidebarIdLabel" text="ID: ---" style="-fx-text-fill: #A3CFC0; -fx-font-size: 11px;" />
                 </VBox>
             </HBox>
 
@@ -63,7 +63,7 @@
 
                     <VBox fx:id="viewDashboard" spacing="25.0" style="-fx-padding: 10 35 35 25; -fx-background-color: transparent;">
                         <VBox spacing="5.0">
-                            <Label text="Hello, Pranty!" style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 32px;" />
+                            <Label fx:id="greetingLabel" text="Hello!" style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 32px;" />
                             <Label text="How are you feeling today?" style="-fx-text-fill: #4A7A68; -fx-font-size: 16px; -fx-font-weight: bold;" />
                         </VBox>
 
@@ -78,8 +78,8 @@
                                         <HBox spacing="15.0" alignment="CENTER_LEFT">
                                             <VBox alignment="CENTER" style="-fx-background-color: #E8F3EE; -fx-background-radius: 50; -fx-min-width: 50; -fx-min-height: 50;"><Label text="👨‍⚕️" style="-fx-font-size: 24px; -fx-font-family: 'Segoe UI Emoji';" /></VBox>
                                             <VBox spacing="2.0" HBox.hgrow="ALWAYS">
-                                                <Label text="Dr. S. Johnson" style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 16px;" />
-                                                <Label text="Cardiologist" style="-fx-text-fill: #6B7280; -fx-font-size: 13px;" />
+                                                <Label fx:id="primaryDoctorNameLabel" text="No Doctor Yet" style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 16px;" />
+                                                <Label fx:id="primaryDoctorSpecLabel" text="-" style="-fx-text-fill: #6B7280; -fx-font-size: 13px;" />
                                             </VBox>
                                             <HBox spacing="10.0">
                                                 <Button text="💬" style="-fx-background-color: #E8F3EE; -fx-text-fill: #26463D; -fx-background-radius: 10; -fx-cursor: hand; -fx-font-family: 'Segoe UI Emoji';" />
@@ -93,9 +93,9 @@
                                             <Label text="✎ Update" style="-fx-text-fill: #5C8D7D; -fx-font-size: 12px; -fx-font-weight: bold; -fx-cursor: hand; -fx-font-family: 'Segoe UI Emoji';" />
                                         </HBox>
                                         <HBox spacing="20.0" alignment="CENTER_LEFT">
-                                            <VBox spacing="2.0"><Label text="Weight" style="-fx-text-fill: #6B7280; -fx-font-size: 13px;" /><Label text="60 kg" style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 18px;" /></VBox>
-                                            <VBox spacing="2.0"><Label text="Height" style="-fx-text-fill: #6B7280; -fx-font-size: 13px;" /><Label text="160 cm" style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 18px;" /></VBox>
-                                            <VBox spacing="2.0"><Label text="Blood" style="-fx-text-fill: #6B7280; -fx-font-size: 13px;" /><Label text="AB+" style="-fx-text-fill: #EF4444; -fx-font-weight: bold; -fx-font-size: 18px;" /></VBox>
+                                            <VBox spacing="2.0"><Label text="Weight" style="-fx-text-fill: #6B7280; -fx-font-size: 13px;" /><Label fx:id="weightLabel" text="-" style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 18px;" /></VBox>
+                                            <VBox spacing="2.0"><Label text="Height" style="-fx-text-fill: #6B7280; -fx-font-size: 13px;" /><Label fx:id="heightLabel" text="-" style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 18px;" /></VBox>
+                                            <VBox spacing="2.0"><Label text="Blood" style="-fx-text-fill: #6B7280; -fx-font-size: 13px;" /><Label fx:id="bloodGroupLabel" text="-" style="-fx-text-fill: #EF4444; -fx-font-weight: bold; -fx-font-size: 18px;" /></VBox>
                                         </HBox>
                                     </VBox>
                                 </HBox>
@@ -115,13 +115,9 @@
 
                             <VBox minWidth="320.0" maxWidth="320.0" spacing="20.0" VBox.vgrow="ALWAYS" maxHeight="Infinity" style="-fx-background-color: white; -fx-background-radius: 20; -fx-padding: 25; -fx-effect: dropshadow(three-pass-box, rgba(38,70,61,0.08), 20, 0, 5, 5);">
                                 <HBox alignment="CENTER_LEFT"><Label text="Remind me" style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 18px;" HBox.hgrow="ALWAYS" /><Label text="Show: This week ▾" style="-fx-text-fill: #5C8D7D; -fx-font-size: 12px; -fx-font-weight: bold; -fx-cursor: hand;" /></HBox>
-                                <Label text="3 tasks completed out of 6" style="-fx-text-fill: #6B7280; -fx-font-size: 12px;" />
+                                <Label text="Upcoming Tasks" style="-fx-text-fill: #6B7280; -fx-font-size: 12px;" />
                                 <VBox spacing="15.0">
-                                    <HBox alignment="CENTER_LEFT" spacing="15.0" style="-fx-background-color: white; -fx-border-color: #E8F3EE; -fx-border-width: 2; -fx-background-radius: 12; -fx-border-radius: 12; -fx-padding: 15 12; -fx-effect: dropshadow(three-pass-box, rgba(38, 70, 61, 0.1), 10, 0, 0, 4);"><VBox alignment="CENTER" style="-fx-background-color: #E8F3EE; -fx-background-radius: 8; -fx-min-width: 35; -fx-min-height: 35;"><Label text="💊" style="-fx-font-family: 'Segoe UI Emoji';"/></VBox><VBox spacing="2.0" HBox.hgrow="ALWAYS"><Label text="Take Metformin" style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 14px;" /><Label text="08:00 AM, Today" style="-fx-text-fill: #5C8D7D; -fx-font-size: 11px; -fx-font-weight: bold;" /></VBox></HBox>
-                                    <HBox alignment="CENTER_LEFT" spacing="15.0" style="-fx-background-color: #F8FAFC; -fx-background-radius: 12; -fx-padding: 15 12;"><VBox alignment="CENTER" style="-fx-background-color: white; -fx-background-radius: 8; -fx-min-width: 35; -fx-min-height: 35;"><Label text="🩺" style="-fx-font-family: 'Segoe UI Emoji';"/></VBox><VBox spacing="2.0" HBox.hgrow="ALWAYS"><Label text="Doctor Consult" style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 14px;" /><Label text="10:00 AM, Tomorrow" style="-fx-text-fill: #6B7280; -fx-font-size: 11px;" /></VBox></HBox>
-                                    <HBox alignment="CENTER_LEFT" spacing="15.0" style="-fx-background-color: #F8FAFC; -fx-background-radius: 12; -fx-padding: 15 12;"><VBox alignment="CENTER" style="-fx-background-color: white; -fx-background-radius: 8; -fx-min-width: 35; -fx-min-height: 35;"><Label text="🩸" style="-fx-font-family: 'Segoe UI Emoji';"/></VBox><VBox spacing="2.0" HBox.hgrow="ALWAYS"><Label text="Blood Test" style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 14px;" /><Label text="09:00 AM, Oct 25" style="-fx-text-fill: #6B7280; -fx-font-size: 11px;" /></VBox></HBox>
-                                    <HBox alignment="CENTER_LEFT" spacing="15.0" style="-fx-background-color: #F8FAFC; -fx-background-radius: 12; -fx-padding: 15 12; -fx-opacity: 0.6;"><VBox alignment="CENTER" style="-fx-background-color: white; -fx-background-radius: 8; -fx-min-width: 35; -fx-min-height: 35;"><Label text="✔️" style="-fx-text-fill: #10B981; -fx-font-family: 'Segoe UI Emoji';" /></VBox><VBox spacing="2.0" HBox.hgrow="ALWAYS"><Label text="Daily Vitamins" style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 14px; -fx-strikethrough: true;" /><Label text="Done • Today" style="-fx-text-fill: #6B7280; -fx-font-size: 11px;" /></VBox></HBox>
-                                    <HBox alignment="CENTER_LEFT" spacing="15.0" style="-fx-background-color: #F8FAFC; -fx-background-radius: 12; -fx-padding: 15 12; -fx-opacity: 0.6;"><VBox alignment="CENTER" style="-fx-background-color: white; -fx-background-radius: 8; -fx-min-width: 35; -fx-min-height: 35;"><Label text="✔️" style="-fx-text-fill: #10B981; -fx-font-family: 'Segoe UI Emoji';" /></VBox><VBox spacing="2.0" HBox.hgrow="ALWAYS"><Label text="Order drugs" style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 14px; -fx-strikethrough: true;" /><Label text="Done • Oct 20" style="-fx-text-fill: #6B7280; -fx-font-size: 11px;" /></VBox></HBox>
+                                    <HBox alignment="CENTER_LEFT" spacing="15.0" style="-fx-background-color: white; -fx-border-color: #E8F3EE; -fx-border-width: 2; -fx-background-radius: 12; -fx-border-radius: 12; -fx-padding: 15 12; -fx-effect: dropshadow(three-pass-box, rgba(38, 70, 61, 0.1), 10, 0, 0, 4);"><VBox alignment="CENTER" style="-fx-background-color: #E8F3EE; -fx-background-radius: 8; -fx-min-width: 35; -fx-min-height: 35;"><Label text="💧" style="-fx-font-family: 'Segoe UI Emoji';"/></VBox><VBox spacing="2.0" HBox.hgrow="ALWAYS"><Label text="Stay Hydrated!" style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 14px;" /><Label text="Daily Goal" style="-fx-text-fill: #5C8D7D; -fx-font-size: 11px; -fx-font-weight: bold;" /></VBox></HBox>
                                 </VBox>
                             </VBox>
                         </HBox>
@@ -135,32 +131,10 @@
                         <HBox spacing="25.0" VBox.vgrow="ALWAYS">
                             <VBox spacing="25.0" HBox.hgrow="ALWAYS">
                                 <Label text="Upcoming Schedule" style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 18px;" />
-                                <VBox spacing="15.0">
-                                    <HBox alignment="CENTER_LEFT" spacing="20.0" style="-fx-background-color: white; -fx-background-radius: 15; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(38,70,61,0.08), 15, 0, 5, 5); -fx-border-color: #E8F3EE; -fx-border-width: 2; -fx-border-radius: 15;">
-                                        <VBox alignment="CENTER" minWidth="65.0" minHeight="65.0" style="-fx-background-color: #115E59; -fx-background-radius: 12;"><Label text="OCT" style="-fx-text-fill: #A3CFC0; -fx-font-weight: bold; -fx-font-size: 12px;" /><Label text="24" style="-fx-text-fill: white; -fx-font-weight: 900; -fx-font-size: 22px;" /></VBox>
-                                        <VBox spacing="3.0" HBox.hgrow="ALWAYS">
-                                            <Label text="Dr. S. Johnson" style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 18px;" />
-                                            <Label text="Cardiologist • Routine Checkup" style="-fx-text-fill: #5C8D7D; -fx-font-weight: bold; -fx-font-size: 13px;" />
-                                            <HBox alignment="CENTER_LEFT" spacing="5.0"><Label text="🕒" style="-fx-font-family: 'Segoe UI Emoji'; -fx-text-fill: #6B7280; -fx-font-size: 11px;" /><Label text="10:00 AM - 10:30 AM" style="-fx-text-fill: #6B7280; -fx-font-size: 12px;" /></HBox>
-                                        </VBox>
-                                        <VBox spacing="10.0" alignment="CENTER_RIGHT">
-                                            <Button text="🔔 Reminder ON" style="-fx-background-color: #ECFDF5; -fx-text-fill: #10B981; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 15; -fx-cursor: hand; -fx-font-family: 'Segoe UI Emoji', 'System';" />
-                                            <Label text="Cancel / Reschedule" style="-fx-text-fill: #9CA3AF; -fx-font-size: 11px; -fx-underline: true; -fx-cursor: hand;" />
-                                        </VBox>
-                                    </HBox>
-                                    <HBox alignment="CENTER_LEFT" spacing="20.0" style="-fx-background-color: white; -fx-background-radius: 15; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(38,70,61,0.08), 15, 0, 5, 5);">
-                                        <VBox alignment="CENTER" minWidth="65.0" minHeight="65.0" style="-fx-background-color: #F8FAFC; -fx-background-radius: 12; -fx-border-color: #E2E8F0; -fx-border-radius: 12;"><Label text="NOV" style="-fx-text-fill: #6B7280; -fx-font-weight: bold; -fx-font-size: 12px;" /><Label text="02" style="-fx-text-fill: #111827; -fx-font-weight: 900; -fx-font-size: 22px;" /></VBox>
-                                        <VBox spacing="3.0" HBox.hgrow="ALWAYS">
-                                            <Label text="Dr. Emily Carter" style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 18px;" />
-                                            <Label text="Dermatologist • Skin Consultation" style="-fx-text-fill: #5C8D7D; -fx-font-weight: bold; -fx-font-size: 13px;" />
-                                            <HBox alignment="CENTER_LEFT" spacing="5.0"><Label text="🕒" style="-fx-font-family: 'Segoe UI Emoji'; -fx-text-fill: #6B7280; -fx-font-size: 11px;" /><Label text="02:00 PM - 02:45 PM" style="-fx-text-fill: #6B7280; -fx-font-size: 12px;" /></HBox>
-                                        </VBox>
-                                        <VBox spacing="10.0" alignment="CENTER_RIGHT">
-                                            <Button text="🔕 Reminder OFF" style="-fx-background-color: #F8FAFC; -fx-text-fill: #6B7280; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 15; -fx-cursor: hand; -fx-border-color: #E2E8F0; -fx-border-radius: 8; -fx-font-family: 'Segoe UI Emoji', 'System';" />
-                                            <Label text="Cancel / Reschedule" style="-fx-text-fill: #9CA3AF; -fx-font-size: 11px; -fx-underline: true; -fx-cursor: hand;" />
-                                        </VBox>
-                                    </HBox>
+
+                                <VBox fx:id="appointmentsContainer" spacing="15.0">
                                 </VBox>
+
                             </VBox>
 
                             <VBox minWidth="320.0" maxWidth="320.0" spacing="20.0" style="-fx-background-color: white; -fx-background-radius: 20; -fx-padding: 25; -fx-effect: dropshadow(three-pass-box, rgba(38,70,61,0.08), 20, 0, 5, 5);">
@@ -180,150 +154,22 @@
                     </VBox>
 
                     <VBox fx:id="viewPrescriptions" visible="false" managed="false" spacing="25.0" style="-fx-padding: 10 35 35 25; -fx-background-color: transparent;">
-
                         <VBox spacing="5.0">
                             <Label text="My Prescriptions" style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 32px;" />
                             <Label text="Manage your medications and track your dosages." style="-fx-text-fill: #4A7A68; -fx-font-size: 16px; -fx-font-weight: bold;" />
                         </VBox>
 
-                        <VBox spacing="15.0" VBox.vgrow="ALWAYS">
-                            <HBox alignment="CENTER_LEFT" spacing="20.0" style="-fx-background-color: white; -fx-background-radius: 15; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(38,70,61,0.08), 15, 0, 5, 5); -fx-border-color: #E8F3EE; -fx-border-width: 2; -fx-border-radius: 15;">
-                                <VBox alignment="CENTER" minWidth="65.0" minHeight="65.0" style="-fx-background-color: #ECFDF5; -fx-background-radius: 12;">
-                                    <Label text="💊" style="-fx-font-size: 28px; -fx-font-family: 'Segoe UI Emoji';" />
-                                </VBox>
-                                <VBox spacing="5.0" HBox.hgrow="ALWAYS">
-                                    <HBox alignment="CENTER_LEFT" spacing="10.0">
-                                        <Label text="Metformin" style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 18px;" />
-                                        <Label text="Active" style="-fx-background-color: #D1FAE5; -fx-text-fill: #065F46; -fx-padding: 3 8; -fx-background-radius: 5; -fx-font-size: 10px; -fx-font-weight: bold;" />
-                                    </HBox>
-                                    <Label text="Dosage: 500mg • 2 times a day (After meals)" style="-fx-text-fill: #5C8D7D; -fx-font-weight: bold; -fx-font-size: 13px;" />
-                                    <HBox alignment="CENTER_LEFT" spacing="15.0">
-                                        <HBox alignment="CENTER_LEFT" spacing="5.0">
-                                            <Label text="⏳" style="-fx-font-family: 'Segoe UI Emoji'; -fx-text-fill: #6B7280; -fx-font-size: 11px;" />
-                                            <Label text="Duration: 30 Days (15 days left)" style="-fx-text-fill: #6B7280; -fx-font-size: 12px;" />
-                                        </HBox>
-                                        <HBox alignment="CENTER_LEFT" spacing="5.0">
-                                            <Label text="👨‍⚕️" style="-fx-font-family: 'Segoe UI Emoji'; -fx-text-fill: #6B7280; -fx-font-size: 11px;" />
-                                            <Label text="Dr. S. Johnson" style="-fx-text-fill: #6B7280; -fx-font-size: 12px;" />
-                                        </HBox>
-                                    </HBox>
-                                </VBox>
-                            </HBox>
-
-                            <HBox alignment="CENTER_LEFT" spacing="20.0" style="-fx-background-color: white; -fx-background-radius: 15; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(38,70,61,0.08), 15, 0, 5, 5);">
-                                <VBox alignment="CENTER" minWidth="65.0" minHeight="65.0" style="-fx-background-color: #F8FAFC; -fx-background-radius: 12; -fx-border-color: #E2E8F0; -fx-border-radius: 12;">
-                                    <Label text="💊" style="-fx-font-size: 28px; -fx-font-family: 'Segoe UI Emoji';" />
-                                </VBox>
-                                <VBox spacing="5.0" HBox.hgrow="ALWAYS">
-                                    <HBox alignment="CENTER_LEFT" spacing="10.0">
-                                        <Label text="Atorvastatin" style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 18px;" />
-                                        <Label text="Active" style="-fx-background-color: #D1FAE5; -fx-text-fill: #065F46; -fx-padding: 3 8; -fx-background-radius: 5; -fx-font-size: 10px; -fx-font-weight: bold;" />
-                                    </HBox>
-                                    <Label text="Dosage: 20mg • 1 time a day (Bedtime)" style="-fx-text-fill: #5C8D7D; -fx-font-weight: bold; -fx-font-size: 13px;" />
-                                    <HBox alignment="CENTER_LEFT" spacing="15.0">
-                                        <HBox alignment="CENTER_LEFT" spacing="5.0">
-                                            <Label text="⏳" style="-fx-font-family: 'Segoe UI Emoji'; -fx-text-fill: #6B7280; -fx-font-size: 11px;" />
-                                            <Label text="Duration: 90 Days (60 days left)" style="-fx-text-fill: #6B7280; -fx-font-size: 12px;" />
-                                        </HBox>
-                                        <HBox alignment="CENTER_LEFT" spacing="5.0">
-                                            <Label text="👨‍⚕️" style="-fx-font-family: 'Segoe UI Emoji'; -fx-text-fill: #6B7280; -fx-font-size: 11px;" />
-                                            <Label text="Dr. S. Johnson" style="-fx-text-fill: #6B7280; -fx-font-size: 12px;" />
-                                        </HBox>
-                                    </HBox>
-                                </VBox>
-                            </HBox>
-
-                            <HBox alignment="CENTER_LEFT" spacing="20.0" style="-fx-background-color: white; -fx-background-radius: 15; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(38,70,61,0.08), 15, 0, 5, 5); -fx-opacity: 0.7;">
-                                <VBox alignment="CENTER" minWidth="65.0" minHeight="65.0" style="-fx-background-color: #F8FAFC; -fx-background-radius: 12; -fx-border-color: #E2E8F0; -fx-border-radius: 12;">
-                                    <Label text="✔️" style="-fx-font-size: 28px; -fx-text-fill: #9CA3AF; -fx-font-family: 'Segoe UI Emoji';" />
-                                </VBox>
-                                <VBox spacing="5.0" HBox.hgrow="ALWAYS">
-                                    <HBox alignment="CENTER_LEFT" spacing="10.0">
-                                        <Label text="Amoxicillin" style="-fx-text-fill: #6B7280; -fx-font-weight: bold; -fx-font-size: 18px; -fx-strikethrough: true;" />
-                                        <Label text="Completed" style="-fx-background-color: #F3F4F6; -fx-text-fill: #6B7280; -fx-padding: 3 8; -fx-background-radius: 5; -fx-font-size: 10px; -fx-font-weight: bold;" />
-                                    </HBox>
-                                    <Label text="Dosage: 250mg • 3 times a day" style="-fx-text-fill: #9CA3AF; -fx-font-weight: bold; -fx-font-size: 13px;" />
-                                    <HBox alignment="CENTER_LEFT" spacing="15.0">
-                                        <HBox alignment="CENTER_LEFT" spacing="5.0">
-                                            <Label text="⏳" style="-fx-font-family: 'Segoe UI Emoji'; -fx-text-fill: #9CA3AF; -fx-font-size: 11px;" />
-                                            <Label text="Duration: 7 Days (Finished Oct 10)" style="-fx-text-fill: #9CA3AF; -fx-font-size: 12px;" />
-                                        </HBox>
-                                    </HBox>
-                                </VBox>
-                            </HBox>
+                        <VBox fx:id="prescriptionsContainer" spacing="15.0" VBox.vgrow="ALWAYS">
                         </VBox>
                     </VBox>
 
                     <VBox fx:id="viewTestReports" visible="false" managed="false" spacing="25.0" style="-fx-padding: 10 35 35 25; -fx-background-color: transparent;">
-
                         <VBox spacing="5.0">
                             <Label text="My Test Reports" style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 32px;" />
                             <Label text="View and download your recent medical test results." style="-fx-text-fill: #4A7A68; -fx-font-size: 16px; -fx-font-weight: bold;" />
                         </VBox>
 
-                        <VBox spacing="15.0" VBox.vgrow="ALWAYS">
-                            <HBox alignment="CENTER_LEFT" spacing="20.0" style="-fx-background-color: white; -fx-background-radius: 15; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(38,70,61,0.08), 15, 0, 5, 5);">
-                                <VBox alignment="CENTER" minWidth="65.0" minHeight="65.0" style="-fx-background-color: #ECFDF5; -fx-background-radius: 12;">
-                                    <Label text="🩸" style="-fx-font-size: 28px; -fx-font-family: 'Segoe UI Emoji';" />
-                                </VBox>
-                                <VBox spacing="5.0" HBox.hgrow="ALWAYS">
-                                    <HBox alignment="CENTER_LEFT" spacing="10.0">
-                                        <Label text="Complete Blood Count (CBC)" style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 18px;" />
-                                        <Label text="Normal" style="-fx-background-color: #D1FAE5; -fx-text-fill: #065F46; -fx-padding: 3 8; -fx-background-radius: 5; -fx-font-size: 10px; -fx-font-weight: bold;" />
-                                    </HBox>
-                                    <Label text="Referred by Dr. S. Johnson • PathCare Labs" style="-fx-text-fill: #5C8D7D; -fx-font-weight: bold; -fx-font-size: 13px;" />
-                                    <HBox alignment="CENTER_LEFT" spacing="5.0">
-                                        <Label text="📅" style="-fx-font-family: 'Segoe UI Emoji'; -fx-text-fill: #6B7280; -fx-font-size: 11px;" />
-                                        <Label text="Tested on: Oct 20, 2026" style="-fx-text-fill: #6B7280; -fx-font-size: 12px;" />
-                                    </HBox>
-                                </VBox>
-                                <HBox spacing="10.0" alignment="CENTER_RIGHT">
-                                    <Button text="👁️ View" style="-fx-background-color: #F8FAFC; -fx-text-fill: #26463D; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 15; -fx-cursor: hand; -fx-border-color: #E2E8F0; -fx-border-radius: 8; -fx-font-family: 'Segoe UI Emoji', 'System';" />
-                                    <Button text="⬇️ Download" style="-fx-background-color: #115E59; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 15; -fx-cursor: hand; -fx-font-family: 'Segoe UI Emoji', 'System';" />
-                                </HBox>
-                            </HBox>
-
-                            <HBox alignment="CENTER_LEFT" spacing="20.0" style="-fx-background-color: white; -fx-background-radius: 15; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(38,70,61,0.08), 15, 0, 5, 5);">
-                                <VBox alignment="CENTER" minWidth="65.0" minHeight="65.0" style="-fx-background-color: #FFFBEB; -fx-background-radius: 12;">
-                                    <Label text="🧪" style="-fx-font-size: 28px; -fx-font-family: 'Segoe UI Emoji';" />
-                                </VBox>
-                                <VBox spacing="5.0" HBox.hgrow="ALWAYS">
-                                    <HBox alignment="CENTER_LEFT" spacing="10.0">
-                                        <Label text="Lipid Profile" style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 18px;" />
-                                        <Label text="Consult Doctor" style="-fx-background-color: #FEF2F2; -fx-text-fill: #991B1B; -fx-padding: 3 8; -fx-background-radius: 5; -fx-font-size: 10px; -fx-font-weight: bold;" />
-                                    </HBox>
-                                    <Label text="Referred by Dr. S. Johnson • City Diagnostic Center" style="-fx-text-fill: #5C8D7D; -fx-font-weight: bold; -fx-font-size: 13px;" />
-                                    <HBox alignment="CENTER_LEFT" spacing="5.0">
-                                        <Label text="📅" style="-fx-font-family: 'Segoe UI Emoji'; -fx-text-fill: #6B7280; -fx-font-size: 11px;" />
-                                        <Label text="Tested on: Sep 15, 2026" style="-fx-text-fill: #6B7280; -fx-font-size: 12px;" />
-                                    </HBox>
-                                </VBox>
-                                <HBox spacing="10.0" alignment="CENTER_RIGHT">
-                                    <Button text="👁️ View" style="-fx-background-color: #F8FAFC; -fx-text-fill: #26463D; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 15; -fx-cursor: hand; -fx-border-color: #E2E8F0; -fx-border-radius: 8; -fx-font-family: 'Segoe UI Emoji', 'System';" />
-                                    <Button text="⬇️ Download" style="-fx-background-color: #115E59; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 15; -fx-cursor: hand; -fx-font-family: 'Segoe UI Emoji', 'System';" />
-                                </HBox>
-                            </HBox>
-
-                            <HBox alignment="CENTER_LEFT" spacing="20.0" style="-fx-background-color: white; -fx-background-radius: 15; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(38,70,61,0.08), 15, 0, 5, 5);">
-                                <VBox alignment="CENTER" minWidth="65.0" minHeight="65.0" style="-fx-background-color: #F0F9FF; -fx-background-radius: 12;">
-                                    <Label text="🩻" style="-fx-font-size: 28px; -fx-font-family: 'Segoe UI Emoji';" />
-                                </VBox>
-                                <VBox spacing="5.0" HBox.hgrow="ALWAYS">
-                                    <HBox alignment="CENTER_LEFT" spacing="10.0">
-                                        <Label text="Chest X-Ray" style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 18px;" />
-                                        <Label text="Normal" style="-fx-background-color: #D1FAE5; -fx-text-fill: #065F46; -fx-padding: 3 8; -fx-background-radius: 5; -fx-font-size: 10px; -fx-font-weight: bold;" />
-                                    </HBox>
-                                    <Label text="Referred by Dr. A. Rahman • Prime Imaging" style="-fx-text-fill: #5C8D7D; -fx-font-weight: bold; -fx-font-size: 13px;" />
-                                    <HBox alignment="CENTER_LEFT" spacing="5.0">
-                                        <Label text="📅" style="-fx-font-family: 'Segoe UI Emoji'; -fx-text-fill: #6B7280; -fx-font-size: 11px;" />
-                                        <Label text="Tested on: Aug 02, 2026" style="-fx-text-fill: #6B7280; -fx-font-size: 12px;" />
-                                    </HBox>
-                                </VBox>
-                                <HBox spacing="10.0" alignment="CENTER_RIGHT">
-                                    <Button text="👁️ View" style="-fx-background-color: #F8FAFC; -fx-text-fill: #26463D; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 15; -fx-cursor: hand; -fx-border-color: #E2E8F0; -fx-border-radius: 8; -fx-font-family: 'Segoe UI Emoji', 'System';" />
-                                    <Button text="⬇️ Download" style="-fx-background-color: #115E59; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 15; -fx-cursor: hand; -fx-font-family: 'Segoe UI Emoji', 'System';" />
-                                </HBox>
-                            </HBox>
+                        <VBox fx:id="testReportsContainer" spacing="15.0" VBox.vgrow="ALWAYS">
                         </VBox>
                     </VBox>
 
