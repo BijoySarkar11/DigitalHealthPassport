@@ -35,12 +35,12 @@
             <VBox maxWidth="Infinity" spacing="15.0">
                 <VBox spacing="5.0">
                     <Label style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #2F4F4F;" text="Admin ID" />
-                    <TextField fx:id="usernameField" promptText="Enter Admin ID" style="-fx-background-color: #F5F7F6; -fx-border-color: #5C8D7D; -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 12;" />
+                    <TextField fx:id="usernameField" promptText="Enter Admin ID / Email" style="-fx-background-color: #F5F7F6; -fx-border-color: #5C8D7D; -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 12;" />
                 </VBox>
 
                 <VBox spacing="5.0">
                     <Label style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #2F4F4F;" text="Password" />
-                    <PasswordField fx:id="passwordField" promptText="Enter System Password" style="-fx-background-color: #F5F7F6; -fx-border-color: #5C8D7D; -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 12;" />
+                    <PasswordField fx:id="passwordField" promptText="Enter Password" style="-fx-background-color: #F5F7F6; -fx-border-color: #5C8D7D; -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 12;" />
                 </VBox>
             </VBox>
 

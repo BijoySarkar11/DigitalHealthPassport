@@ -152,7 +152,60 @@ CREATE TABLE Audit_Logs (
     ip_address VARCHAR(45),
     FOREIGN KEY (user_id) REFERENCES Users(id)
 );
+-- 1. Create the Reviews Table
+CREATE TABLE IF NOT EXISTS Doctor_Reviews (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    patient_id INT NOT NULL,
+    doctor_id INT NOT NULL,
+    rating INT NOT NULL CHECK (rating >= 1 AND rating <= 5),
+    review_text TEXT,
+    review_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (patient_id) REFERENCES Patients(id) ON DELETE CASCADE,
+    FOREIGN KEY (doctor_id) REFERENCES Doctors(id) ON DELETE CASCADE
+);
 
+-- 1. Wipe the table completely clean so we start fresh!
+TRUNCATE TABLE Doctor_Reviews;
+
+-- ==========================================
+-- FRESH REVIEWS FOR ALL 4 DOCTORS
+-- ==========================================
+
+-- 1. DR. MARUF (DOC-001)
+INSERT INTO Doctor_Reviews (patient_id, doctor_id, rating, review_text)
+SELECT DISTINCT patient_id, doctor_id, 5, 'Highly recommended!'
+FROM Appointments WHERE doctor_id = (SELECT id FROM Doctors WHERE user_id = (SELECT id FROM Users WHERE national_id='DOC-001')) LIMIT 8;
+
+INSERT INTO Doctor_Reviews (patient_id, doctor_id, rating, review_text)
+SELECT DISTINCT patient_id, doctor_id, 4, 'Very helpful.'
+FROM Appointments WHERE doctor_id = (SELECT id FROM Doctors WHERE user_id = (SELECT id FROM Users WHERE national_id='DOC-001')) ORDER BY patient_id DESC LIMIT 2;
+
+-- 2. DR. ALISHA (DOC-002)
+INSERT INTO Doctor_Reviews (patient_id, doctor_id, rating, review_text)
+SELECT DISTINCT patient_id, doctor_id, 5, 'Excellent and caring.'
+FROM Appointments WHERE doctor_id = (SELECT id FROM Doctors WHERE user_id = (SELECT id FROM Users WHERE national_id='DOC-002')) LIMIT 6;
+
+INSERT INTO Doctor_Reviews (patient_id, doctor_id, rating, review_text)
+SELECT DISTINCT patient_id, doctor_id, 4, 'Very good experience.'
+FROM Appointments WHERE doctor_id = (SELECT id FROM Doctors WHERE user_id = (SELECT id FROM Users WHERE national_id='DOC-002')) ORDER BY patient_id DESC LIMIT 3;
+
+-- 3. DR. FARIA (DOC-003)
+INSERT INTO Doctor_Reviews (patient_id, doctor_id, rating, review_text)
+SELECT DISTINCT patient_id, doctor_id, 5, 'Very attentive and kind pediatrician.'
+FROM Appointments WHERE doctor_id = (SELECT id FROM Doctors WHERE user_id = (SELECT id FROM Users WHERE national_id='DOC-003')) LIMIT 5;
+
+INSERT INTO Doctor_Reviews (patient_id, doctor_id, rating, review_text)
+SELECT DISTINCT patient_id, doctor_id, 4, 'Great doctor, but the waiting room was full.'
+FROM Appointments WHERE doctor_id = (SELECT id FROM Doctors WHERE user_id = (SELECT id FROM Users WHERE national_id='DOC-003')) ORDER BY patient_id DESC LIMIT 4;
+
+-- 4. DR. SAMEHA (DOC-004)
+INSERT INTO Doctor_Reviews (patient_id, doctor_id, rating, review_text)
+SELECT DISTINCT patient_id, doctor_id, 5, 'The best orthopedics specialist!'
+FROM Appointments WHERE doctor_id = (SELECT id FROM Doctors WHERE user_id = (SELECT id FROM Users WHERE national_id='DOC-004')) LIMIT 7;
+
+INSERT INTO Doctor_Reviews (patient_id, doctor_id, rating, review_text)
+SELECT DISTINCT patient_id, doctor_id, 4, 'Very knowledgeable and helpful.'
+FROM Appointments WHERE doctor_id = (SELECT id FROM Doctors WHERE user_id = (SELECT id FROM Users WHERE national_id='DOC-004')) ORDER BY patient_id DESC LIMIT 2;
 -- --------------------------------------------------------
 -- DUMMY DATA FOR INITIAL TESTING
 -- --------------------------------------------------------
@@ -165,7 +218,7 @@ SET @hospital_id = LAST_INSERT_ID();
 
 -- Insert an Admin for the Hospital
 INSERT INTO Users (email, password_hash, role, hospital_id)
-VALUES ('admin@dmc.gov.bd', 'hashed_pass123', 'ADMIN', @hospital_id);
+VALUES ('admin_dmc@gov.bd', 'pass123', 'ADMIN', @hospital_id);
 
 -- ==========================================
 -- INSERT DOCTORS
@@ -436,3 +489,56 @@ SELECT
     (SELECT id FROM Users WHERE role = 'ADMIN' LIMIT 1)
 FROM Patients p
 WHERE p.national_id BETWEEN 'PT-0025265' AND 'PT-0025276';
+
+-- =========================================================================
+-- BATCH INSERT: MEDICAL HISTORY, PRESCRIPTIONS, & TESTS FOR ALL PATIENTS
+-- =========================================================================
+
+-- 1. Give every patient a Clinical Diagnosis (Medical History)
+INSERT INTO Medical_History (patient_id, diagnosed_by, hospital_id, diagnosis, diagnosis_date)
+SELECT id, 
+       (SELECT id FROM Doctors LIMIT 1), 
+       1, 
+       CASE WHEN id % 2 = 0 THEN 'Type 2 Diabetes (Managed)' ELSE 'Hypertension (Stage 1)' END, 
+       DATE_SUB(CURDATE(), INTERVAL (id * 2) DAY)
+FROM Patients;
+
+-- 2. Give every patient an Active Prescription Document
+INSERT INTO Prescriptions (patient_id, doctor_id, hospital_id, prescription_date, notes)
+SELECT id, 
+       (SELECT id FROM Doctors LIMIT 1), 
+       1, 
+       DATE_SUB(CURDATE(), INTERVAL 5 DAY), 
+       'Routine maintenance medication'
+FROM Patients;
+
+-- 3. Add Medication Item #1 to every Prescription
+INSERT INTO Prescription_Items (prescription_id, medicine_name, dosage, frequency, duration, instructions)
+SELECT id, 
+       CASE WHEN patient_id % 2 = 0 THEN 'Metformin' ELSE 'Amlodipine' END, 
+       '500mg', 
+       '2 times a day', 
+       '30 Days', 
+       'After meals'
+FROM Prescriptions;
+
+-- 4. Add Medication Item #2 to every Prescription (so the list looks full!)
+INSERT INTO Prescription_Items (prescription_id, medicine_name, dosage, frequency, duration, instructions)
+SELECT id, 
+       'Atorvastatin', 
+       '20mg', 
+       'Once daily', 
+       '90 Days', 
+       'Before bedtime'
+FROM Prescriptions;
+
+-- 5. Give every patient a Test Report
+INSERT INTO Test_Reports (patient_id, added_by_admin_id, hospital_id, report_type, file_url, report_date, notes)
+SELECT id, 
+       (SELECT id FROM Users WHERE role='ADMIN' LIMIT 1), 
+       1, 
+       'Complete Blood Count (CBC)', 
+       '/docs/cbc_report.pdf', 
+       DATE_SUB(CURDATE(), INTERVAL (id + 3) DAY), 
+       'Normal parameters observed.'
+FROM Patients;

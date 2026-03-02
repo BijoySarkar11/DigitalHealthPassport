@@ -40,7 +40,7 @@ public class DoctorLoginController {
                 e.printStackTrace();
             }
         } else {
-            errorLabel.setText("Invalid Doctor credentials or unauthorized access.");
+            errorLabel.setText("Invalid Doctor credentials. ");
         }
     }
 

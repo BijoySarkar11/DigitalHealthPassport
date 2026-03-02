@@ -43,7 +43,7 @@ public class PatientLoginController {
                 e.printStackTrace();
             }
         } else {
-            errorLabel.setText("Invalid National ID or password.");
+            errorLabel.setText("Invalid Patient credentials.");
         }
     }
 
