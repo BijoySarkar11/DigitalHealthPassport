@@ -27,7 +27,7 @@ public class Patient {
         this.height = height;
     }
 
-    // Standard Getters
+
     public int getId() { return id; }
     public int getUserId() { return userId; }
     public String getNationalId() { return nationalId; }
@@ -37,7 +37,6 @@ public class Patient {
     public String getBloodGroup() { return bloodGroup; }
     public String getPhone() { return phone; }
 
-    // NEW Getters for the UI
     public double getWeight() { return weight; }
     public double getHeight() { return height; }
 }

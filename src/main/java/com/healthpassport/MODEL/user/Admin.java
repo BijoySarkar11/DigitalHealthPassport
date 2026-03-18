@@ -9,5 +9,5 @@ public class Admin {
         this.password = password;
     }
 
-    // Add getters and setters if needed later
+
 }

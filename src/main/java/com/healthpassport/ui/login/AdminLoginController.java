@@ -16,7 +16,7 @@ import java.io.IOException;
 
 public class AdminLoginController {
 
-    @FXML private TextField usernameField; // Accepts Admin Email
+    @FXML private TextField usernameField;
     @FXML private PasswordField passwordField;
     @FXML private Label errorLabel;
 
@@ -28,7 +28,7 @@ public class AdminLoginController {
         String password = passwordField.getText();
         errorLabel.setText("");
 
-        // Pass Role.ADMIN
+
         if (authService.login(email, password, Role.ADMIN)) {
             try {
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/AdminDashboard.fxml"));

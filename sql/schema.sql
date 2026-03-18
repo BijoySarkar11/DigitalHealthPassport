@@ -167,9 +167,7 @@ CREATE TABLE IF NOT EXISTS Doctor_Reviews (
 -- 1. Wipe the table completely clean so we start fresh!
 TRUNCATE TABLE Doctor_Reviews;
 
--- ==========================================
--- FRESH REVIEWS FOR ALL 4 DOCTORS
--- ==========================================
+
 
 -- 1. DR. MARUF (DOC-001)
 INSERT INTO Doctor_Reviews (patient_id, doctor_id, rating, review_text)
@@ -206,9 +204,7 @@ FROM Appointments WHERE doctor_id = (SELECT id FROM Doctors WHERE user_id = (SEL
 INSERT INTO Doctor_Reviews (patient_id, doctor_id, rating, review_text)
 SELECT DISTINCT patient_id, doctor_id, 4, 'Very knowledgeable and helpful.'
 FROM Appointments WHERE doctor_id = (SELECT id FROM Doctors WHERE user_id = (SELECT id FROM Users WHERE national_id='DOC-004')) ORDER BY patient_id DESC LIMIT 2;
--- --------------------------------------------------------
--- DUMMY DATA FOR INITIAL TESTING
--- --------------------------------------------------------
+
 -- Insert a Hospital
 INSERT INTO Hospitals (name, address, contact_number)
 VALUES ('Dhaka Medical College', 'Dhaka, Bangladesh', '01711111111');
@@ -220,37 +216,37 @@ SET @hospital_id = LAST_INSERT_ID();
 INSERT INTO Users (email, password_hash, role, hospital_id)
 VALUES ('admin_dmc@gov.bd', 'pass123', 'ADMIN', @hospital_id);
 
--- ==========================================
+
 -- INSERT DOCTORS
--- ==========================================
+
 
 -- 1. Prof Maruf Ahmed Tamal
 INSERT INTO Users (national_id, email, password_hash, role, hospital_id) 
-VALUES ('DOC-001', 'maruf.tamal@dmc.gov.bd', 'hashed_pass123', 'DOCTOR', @hospital_id);
+VALUES ('DOC-001', 'maruf.tamal@dmc.gov.bd', 'pass123', 'DOCTOR', @hospital_id);
 INSERT INTO Doctors (user_id, hospital_id, specialization, license_number, years_of_experience) 
 VALUES (LAST_INSERT_ID(), @hospital_id, 'Cardiology', 'BMDC-1001', 15);
 
 -- 2. Doctor Alisha Kabir
 INSERT INTO Users (national_id, email, password_hash, role, hospital_id) 
-VALUES ('DOC-002', 'alisha.kabir@dmc.gov.bd', 'hashed_pass123', 'DOCTOR', @hospital_id);
+VALUES ('DOC-002', 'alisha.kabir@dmc.gov.bd', 'pass123', 'DOCTOR', @hospital_id);
 INSERT INTO Doctors (user_id, hospital_id, specialization, license_number, years_of_experience) 
 VALUES (LAST_INSERT_ID(), @hospital_id, 'Neurology', 'BMDC-1002', 8);
 
 -- 3. Doctor Faria alam
 INSERT INTO Users (national_id, email, password_hash, role, hospital_id) 
-VALUES ('DOC-003', 'faria.alam@dmc.gov.bd', 'hashed_pass123', 'DOCTOR', @hospital_id);
+VALUES ('DOC-003', 'faria.alam@dmc.gov.bd', 'pass123', 'DOCTOR', @hospital_id);
 INSERT INTO Doctors (user_id, hospital_id, specialization, license_number, years_of_experience) 
 VALUES (LAST_INSERT_ID(), @hospital_id, 'Pediatrics', 'BMDC-1003', 5);
 
 -- 4. Doctor Sameha Kamrul
 INSERT INTO Users (national_id, email, password_hash, role, hospital_id) 
-VALUES ('DOC-004', 'sameha.kamrul@dmc.gov.bd', 'hashed_pass123', 'DOCTOR', @hospital_id);
+VALUES ('DOC-004', 'sameha.kamrul@dmc.gov.bd', 'pass123', 'DOCTOR', @hospital_id);
 INSERT INTO Doctors (user_id, hospital_id, specialization, license_number, years_of_experience) 
 VALUES (LAST_INSERT_ID(), @hospital_id, 'Orthopedics', 'BMDC-1004', 10);
 
--- ==========================================
+
 -- INSERT PATIENTS
--- ==========================================
+
 
 -- 1. Ummey Habiba Pranty
 INSERT INTO Users (national_id, email, password_hash, role, hospital_id) 
@@ -270,9 +266,6 @@ VALUES ('PT-0025237', 'saber@gmail.com', 'pass123', 'PATIENT', NULL);
 INSERT INTO Patients (user_id, national_id, full_name, date_of_birth, gender, blood_group, phone, weight, height) 
 VALUES (LAST_INSERT_ID(), 'PT-0025237', 'Saber Hossen', '2003-05-15', 'MALE', 'B+', '01644444444', 68.00, 170.00);
 
--- ==========================================
--- BATCH INSERT: 39 NEW PATIENTS
--- ==========================================
 
 -- 4. Tasnuva
 INSERT INTO Users (national_id, full_name, email, password_hash, role, hospital_id) VALUES ('PT-0025238', 'Tasnuva', 'tasnuva38@gmail.com', 'pass123', 'PATIENT', NULL);
@@ -431,9 +424,9 @@ INSERT INTO Users (national_id, full_name, email, password_hash, role, hospital_
 INSERT INTO Patients (user_id, national_id, full_name, date_of_birth, gender, blood_group, phone, weight, height) VALUES (LAST_INSERT_ID(), 'PT-0025276', 'Tanvir Foysal', '2003-03-09', 'MALE', 'O+', '01711000076', 68.0, 172.0);
 
 
--- ==========================================
--- INSERT APPOINTMENTS (DUMMY DATA FOR DASHBOARD)
--- ==========================================
+
+-- INSERT APPOINTMENTS 
+
 
 -- 1. Fix the blank Doctor name
 UPDATE Users SET full_name = 'Dr. Maruf Ahmed Tamal' WHERE national_id = 'DOC-001';

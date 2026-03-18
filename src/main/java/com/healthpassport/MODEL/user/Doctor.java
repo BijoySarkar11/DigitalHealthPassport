@@ -17,7 +17,7 @@ public class Doctor {
         this.yearsOfExperience = yearsOfExperience;
     }
 
-    // Standard Getters
+
     public int getId() { return id; }
     public int getUserId() { return userId; }
     public int getHospitalId() { return hospitalId; }

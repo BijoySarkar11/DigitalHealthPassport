@@ -6,7 +6,7 @@ import com.healthpassport.MODEL.user.Patient;
 public class PatientService {
     private final PatientDAO patientDAO = new PatientDAO();
 
-    // NO authentication methods here anymore! (AuthService handles that)
+
 
     public Patient getProfile(int userId) {
         return patientDAO.getPatientProfileByUserId(userId);

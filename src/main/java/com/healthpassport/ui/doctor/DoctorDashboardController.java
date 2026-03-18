@@ -37,7 +37,7 @@ public class DoctorDashboardController {
 
     @FXML private Label doctorNameLabel, doctorIdLabel, doctorEmojiLabel;
 
-    // Overview Stat Labels
+
     @FXML private Label totalPatientsLabel, totalPatientsSubLabel;
     @FXML private Label activeCasesLabel, activeCasesSubLabel;
     @FXML private Label todaysApptsLabel, todaysApptsSubLabel;
@@ -86,7 +86,7 @@ public class DoctorDashboardController {
 
         try (Connection conn = DBConnection.getConnection()) {
 
-            // 1. Total Patients Calculation
+
             String totalQuery = "SELECT COUNT(DISTINCT a.patient_id) AS total FROM Appointments a JOIN Doctors d ON a.doctor_id = d.id WHERE d.user_id = ?";
             try (PreparedStatement stmt = conn.prepareStatement(totalQuery)) {
                 stmt.setInt(1, userId);
@@ -98,7 +98,7 @@ public class DoctorDashboardController {
                 }
             }
 
-            // 2. Active Cases
+
             String activeQuery = "SELECT COUNT(DISTINCT a.patient_id) AS active FROM Appointments a JOIN Doctors d ON a.doctor_id = d.id WHERE d.user_id = ? AND a.appointment_date >= CURDATE()";
             try (PreparedStatement stmt = conn.prepareStatement(activeQuery)) {
                 stmt.setInt(1, userId);
@@ -110,7 +110,7 @@ public class DoctorDashboardController {
                 }
             }
 
-            // 3. Today's Appointments
+
             String todayQuery = "SELECT COUNT(*) AS total, SUM(CASE WHEN a.status='COMPLETED' THEN 1 ELSE 0 END) AS completed, SUM(CASE WHEN a.status='SCHEDULED' THEN 1 ELSE 0 END) AS upcoming FROM Appointments a JOIN Doctors d ON a.doctor_id = d.id WHERE d.user_id = ? AND DATE(a.appointment_date) = CURDATE()";
             try (PreparedStatement stmt = conn.prepareStatement(todayQuery)) {
                 stmt.setInt(1, userId);
@@ -124,7 +124,7 @@ public class DoctorDashboardController {
                 }
             }
 
-            // 4. Setup Reviews BarChart
+
             setupReviewChart(conn, userId);
 
         } catch (Exception e) { e.printStackTrace(); }
@@ -159,7 +159,7 @@ public class DoctorDashboardController {
             }
         } catch (Exception e) { e.printStackTrace(); }
 
-        // 🌟 DEMO FALLBACK: If the database is empty, fill it with realistic presentation data! 🌟
+
         if (totalReviewsFound == 0) {
             chartData.put("1 Star", 0);
             chartData.put("2 Stars", 1);
@@ -168,7 +168,7 @@ public class DoctorDashboardController {
             chartData.put("5 Stars", 24); // Gives a massive, realistic green bar for 5 stars!
         }
 
-        // Add the data to the series
+
         for (Map.Entry<String, Integer> entry : chartData.entrySet()) {
             XYChart.Data<String, Number> dataNode = new XYChart.Data<>(entry.getKey(), entry.getValue());
             series.getData().add(dataNode);
@@ -176,7 +176,7 @@ public class DoctorDashboardController {
 
         reviewChart.getData().add(series);
 
-        // Safely color the bars deep green after they are added to the scene
+
         Platform.runLater(() -> {
             for (XYChart.Data<String, Number> data : series.getData()) {
                 Node node = data.getNode();
@@ -315,8 +315,6 @@ public class DoctorDashboardController {
         } catch (Exception e) { e.printStackTrace(); }
     }
 
-    // --- EXACT UI MATCH BUILDERS ---
-
     private HBox createMiniScheduleCard(String timeText, String nameText, String statusText) {
         HBox card = new HBox();
         card.setStyle("-fx-background-color: #F8FAF9; -fx-background-radius: 10; -fx-padding: 10 15; -fx-spacing: 20; -fx-alignment: center-left;");
@@ -427,7 +425,7 @@ public class DoctorDashboardController {
         return card;
     }
 
-    // --- View Navigation ---
+    // Navigation
     @FXML private void showDashboard(ActionEvent event) { hideAllViews(); if (viewDashboard != null) { viewDashboard.setVisible(true); viewDashboard.setManaged(true); } resetButtons(); if (btnDashboard != null) btnDashboard.setStyle(ACTIVE_STYLE); }
     @FXML private void showPatients(ActionEvent event) { hideAllViews(); if (viewPatients != null) { viewPatients.setVisible(true); viewPatients.setManaged(true); } resetButtons(); if (btnPatients != null) btnPatients.setStyle(ACTIVE_STYLE); }
     @FXML private void showAppointments(ActionEvent event) { hideAllViews(); if (viewAppointments != null) { viewAppointments.setVisible(true); viewAppointments.setManaged(true); } resetButtons(); if (btnAppointments != null) btnAppointments.setStyle(ACTIVE_STYLE); }

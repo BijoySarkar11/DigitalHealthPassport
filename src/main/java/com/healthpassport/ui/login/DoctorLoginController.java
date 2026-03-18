@@ -16,7 +16,7 @@ import java.io.IOException;
 
 public class DoctorLoginController {
 
-    @FXML private TextField usernameField; // This accepts National ID or Email
+    @FXML private TextField usernameField;
     @FXML private PasswordField passwordField;
     @FXML private Label errorLabel;
 
@@ -28,7 +28,7 @@ public class DoctorLoginController {
         String password = passwordField.getText();
         errorLabel.setText("");
 
-        // Pass Role.DOCTOR to ensure patients/admins can't log in here!
+
         if (authService.login(identifier, password, Role.DOCTOR)) {
             try {
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/DoctorDashboard.fxml"));

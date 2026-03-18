@@ -6,16 +6,16 @@ public class User {
     private String email;
     private String passwordHash;
     private Role role;
-    private Integer hospitalId; // Integer object allows for 'null' values (Patients)
+    private Integer hospitalId;
     private boolean isActive;
 
-    // NEW: Added to hold the user's name for the UI dashboards
+
     private String fullName;
 
-    // NEW: Empty constructor (Required so the UserDAO can build this object step-by-step)
+
     public User() {}
 
-    // Updated full constructor (Includes fullName)
+
     public User(int id, String nationalId, String email, String passwordHash, Role role, Integer hospitalId, boolean isActive, String fullName) {
         this.id = id;
         this.nationalId = nationalId;
@@ -27,7 +27,7 @@ public class User {
         this.fullName = fullName;
     }
 
-    // --- Getters ---
+
     public int getId() { return id; }
     public String getNationalId() { return nationalId; }
     public String getEmail() { return email; }
@@ -37,7 +37,7 @@ public class User {
     public boolean isActive() { return isActive; }
     public String getFullName() { return fullName; } // NEW
 
-    // --- Setters --- (Needed for the DAO to populate the object from the database)
+
     public void setId(int id) { this.id = id; }
     public void setNationalId(String nationalId) { this.nationalId = nationalId; }
     public void setEmail(String email) { this.email = email; }

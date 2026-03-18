@@ -1,28 +1,23 @@
 package com.healthpassport.ui.patient;
 
 import com.healthpassport.MODEL.user.User;
+import com.healthpassport.ui.common.BaseController;
 import com.healthpassport.util.DBConnection;
 import com.healthpassport.util.UserSession;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Node;
-import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
-import javafx.stage.Stage;
 
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-public class PatientDashboardController {
+public class PatientDashboardController extends BaseController {
 
     @FXML private Button btnDashboard, btnAppointments, btnPrescriptions, btnTestReports;
     @FXML private VBox viewDashboard, viewAppointments, viewPrescriptions, viewTestReports;
@@ -35,9 +30,21 @@ public class PatientDashboardController {
 
     private int currentPatientId = -1;
 
-    // RESTORED: Added back the font-family and cursor to prevent text resizing/glitching
     private final String ACTIVE_STYLE = "-fx-background-color: #1B362F; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 12 15; -fx-background-radius: 12; -fx-cursor: hand; -fx-font-family: 'Segoe UI Emoji', 'System';";
     private final String INACTIVE_STYLE = "-fx-background-color: transparent; -fx-text-fill: #A3CFC0; -fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 12 15; -fx-background-radius: 12; -fx-cursor: hand; -fx-font-family: 'Segoe UI Emoji', 'System';";
+
+    public static class PatientDashboardException extends Exception {
+        public PatientDashboardException(String message, Throwable cause) {
+            super(message, cause);
+        }
+    }
+
+    private void handleDashboardError(PatientDashboardException e) {
+        System.err.println("[Dashboard Error] " + e.getMessage());
+        if (e.getCause() != null) {
+            System.err.println("Technical Reason: " + e.getCause().getMessage());
+        }
+    }
 
     @FXML
     public void initialize() {
@@ -66,7 +73,9 @@ public class PatientDashboardController {
                 bloodGroupLabel.setText(rs.getString("blood_group"));
                 phoneLabel.setText("📞 " + rs.getString("phone"));
             }
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (SQLException e) {
+            handleDashboardError(new PatientDashboardException("Failed to load basic patient profile data.", e));
+        }
 
         if (currentPatientId != -1) {
             loadPrimaryDoctor();
@@ -117,7 +126,9 @@ public class PatientDashboardController {
                 diagnosticDetailsContainer.getChildren().add(lbl);
             }
             if(!hasData) diagnosticDetailsContainer.getChildren().add(new Label("No diagnostic records found."));
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (SQLException e) {
+            handleDashboardError(new PatientDashboardException("Failed to load inline diagnostic history.", e));
+        }
     }
 
     private void loadInlineDrugs() {
@@ -135,7 +146,9 @@ public class PatientDashboardController {
                 drugsDetailsContainer.getChildren().add(lbl);
             }
             if(!hasData) drugsDetailsContainer.getChildren().add(new Label("No drugs prescribed."));
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (SQLException e) {
+            handleDashboardError(new PatientDashboardException("Failed to load inline prescribed drugs.", e));
+        }
     }
 
     private void loadInlineTests() {
@@ -153,7 +166,9 @@ public class PatientDashboardController {
                 testsDetailsContainer.getChildren().add(lbl);
             }
             if(!hasData) testsDetailsContainer.getChildren().add(new Label("No test reports available."));
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (SQLException e) {
+            handleDashboardError(new PatientDashboardException("Failed to load inline test reports.", e));
+        }
     }
 
     private void loadMedicationReminders() {
@@ -166,10 +181,16 @@ public class PatientDashboardController {
             boolean hasData = false;
             while (rs.next()) {
                 hasData = true;
-                remindersContainer.getChildren().add(createReminderCard(rs.getString("medicine_name"), rs.getString("dosage") + " • " + rs.getString("frequency"), rs.getString("doctor_name")));
+                remindersContainer.getChildren().add(DashboardUIFactory.createReminderCard(
+                        rs.getString("medicine_name"),
+                        rs.getString("dosage") + " • " + rs.getString("frequency"),
+                        rs.getString("doctor_name")
+                ));
             }
             if (!hasData) remindersContainer.getChildren().add(new Label("No daily medications."));
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (SQLException e) {
+            handleDashboardError(new PatientDashboardException("Failed to load medication reminders.", e));
+        }
     }
 
     private void loadPrimaryDoctor() {
@@ -181,7 +202,9 @@ public class PatientDashboardController {
                 if (primaryDoctorNameLabel != null) primaryDoctorNameLabel.setText(rs.getString("full_name"));
                 if (primaryDoctorSpecLabel != null) primaryDoctorSpecLabel.setText(rs.getString("specialization"));
             }
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (SQLException e) {
+            handleDashboardError(new PatientDashboardException("Failed to load primary doctor info.", e));
+        }
     }
 
     private void loadUpcomingAppointments() {
@@ -198,10 +221,18 @@ public class PatientDashboardController {
             while (rs.next()) {
                 hasData = true;
                 LocalDateTime date = rs.getTimestamp("appointment_date").toLocalDateTime();
-                appointmentsContainer.getChildren().add(createAppointmentCard(date.format(monFmt).toUpperCase(), date.format(dayFmt), rs.getString("full_name"), rs.getString("specialization"), date.format(timeFmt) + " - Scheduled"));
+                appointmentsContainer.getChildren().add(DashboardUIFactory.createAppointmentCard(
+                        date.format(monFmt).toUpperCase(),
+                        date.format(dayFmt),
+                        rs.getString("full_name"),
+                        rs.getString("specialization"),
+                        date.format(timeFmt) + " - Scheduled"
+                ));
             }
             if (!hasData) appointmentsContainer.getChildren().add(new Label("No upcoming appointments."));
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (SQLException e) {
+            handleDashboardError(new PatientDashboardException("Failed to load upcoming appointments.", e));
+        }
     }
 
     private void loadPrescriptions() {
@@ -214,10 +245,17 @@ public class PatientDashboardController {
             boolean hasData = false;
             while (rs.next()) {
                 hasData = true;
-                prescriptionsContainer.getChildren().add(createPrescriptionCard(rs.getString("medicine_name"), "Dosage: " + rs.getString("dosage") + " • " + rs.getString("frequency"), "Duration: " + rs.getString("duration"), rs.getString("doctor_name")));
+                prescriptionsContainer.getChildren().add(DashboardUIFactory.createPrescriptionCard(
+                        rs.getString("medicine_name"),
+                        "Dosage: " + rs.getString("dosage") + " • " + rs.getString("frequency"),
+                        "Duration: " + rs.getString("duration"),
+                        rs.getString("doctor_name")
+                ));
             }
             if (!hasData) prescriptionsContainer.getChildren().add(new Label("No prescriptions found."));
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (SQLException e) {
+            handleDashboardError(new PatientDashboardException("Failed to load prescriptions list.", e));
+        }
     }
 
     private void loadTestReports() {
@@ -231,123 +269,16 @@ public class PatientDashboardController {
             DateTimeFormatter dateFmt = DateTimeFormatter.ofPattern("MMM dd, yyyy");
             while (rs.next()) {
                 hasData = true;
-                testReportsContainer.getChildren().add(createTestReportCard(rs.getString("report_type"), "Tested at: " + rs.getString("hospital_name"), "Tested on: " + rs.getDate("report_date").toLocalDate().format(dateFmt)));
+                testReportsContainer.getChildren().add(DashboardUIFactory.createTestReportCard(
+                        rs.getString("report_type"),
+                        "Tested at: " + rs.getString("hospital_name"),
+                        "Tested on: " + rs.getDate("report_date").toLocalDate().format(dateFmt)
+                ));
             }
             if (!hasData) testReportsContainer.getChildren().add(new Label("No test reports available."));
-        } catch (Exception e) { e.printStackTrace(); }
-    }
-
-    // --- UI BUILDERS ---
-    private HBox createReminderCard(String med, String dose, String doc) {
-        HBox card = new HBox(15);
-        card.setStyle("-fx-background-color: #F8FAFC; -fx-background-radius: 12; -fx-padding: 15 12;");
-        VBox icon = new VBox(new Label("💊"));
-        icon.setStyle("-fx-background-color: white; -fx-background-radius: 8; -fx-min-width: 35; -fx-min-height: 35; -fx-alignment: center;");
-        icon.getChildren().get(0).setStyle("-fx-font-family: 'Segoe UI Emoji';");
-        VBox details = new VBox(2);
-        Label name = new Label(med); name.setStyle("-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 14px;");
-        Label sub = new Label(dose); sub.setStyle("-fx-text-fill: #5C8D7D; -fx-font-size: 11px; -fx-font-weight: bold;");
-        Label dr = new Label("By " + doc); dr.setStyle("-fx-text-fill: #6B7280; -fx-font-size: 10px;");
-        details.getChildren().addAll(name, sub, dr);
-        HBox.setHgrow(details, Priority.ALWAYS);
-        card.getChildren().addAll(icon, details);
-        return card;
-    }
-
-    private HBox createAppointmentCard(String month, String day, String docName, String spec, String timeStr) {
-        HBox card = new HBox();
-        card.setStyle("-fx-background-color: white; -fx-background-radius: 15; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(38,70,61,0.08), 15, 0, 5, 5); -fx-border-color: #E8F3EE; -fx-border-width: 2; -fx-border-radius: 15; -fx-alignment: center-left; -fx-spacing: 20;");
-        VBox dateBox = new VBox(new Label(month), new Label(day));
-        dateBox.setStyle("-fx-background-color: #115E59; -fx-background-radius: 12; -fx-min-width: 65; -fx-min-height: 65; -fx-alignment: center;");
-        dateBox.getChildren().get(0).setStyle("-fx-text-fill: #A3CFC0; -fx-font-weight: bold; -fx-font-size: 12px;");
-        dateBox.getChildren().get(1).setStyle("-fx-text-fill: white; -fx-font-weight: 900; -fx-font-size: 22px;");
-        VBox infoBox = new VBox();
-        infoBox.setSpacing(3);
-        HBox.setHgrow(infoBox, Priority.ALWAYS);
-        Label nameLabel = new Label(docName);
-        nameLabel.setStyle("-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 18px;");
-        Label specLabel = new Label(spec + " • Routine Checkup");
-        specLabel.setStyle("-fx-text-fill: #5C8D7D; -fx-font-weight: bold; -fx-font-size: 13px;");
-        HBox timeBox = new HBox(new Label("🕒"), new Label(timeStr));
-        timeBox.setSpacing(5);
-        timeBox.getChildren().get(0).setStyle("-fx-font-family: 'Segoe UI Emoji'; -fx-text-fill: #6B7280; -fx-font-size: 11px;");
-        timeBox.getChildren().get(1).setStyle("-fx-text-fill: #6B7280; -fx-font-size: 12px;");
-        infoBox.getChildren().addAll(nameLabel, specLabel, timeBox);
-        VBox btnBox = new VBox();
-        btnBox.setSpacing(10);
-        btnBox.setStyle("-fx-alignment: center-right;");
-        Button remBtn = new Button("🔔 Reminder ON");
-        remBtn.setStyle("-fx-background-color: #ECFDF5; -fx-text-fill: #10B981; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 15; -fx-cursor: hand; -fx-font-family: 'Segoe UI Emoji', 'System';");
-        Label cancelLbl = new Label("Cancel / Reschedule");
-        cancelLbl.setStyle("-fx-text-fill: #9CA3AF; -fx-font-size: 11px; -fx-underline: true; -fx-cursor: hand;");
-        btnBox.getChildren().addAll(remBtn, cancelLbl);
-        card.getChildren().addAll(dateBox, infoBox, btnBox);
-        return card;
-    }
-
-    private HBox createPrescriptionCard(String medName, String instructions, String duration, String docName) {
-        HBox card = new HBox();
-        card.setStyle("-fx-background-color: white; -fx-background-radius: 15; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(38,70,61,0.08), 15, 0, 5, 5); -fx-alignment: center-left; -fx-spacing: 20;");
-        VBox iconBox = new VBox(new Label("💊"));
-        iconBox.setStyle("-fx-background-color: #ECFDF5; -fx-background-radius: 12; -fx-min-width: 65; -fx-min-height: 65; -fx-alignment: center;");
-        iconBox.getChildren().get(0).setStyle("-fx-font-size: 28px; -fx-font-family: 'Segoe UI Emoji';");
-        VBox infoBox = new VBox();
-        infoBox.setSpacing(5);
-        HBox.setHgrow(infoBox, Priority.ALWAYS);
-        HBox titleBox = new HBox(new Label(medName), new Label("Active"));
-        titleBox.setSpacing(10);
-        titleBox.setStyle("-fx-alignment: center-left;");
-        titleBox.getChildren().get(0).setStyle("-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 18px;");
-        titleBox.getChildren().get(1).setStyle("-fx-background-color: #D1FAE5; -fx-text-fill: #065F46; -fx-padding: 3 8; -fx-background-radius: 5; -fx-font-size: 10px; -fx-font-weight: bold;");
-        Label instLabel = new Label(instructions);
-        instLabel.setStyle("-fx-text-fill: #5C8D7D; -fx-font-weight: bold; -fx-font-size: 13px;");
-        HBox bottomBox = new HBox();
-        bottomBox.setSpacing(15);
-        HBox durBox = new HBox(new Label("⏳"), new Label(duration));
-        durBox.setSpacing(5);
-        durBox.getChildren().get(0).setStyle("-fx-font-family: 'Segoe UI Emoji'; -fx-text-fill: #6B7280; -fx-font-size: 11px;");
-        durBox.getChildren().get(1).setStyle("-fx-text-fill: #6B7280; -fx-font-size: 12px;");
-        HBox docBox = new HBox(new Label("👨‍⚕️"), new Label("By " + docName));
-        docBox.setSpacing(5);
-        docBox.getChildren().get(0).setStyle("-fx-font-family: 'Segoe UI Emoji'; -fx-text-fill: #6B7280; -fx-font-size: 11px;");
-        docBox.getChildren().get(1).setStyle("-fx-text-fill: #6B7280; -fx-font-size: 12px;");
-        bottomBox.getChildren().addAll(durBox, docBox);
-        infoBox.getChildren().addAll(titleBox, instLabel, bottomBox);
-        card.getChildren().addAll(iconBox, infoBox);
-        return card;
-    }
-
-    private HBox createTestReportCard(String testName, String details, String dateStr) {
-        HBox card = new HBox();
-        card.setStyle("-fx-background-color: white; -fx-background-radius: 15; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(38,70,61,0.08), 15, 0, 5, 5); -fx-alignment: center-left; -fx-spacing: 20;");
-        VBox iconBox = new VBox(new Label("🩸"));
-        iconBox.setStyle("-fx-background-color: #ECFDF5; -fx-background-radius: 12; -fx-min-width: 65; -fx-min-height: 65; -fx-alignment: center;");
-        iconBox.getChildren().get(0).setStyle("-fx-font-size: 28px; -fx-font-family: 'Segoe UI Emoji';");
-        VBox infoBox = new VBox();
-        infoBox.setSpacing(5);
-        HBox.setHgrow(infoBox, Priority.ALWAYS);
-        HBox titleBox = new HBox(new Label(testName), new Label("Ready"));
-        titleBox.setSpacing(10);
-        titleBox.setStyle("-fx-alignment: center-left;");
-        titleBox.getChildren().get(0).setStyle("-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 18px;");
-        titleBox.getChildren().get(1).setStyle("-fx-background-color: #D1FAE5; -fx-text-fill: #065F46; -fx-padding: 3 8; -fx-background-radius: 5; -fx-font-size: 10px; -fx-font-weight: bold;");
-        Label detailsLabel = new Label(details);
-        detailsLabel.setStyle("-fx-text-fill: #5C8D7D; -fx-font-weight: bold; -fx-font-size: 13px;");
-        HBox dateBox = new HBox(new Label("📅"), new Label(dateStr));
-        dateBox.setSpacing(5);
-        dateBox.getChildren().get(0).setStyle("-fx-font-family: 'Segoe UI Emoji'; -fx-text-fill: #6B7280; -fx-font-size: 11px;");
-        dateBox.getChildren().get(1).setStyle("-fx-text-fill: #6B7280; -fx-font-size: 12px;");
-        infoBox.getChildren().addAll(titleBox, detailsLabel, dateBox);
-        HBox btnBox = new HBox();
-        btnBox.setSpacing(10);
-        btnBox.setStyle("-fx-alignment: center-right;");
-        Button viewBtn = new Button("👁️ View");
-        viewBtn.setStyle("-fx-background-color: #F8FAFC; -fx-text-fill: #26463D; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 15; -fx-cursor: hand; -fx-border-color: #E2E8F0; -fx-border-radius: 8; -fx-font-family: 'Segoe UI Emoji', 'System';");
-        Button downBtn = new Button("⬇️ Download");
-        downBtn.setStyle("-fx-background-color: #115E59; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 15; -fx-cursor: hand; -fx-font-family: 'Segoe UI Emoji', 'System';");
-        btnBox.getChildren().addAll(viewBtn, downBtn);
-        card.getChildren().addAll(iconBox, infoBox, btnBox);
-        return card;
+        } catch (SQLException e) {
+            handleDashboardError(new PatientDashboardException("Failed to load test reports.", e));
+        }
     }
 
     @FXML private void showDashboard(ActionEvent event) { hideAllViews(); if (viewDashboard != null) { viewDashboard.setVisible(true); viewDashboard.setManaged(true); } resetButtons(); if (btnDashboard != null) btnDashboard.setStyle(ACTIVE_STYLE); }
@@ -371,9 +302,6 @@ public class PatientDashboardController {
 
     @FXML private void handleLogout(ActionEvent event) {
         UserSession.getInstance().cleanUserSession();
-        try {
-            Parent root = FXMLLoader.load(getClass().getResource("/fxml/RoleSelection.fxml"));
-            ((Stage) ((Node) event.getSource()).getScene().getWindow()).getScene().setRoot(root);
-        } catch (IOException e) { e.printStackTrace(); }
+        navigateTo(event, "/fxml/RoleSelection.fxml", "Digital Health Passport - Role Selection");
     }
 }
