@@ -25,17 +25,19 @@ public class PatientDAO {
                 // Convert SQL Date to Java LocalDate
                 LocalDate dob = rs.getDate("date_of_birth").toLocalDate();
 
+                // FIXED: The order now perfectly matches the new Patient constructor
+                // Patient(id, fullName, userId, nationalId, dateOfBirth, gender, bloodGroup, phone, weight, height)
                 return new Patient(
-                        rs.getInt("id"),
-                        rs.getInt("user_id"),
-                        rs.getString("national_id"),
-                        rs.getString("full_name"),
-                        dob,
-                        rs.getString("gender"),
-                        rs.getString("blood_group"),
-                        rs.getString("phone"),
-                        rs.getDouble("weight"), // NEW: Fetches weight from database
-                        rs.getDouble("height")  // NEW: Fetches height from database
+                        rs.getInt("id"),                // 1. id
+                        rs.getString("full_name"),      // 2. fullName (Moved to 2nd position)
+                        rs.getInt("user_id"),           // 3. userId
+                        rs.getString("national_id"),    // 4. nationalId
+                        dob,                            // 5. dateOfBirth
+                        rs.getString("gender"),         // 6. gender
+                        rs.getString("blood_group"),    // 7. bloodGroup
+                        rs.getString("phone"),          // 8. phone
+                        rs.getDouble("weight"),         // 9. weight
+                        rs.getDouble("height")          // 10. height
                 );
             }
         } catch (SQLException e) {

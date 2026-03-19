@@ -1,3 +1,4 @@
+
 package com.healthpassport.ui.common;
 
 import javafx.event.Event;
@@ -27,3 +28,4 @@ public abstract class BaseController {
         }
     }
 }
+

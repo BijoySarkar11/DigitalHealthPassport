@@ -2,11 +2,15 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
@@ -26,11 +30,11 @@
 
             <HBox spacing="12.0" alignment="CENTER_LEFT" style="-fx-padding: 0 0 20 0;">
                 <VBox alignment="CENTER" style="-fx-background-color: #A3CFC0; -fx-background-radius: 50; -fx-min-width: 45; -fx-min-height: 45;">
-                    <Label text="👩" style="-fx-font-size: 24px; -fx-font-family: 'Segoe UI Emoji';" />
+                    <Label fx:id="patientEmojiLabel" text="👩" style="-fx-font-size: 24px; -fx-font-family: 'Segoe UI Emoji';" />
                 </VBox>
                 <VBox spacing="2.0">
-                    <Label fx:id="sidebarNameLabel" text="Loading..." style="-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 15px;" />
-                    <Label fx:id="sidebarIdLabel" text="ID: ---" style="-fx-text-fill: #A3CFC0; -fx-font-size: 11px;" />
+                    <Label fx:id="sidebarNameLabel" text="Loading..." style="-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px;" wrapText="true" />
+                    <Label fx:id="sidebarIdLabel" text="ID: ---" style="-fx-text-fill: #BCE3D1; -fx-font-size: 11px;" />
                 </VBox>
             </HBox>
 
@@ -52,7 +56,7 @@
                 <HBox HBox.hgrow="ALWAYS" />
                 <HBox alignment="CENTER_LEFT" prefWidth="300.0" style="-fx-background-color: white; -fx-background-radius: 20; -fx-padding: 8 15; -fx-effect: dropshadow(three-pass-box, rgba(38,70,61,0.05), 10, 0, 0, 2);">
                     <Label text="🔍" style="-fx-text-fill: #9CA3AF; -fx-font-family: 'Segoe UI Emoji';" />
-                    <TextField promptText="Search records, doctors..." style="-fx-background-color: transparent; -fx-border-color: transparent; -fx-prompt-text-fill: #9CA3AF;" HBox.hgrow="ALWAYS" />
+                    <TextField fx:id="globalSearchField" onAction="#handleGlobalSearch" promptText="Search records, doctors..." style="-fx-background-color: transparent; -fx-border-color: transparent; -fx-prompt-text-fill: #9CA3AF;" HBox.hgrow="ALWAYS" />
                 </HBox>
             </HBox>
 
@@ -73,15 +77,14 @@
                                             <Label text="Your doctor" style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 16px;" HBox.hgrow="ALWAYS" />
                                         </HBox>
                                         <HBox spacing="15.0" alignment="CENTER_LEFT">
-                                            <VBox alignment="CENTER" style="-fx-background-color: #E8F3EE; -fx-background-radius: 50; -fx-min-width: 50; -fx-min-height: 50;"><Label text="👨‍⚕️" style="-fx-font-size: 24px; -fx-font-family: 'Segoe UI Emoji';" /></VBox>
+                                            <VBox alignment="CENTER" style="-fx-background-color: #E8F3EE; -fx-background-radius: 50; -fx-min-width: 50; -fx-min-height: 50;">
+                                                <Label text="👨‍⚕️" style="-fx-font-size: 24px; -fx-font-family: 'Segoe UI Emoji'; -fx-text-fill: #26463D;" />
+                                            </VBox>
                                             <VBox spacing="2.0" HBox.hgrow="ALWAYS">
                                                 <Label fx:id="primaryDoctorNameLabel" text="No Doctor Yet" style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 16px;" />
                                                 <Label fx:id="primaryDoctorSpecLabel" text="-" style="-fx-text-fill: #6B7280; -fx-font-size: 13px;" />
                                             </VBox>
-                                            <HBox spacing="10.0">
-                                                <Button text="💬" style="-fx-background-color: #E8F3EE; -fx-text-fill: #26463D; -fx-background-radius: 10; -fx-cursor: hand; -fx-font-family: 'Segoe UI Emoji';" />
-                                                <Button text="📞" style="-fx-background-color: #E8F3EE; -fx-text-fill: #26463D; -fx-background-radius: 10; -fx-cursor: hand; -fx-font-family: 'Segoe UI Emoji';" />
-                                            </HBox>
+                                            <Button text="Book Appointment" onAction="#handleBookPrimaryDoctor" style="-fx-background-color: #E8F3EE; -fx-text-fill: #115E59; -fx-font-weight: bold; -fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 8 15;" />
                                         </HBox>
                                     </VBox>
 
@@ -107,7 +110,9 @@
                                     <VBox spacing="15.0" HBox.hgrow="ALWAYS" alignment="TOP_CENTER" style="-fx-padding: 0 0 0 10;">
                                         <VBox style="-fx-background-color: #F8FAFC; -fx-background-radius: 12; -fx-padding: 15 20;">
                                             <HBox alignment="CENTER_LEFT" spacing="15.0">
-                                                <VBox alignment="CENTER" style="-fx-background-color: white; -fx-background-radius: 8; -fx-min-width: 45; -fx-min-height: 45;"><Label text="📄" style="-fx-font-size: 20px; -fx-font-family: 'Segoe UI Emoji';" /></VBox>
+                                                <VBox alignment="CENTER" style="-fx-background-color: #E8F3EE; -fx-background-radius: 8; -fx-min-width: 45; -fx-min-height: 45;">
+                                                    <Label text="📄" style="-fx-font-size: 20px; -fx-font-family: 'Segoe UI Emoji'; -fx-text-fill: #26463D;" />
+                                                </VBox>
                                                 <VBox spacing="2.0" HBox.hgrow="ALWAYS"><Label text="Diagnostic" style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 16px;" /><Label text="Medical history" style="-fx-text-fill: #6B7280; -fx-font-size: 12px;" /></VBox>
                                                 <Button fx:id="btnToggleDiagnostic" text="+" onAction="#toggleDiagnostic" style="-fx-background-color: white; -fx-text-fill: #26463D; -fx-font-weight: bold; -fx-background-radius: 8; -fx-cursor: hand;" />
                                             </HBox>
@@ -116,7 +121,9 @@
 
                                         <VBox style="-fx-background-color: #F8FAFC; -fx-background-radius: 12; -fx-padding: 15 20;">
                                             <HBox alignment="CENTER_LEFT" spacing="15.0">
-                                                <VBox alignment="CENTER" style="-fx-background-color: white; -fx-background-radius: 8; -fx-min-width: 45; -fx-min-height: 45;"><Label text="💊" style="-fx-font-size: 20px; -fx-font-family: 'Segoe UI Emoji';" /></VBox>
+                                                <VBox alignment="CENTER" style="-fx-background-color: #E8F3EE; -fx-background-radius: 8; -fx-min-width: 45; -fx-min-height: 45;">
+                                                    <Label text="💊" style="-fx-font-size: 20px; -fx-font-family: 'Segoe UI Emoji'; -fx-text-fill: #26463D;" />
+                                                </VBox>
                                                 <VBox spacing="2.0" HBox.hgrow="ALWAYS"><Label text="Drugs" style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 16px;" /><Label text="Prescriptions" style="-fx-text-fill: #6B7280; -fx-font-size: 12px;" /></VBox>
                                                 <Button fx:id="btnToggleDrugs" text="+" onAction="#toggleDrugs" style="-fx-background-color: white; -fx-text-fill: #26463D; -fx-font-weight: bold; -fx-background-radius: 8; -fx-cursor: hand;" />
                                             </HBox>
@@ -125,7 +132,9 @@
 
                                         <VBox style="-fx-background-color: #F8FAFC; -fx-background-radius: 12; -fx-padding: 15 20;">
                                             <HBox alignment="CENTER_LEFT" spacing="15.0">
-                                                <VBox alignment="CENTER" style="-fx-background-color: white; -fx-background-radius: 8; -fx-min-width: 45; -fx-min-height: 45;"><Label text="🧪" style="-fx-font-size: 20px; -fx-font-family: 'Segoe UI Emoji';" /></VBox>
+                                                <VBox alignment="CENTER" style="-fx-background-color: #E8F3EE; -fx-background-radius: 8; -fx-min-width: 45; -fx-min-height: 45;">
+                                                    <Label text="🧪" style="-fx-font-size: 20px; -fx-font-family: 'Segoe UI Emoji'; -fx-text-fill: #26463D;" />
+                                                </VBox>
                                                 <VBox spacing="2.0" HBox.hgrow="ALWAYS"><Label text="Tests" style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 16px;" /><Label text="Lab reports" style="-fx-text-fill: #6B7280; -fx-font-size: 12px;" /></VBox>
                                                 <Button fx:id="btnToggleTests" text="+" onAction="#toggleTests" style="-fx-background-color: white; -fx-text-fill: #26463D; -fx-font-weight: bold; -fx-background-radius: 8; -fx-cursor: hand;" />
                                             </HBox>
@@ -137,20 +146,88 @@
 
                             <VBox minWidth="320.0" maxWidth="320.0" spacing="20.0" style="-fx-background-color: white; -fx-background-radius: 20; -fx-padding: 25; -fx-effect: dropshadow(three-pass-box, rgba(38,70,61,0.08), 20, 0, 5, 5);">
                                 <Label text="Daily Medication" style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 18px;" />
-                                <VBox fx:id="remindersContainer" spacing="15.0">
-                                </VBox>
+                                <VBox fx:id="remindersContainer" spacing="15.0" />
                             </VBox>
                         </HBox>
                     </VBox>
 
-                    <VBox fx:id="viewAppointments" visible="false" managed="false" spacing="25.0" style="-fx-padding: 10 35 35 25; -fx-background-color: transparent;">
-                        <VBox spacing="5.0"><Label text="My Appointments" style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 32px;" /></VBox>
-                        <HBox spacing="25.0" VBox.vgrow="ALWAYS"><VBox fx:id="appointmentsContainer" spacing="15.0" HBox.hgrow="ALWAYS" /></HBox>
+                    <VBox fx:id="viewAppointments" visible="false" managed="false" spacing="20.0" style="-fx-padding: 10 35 35 25; -fx-background-color: transparent;">
+
+                        <VBox spacing="5.0" style="-fx-padding: 0 0 10 0;">
+                            <Label text="Appointments Workspace" style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 32px;" />
+                        </VBox>
+
+                        <HBox alignment="CENTER_LEFT" spacing="15.0" style="-fx-padding: 0 0 15 0;">
+                            <Button fx:id="btnTabMyApts" text="My Appointments" onAction="#showMyAptsTab" style="-fx-background-color: #26463D; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 20; -fx-padding: 10 25; -fx-cursor: hand; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2);" />
+                            <Button fx:id="btnTabBook" text="Book Appointment" onAction="#showBookTab" style="-fx-background-color: white; -fx-text-fill: #6B7280; -fx-font-weight: bold; -fx-background-radius: 20; -fx-padding: 10 25; -fx-cursor: hand; -fx-border-color: #E2E8F0; -fx-border-radius: 20;" />
+                        </HBox>
+
+                        <StackPane VBox.vgrow="ALWAYS">
+
+                            <VBox fx:id="subViewMyApts" spacing="30.0">
+                                <VBox spacing="15.0">
+                                    <Label text="Your Scheduled Appointments" style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 18px;" />
+                                    <VBox fx:id="appointmentsContainer" spacing="15.0" />
+                                </VBox>
+
+                                <VBox spacing="15.0" VBox.vgrow="ALWAYS">
+                                    <HBox alignment="CENTER_LEFT">
+                                        <Label text="Available Doctors" style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 18px;" HBox.hgrow="ALWAYS" />
+                                    </HBox>
+                                    <VBox fx:id="doctorsListContainer" spacing="10.0" />
+                                </VBox>
+                            </VBox>
+
+                            <VBox fx:id="subViewBook" visible="false" managed="false" alignment="TOP_CENTER" VBox.vgrow="ALWAYS">
+
+                                <VBox spacing="20.0" maxWidth="1000.0" style="-fx-background-color: white; -fx-background-radius: 20; -fx-padding: 40; -fx-effect: dropshadow(three-pass-box, rgba(38,70,61,0.08), 20, 0, 5, 5);" VBox.vgrow="ALWAYS">
+                                    <VBox spacing="5.0">
+                                        <Label text="Book Consultation" style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 22px;" />
+                                        <Label text="Select a specialty and doctor, then fill out the details to schedule an appointment." style="-fx-text-fill: #6B7280; -fx-font-size: 13px;" wrapText="true" />
+                                    </VBox>
+
+                                    <VBox spacing="20.0" style="-fx-padding: 10 0 0 0;" VBox.vgrow="ALWAYS">
+
+                                        <HBox spacing="20.0">
+                                            <VBox spacing="5.0" HBox.hgrow="ALWAYS">
+                                                <Label text="Filter by Specialty" style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 12px;" />
+                                                <ComboBox fx:id="specialtyCombo" onAction="#handleSpecialtyFilter" maxWidth="Infinity" promptText="All Specialties" style="-fx-background-color: #F8FAFC; -fx-border-color: #E2E8F0; -fx-border-radius: 8; -fx-padding: 5;" />
+                                            </VBox>
+                                            <VBox spacing="5.0" HBox.hgrow="ALWAYS">
+                                                <Label text="Select Doctor" style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 12px;" />
+                                                <ComboBox fx:id="doctorSelectionCombo" maxWidth="Infinity" promptText="Choose a doctor..." style="-fx-background-color: #F8FAFC; -fx-border-color: #E2E8F0; -fx-border-radius: 8; -fx-padding: 5;" />
+                                            </VBox>
+                                        </HBox>
+
+                                        <HBox spacing="20.0">
+                                            <VBox spacing="5.0" HBox.hgrow="ALWAYS">
+                                                <Label text="Select Date" style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 12px;" />
+                                                <DatePicker fx:id="appointmentDatePicker" maxWidth="Infinity" style="-fx-background-color: #F8FAFC; -fx-border-color: #E2E8F0; -fx-border-radius: 8; -fx-padding: 5;" />
+                                            </VBox>
+
+                                            <VBox spacing="5.0" HBox.hgrow="ALWAYS">
+                                                <Label text="Select Time Slot" style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 12px;" />
+                                                <ComboBox fx:id="appointmentTimeCombo" maxWidth="Infinity" promptText="Choose a time..." style="-fx-background-color: #F8FAFC; -fx-border-color: #E2E8F0; -fx-border-radius: 8; -fx-padding: 5;" />
+                                            </VBox>
+                                        </HBox>
+
+                                        <VBox spacing="5.0" VBox.vgrow="ALWAYS">
+                                            <Label text="Reason for Visit" style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 12px;" />
+                                            <TextArea fx:id="appointmentReasonArea" promptText="Briefly describe your symptoms..." wrapText="true" VBox.vgrow="ALWAYS" prefHeight="150.0" style="-fx-background-color: #F8FAFC; -fx-border-color: #E2E8F0; -fx-border-radius: 8;" />
+                                        </VBox>
+
+                                        <Button text="✔️ Confirm Booking" onAction="#handleConfirmBooking" maxWidth="Infinity" style="-fx-background-color: #115E59; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 15; -fx-cursor: hand; -fx-font-family: 'Segoe UI Emoji', 'System'; -fx-margin: 10 0 0 0;" />
+                                    </VBox>
+                                </VBox>
+                            </VBox>
+                        </StackPane>
                     </VBox>
+
                     <VBox fx:id="viewPrescriptions" visible="false" managed="false" spacing="25.0" style="-fx-padding: 10 35 35 25; -fx-background-color: transparent;">
                         <VBox spacing="5.0"><Label text="My Prescriptions" style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 32px;" /></VBox>
                         <VBox fx:id="prescriptionsContainer" spacing="15.0" VBox.vgrow="ALWAYS" />
                     </VBox>
+
                     <VBox fx:id="viewTestReports" visible="false" managed="false" spacing="25.0" style="-fx-padding: 10 35 35 25; -fx-background-color: transparent;">
                         <VBox spacing="5.0"><Label text="My Test Reports" style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 32px;" /></VBox>
                         <VBox fx:id="testReportsContainer" spacing="15.0" VBox.vgrow="ALWAYS" />

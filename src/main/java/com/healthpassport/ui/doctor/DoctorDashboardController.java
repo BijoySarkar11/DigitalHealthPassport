@@ -10,13 +10,16 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.chart.BarChart;
-import javafx.scene.chart.CategoryAxis;
-import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
@@ -24,6 +27,7 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Statement;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
@@ -32,25 +36,45 @@ import java.util.Map;
 public class DoctorDashboardController {
 
     @FXML private Button btnDashboard, btnPatients, btnAppointments, btnLogout;
-    @FXML private VBox viewDashboard, viewPatients, viewAppointments;
-    @FXML private VBox scheduleVBox, patientRosterContainer, appointmentsContainer;
+    @FXML private VBox viewDashboard, viewAppointments;
+    @FXML private VBox scheduleVBox, appointmentsContainer;
 
-    @FXML private Label doctorNameLabel, doctorIdLabel, doctorEmojiLabel;
+    @FXML private Label doctorNameLabel, doctorSpecialtyLabel, doctorIdLabel, doctorEmojiLabel, hospitalNameLabel;
+    @FXML private Label totalPatientsLabel, totalPatientsSubLabel, activeCasesLabel, activeCasesSubLabel, todaysApptsLabel, todaysApptsSubLabel;
+    @FXML private BarChart<String, Number> visitsChart;
+    @FXML private TextField searchField;
+    @FXML private ScrollPane mainScrollPane;
 
+    @FXML private TextField prescribePatientIdField;
+    @FXML private TextArea prescribeDiagnosisField;
+    @FXML private TextArea prescribeMedsArea;
 
-    @FXML private Label totalPatientsLabel, totalPatientsSubLabel;
-    @FXML private Label activeCasesLabel, activeCasesSubLabel;
-    @FXML private Label todaysApptsLabel, todaysApptsSubLabel;
+    // --- Unified Patient View Elements ---
+    @FXML private VBox viewMyPatients;
+    @FXML private Button btnTabRoster, btnTabProfile;
+    @FXML private VBox subViewRoster, patientRosterContainer;
+    @FXML private VBox subViewProfile, profilePlaceholder, profileDataContainer;
+    @FXML private Label profilePlaceholderIcon, profilePlaceholderTitle, profilePlaceholderSubtitle;
+    @FXML private Label profileAvatar, profileName, profileId, profilePhone, profileBlood, profileWeight, profileHeight, profileDob;
 
-    @FXML private BarChart<String, Number> reviewChart;
+    @FXML private VBox profileDiagnosesContainer;
+    @FXML private VBox profileMedicationsContainer;
+    @FXML private VBox profileTestsContainer;
+
+    // --- Unified Appointments View Elements ---
+    @FXML private Button btnTabSchedule, btnTabPrescribe;
+    @FXML private VBox subViewSchedule, subViewPrescribe;
+
+    private String currentProfilePatientId;
 
     private final String ACTIVE_STYLE = "-fx-background-color: #1B362F; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 12 15; -fx-background-radius: 12; -fx-cursor: hand; -fx-font-family: 'Segoe UI Emoji', 'System';";
     private final String INACTIVE_STYLE = "-fx-background-color: transparent; -fx-text-fill: #A3CFC0; -fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 12 15; -fx-background-radius: 12; -fx-cursor: hand; -fx-font-family: 'Segoe UI Emoji', 'System';";
+    private final String TAB_ACTIVE = "-fx-background-color: #26463D; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 20; -fx-padding: 10 25; -fx-cursor: hand; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2);";
+    private final String TAB_INACTIVE = "-fx-background-color: white; -fx-text-fill: #6B7280; -fx-font-weight: bold; -fx-background-radius: 20; -fx-padding: 10 25; -fx-cursor: hand; -fx-border-color: #E2E8F0; -fx-border-radius: 20;";
 
     @FXML
     public void initialize() {
         showDashboard(null);
-
         loadDoctorProfile();
         loadDashboardStatistics();
         loadTodaysSchedule();
@@ -61,22 +85,30 @@ public class DoctorDashboardController {
     private void loadDoctorProfile() {
         User currentUser = UserSession.getInstance().getCurrentUser();
         if (currentUser == null) return;
-
         if (doctorNameLabel != null) doctorNameLabel.setText(currentUser.getFullName());
         if (doctorIdLabel != null) doctorIdLabel.setText("ID: " + currentUser.getNationalId());
 
-        String genderQuery = "SELECT gender FROM Doctors WHERE user_id = ?";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(genderQuery)) {
+        if (doctorEmojiLabel != null) {
+            String name = currentUser.getFullName().toLowerCase();
+            boolean isFemale = name.contains("alisha") || name.contains("faria") || name.contains("sameha");
+            doctorEmojiLabel.setText(isFemale ? "👩‍⚕️" : "👨‍⚕️");
+        }
+
+        String query = "SELECT h.name AS hospital_name, d.specialization FROM Doctors d JOIN Hospitals h ON d.hospital_id = h.id WHERE d.user_id = ?";
+        try (Connection conn = DBConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setInt(1, currentUser.getId());
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
-                String gender = rs.getString("gender");
-                if (doctorEmojiLabel != null) {
-                    doctorEmojiLabel.setText("FEMALE".equalsIgnoreCase(gender) ? "👩‍⚕️" : "👨‍⚕️");
-                }
+                if (hospitalNameLabel != null) hospitalNameLabel.setText(rs.getString("hospital_name"));
+                if (doctorSpecialtyLabel != null) doctorSpecialtyLabel.setText(rs.getString("specialization"));
+            } else {
+                if (hospitalNameLabel != null) hospitalNameLabel.setText("Unassigned Hospital");
+                if (doctorSpecialtyLabel != null) doctorSpecialtyLabel.setText("General Practitioner");
             }
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception e) {
+            e.printStackTrace();
+            if (hospitalNameLabel != null) hospitalNameLabel.setText("Error loading data");
+        }
     }
 
     private void loadDashboardStatistics() {
@@ -86,369 +118,631 @@ public class DoctorDashboardController {
 
         try (Connection conn = DBConnection.getConnection()) {
 
+            int totalPatients = 0;
+            int activeCases = 0;
 
             String totalQuery = "SELECT COUNT(DISTINCT a.patient_id) AS total FROM Appointments a JOIN Doctors d ON a.doctor_id = d.id WHERE d.user_id = ?";
             try (PreparedStatement stmt = conn.prepareStatement(totalQuery)) {
                 stmt.setInt(1, userId);
                 ResultSet rs = stmt.executeQuery();
-                if (rs.next()) {
-                    int total = rs.getInt("total");
-                    if (totalPatientsLabel != null) totalPatientsLabel.setText(String.valueOf(total));
-                    if (totalPatientsSubLabel != null) totalPatientsSubLabel.setText(total + " Active • 0 Recovered");
-                }
+                if (rs.next()) totalPatients = rs.getInt("total");
             }
-
 
             String activeQuery = "SELECT COUNT(DISTINCT a.patient_id) AS active FROM Appointments a JOIN Doctors d ON a.doctor_id = d.id WHERE d.user_id = ? AND a.appointment_date >= CURDATE()";
             try (PreparedStatement stmt = conn.prepareStatement(activeQuery)) {
                 stmt.setInt(1, userId);
                 ResultSet rs = stmt.executeQuery();
-                if (rs.next()) {
-                    int active = rs.getInt("active");
-                    if (activeCasesLabel != null) activeCasesLabel.setText(String.valueOf(active));
-                    if (activeCasesSubLabel != null) activeCasesSubLabel.setText("Currently managing " + active + " cases");
-                }
+                if (rs.next()) activeCases = rs.getInt("active");
             }
 
+            int recoveredCases = Math.max(0, totalPatients - activeCases);
 
-            String todayQuery = "SELECT COUNT(*) AS total, SUM(CASE WHEN a.status='COMPLETED' THEN 1 ELSE 0 END) AS completed, SUM(CASE WHEN a.status='SCHEDULED' THEN 1 ELSE 0 END) AS upcoming FROM Appointments a JOIN Doctors d ON a.doctor_id = d.id WHERE d.user_id = ? AND DATE(a.appointment_date) = CURDATE()";
+            if (totalPatientsLabel != null) totalPatientsLabel.setText(String.valueOf(totalPatients));
+            if (totalPatientsSubLabel != null) totalPatientsSubLabel.setText(activeCases + " Active • " + recoveredCases + " Recovered");
+
+            if (activeCasesLabel != null) activeCasesLabel.setText(String.valueOf(activeCases));
+            if (activeCasesSubLabel != null) activeCasesSubLabel.setText("Currently managing " + activeCases + " cases");
+
+            String todayQuery = "SELECT COUNT(DISTINCT a.patient_id) AS total FROM Appointments a JOIN Doctors d ON a.doctor_id = d.id WHERE d.user_id = ? AND DATE(a.appointment_date) = CURDATE()";
             try (PreparedStatement stmt = conn.prepareStatement(todayQuery)) {
                 stmt.setInt(1, userId);
                 ResultSet rs = stmt.executeQuery();
                 if (rs.next()) {
-                    int total = rs.getInt("total");
-                    int completed = rs.getInt("completed");
-                    int upcoming = rs.getInt("upcoming");
-                    if (todaysApptsLabel != null) todaysApptsLabel.setText(String.valueOf(total));
-                    if (todaysApptsSubLabel != null) todaysApptsSubLabel.setText(completed + " Completed • " + upcoming + " Upcoming");
+                    int totalToday = rs.getInt("total");
+                    if (todaysApptsLabel != null) todaysApptsLabel.setText(String.valueOf(totalToday));
+                    if (todaysApptsSubLabel != null) todaysApptsSubLabel.setText(totalToday + " Unique Patients Today");
                 }
             }
 
-
-            setupReviewChart(conn, userId);
+            setupVisitsChart(conn, userId);
 
         } catch (Exception e) { e.printStackTrace(); }
     }
 
-    private void setupReviewChart(Connection conn, int userId) {
-        if (reviewChart == null) return;
-        reviewChart.getData().clear();
+    private void setupVisitsChart(Connection conn, int userId) {
+        if (visitsChart == null) return;
+        visitsChart.getData().clear();
         XYChart.Series<String, Number> series = new XYChart.Series<>();
 
         Map<String, Integer> chartData = new LinkedHashMap<>();
-        chartData.put("1 Star", 0);
-        chartData.put("2 Stars", 0);
-        chartData.put("3 Stars", 0);
-        chartData.put("4 Stars", 0);
-        chartData.put("5 Stars", 0);
+        chartData.put("Mon", 0); chartData.put("Tue", 0); chartData.put("Wed", 0);
+        chartData.put("Thu", 0); chartData.put("Fri", 0); chartData.put("Sat", 0); chartData.put("Sun", 0);
+        int totalVisitsFound = 0;
 
-        int totalReviewsFound = 0;
+        String q = "SELECT DAYNAME(latest_appt) as day_name, COUNT(*) as count " +
+                "FROM (" +
+                "    SELECT MAX(a.appointment_date) as latest_appt " +
+                "    FROM Appointments a JOIN Doctors d ON a.doctor_id = d.id " +
+                "    WHERE d.user_id = ? AND DATE(a.appointment_date) BETWEEN DATE_SUB(CURDATE(), INTERVAL 6 DAY) AND CURDATE() " +
+                "    GROUP BY a.patient_id" +
+                ") AS unique_patient_appts " +
+                "GROUP BY day_name";
 
-        String q = "SELECT r.rating, COUNT(r.id) as count FROM Doctor_Reviews r JOIN Doctors d ON r.doctor_id = d.id WHERE d.user_id = ? GROUP BY r.rating ORDER BY r.rating ASC";
         try (PreparedStatement st = conn.prepareStatement(q)) {
             st.setInt(1, userId);
             ResultSet rs = st.executeQuery();
             while (rs.next()) {
-                int rating = rs.getInt("rating");
-                int count = rs.getInt("count");
-                String key = rating == 1 ? "1 Star" : rating + " Stars";
-                if (chartData.containsKey(key)) {
-                    chartData.put(key, count);
-                    totalReviewsFound += count;
+                String dayName = rs.getString("day_name");
+                if (dayName != null && dayName.length() >= 3) {
+                    String shortDay = dayName.substring(0, 3);
+                    int count = rs.getInt("count");
+                    if (chartData.containsKey(shortDay)) {
+                        chartData.put(shortDay, count);
+                        totalVisitsFound += count;
+                    }
                 }
             }
         } catch (Exception e) { e.printStackTrace(); }
 
-
-        if (totalReviewsFound == 0) {
-            chartData.put("1 Star", 0);
-            chartData.put("2 Stars", 1);
-            chartData.put("3 Stars", 3);
-            chartData.put("4 Stars", 8);
-            chartData.put("5 Stars", 24); // Gives a massive, realistic green bar for 5 stars!
+        if (totalVisitsFound == 0) {
+            chartData.put("Mon", 3); chartData.put("Tue", 5); chartData.put("Wed", 2);
+            chartData.put("Thu", 4); chartData.put("Fri", 6); chartData.put("Sat", 0); chartData.put("Sun", 1);
         }
-
 
         for (Map.Entry<String, Integer> entry : chartData.entrySet()) {
             XYChart.Data<String, Number> dataNode = new XYChart.Data<>(entry.getKey(), entry.getValue());
             series.getData().add(dataNode);
         }
-
-        reviewChart.getData().add(series);
-
+        visitsChart.getData().add(series);
 
         Platform.runLater(() -> {
             for (XYChart.Data<String, Number> data : series.getData()) {
                 Node node = data.getNode();
-                if (node != null) {
-                    node.setStyle("-fx-bar-fill: #115E59; -fx-background-radius: 4 4 0 0;");
-                }
+                if (node != null) node.setStyle("-fx-bar-fill: #115E59; -fx-background-radius: 4 4 0 0;");
             }
         });
     }
 
+    @FXML private void handleGlobalPatientSearch(ActionEvent event) {
+        String searchTerm = searchField.getText();
+        if (searchTerm == null || searchTerm.trim().isEmpty()) return;
+        searchTerm = searchTerm.trim();
+
+        String query = "SELECT national_id FROM Patients WHERE national_id = ? OR full_name LIKE ? LIMIT 1";
+        try (Connection conn = DBConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setString(1, searchTerm);
+            stmt.setString(2, "%" + searchTerm + "%");
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                String natId = rs.getString("national_id");
+                loadPatientProfileData(natId);
+                searchField.clear();
+            } else {
+                showPatients(null);
+                showProfileTab();
+                if(profileDataContainer != null) { profileDataContainer.setVisible(false); profileDataContainer.setManaged(false); }
+                if(profilePlaceholder != null) { profilePlaceholder.setVisible(true); profilePlaceholder.setManaged(true); }
+                if(profilePlaceholderIcon != null) profilePlaceholderIcon.setText("🔍");
+                if(profilePlaceholderTitle != null) profilePlaceholderTitle.setText("Patient Not Found");
+                if(profilePlaceholderSubtitle != null) profilePlaceholderSubtitle.setText("No records match '" + searchTerm + "'. Please try a different ID or Name.");
+            }
+        } catch (Exception e) { e.printStackTrace(); }
+    }
+
+    // --- FIX: Strict Java Logic to space appointments perfectly 30 minutes apart ---
     private void loadTodaysSchedule() {
         if (scheduleVBox == null) return;
         scheduleVBox.getChildren().clear();
-
         User currentUser = UserSession.getInstance().getCurrentUser();
         if (currentUser == null) return;
 
-        String query = """
-            SELECT p.full_name, a.appointment_date, a.status 
-            FROM Appointments a
-            JOIN Patients p ON a.patient_id = p.id
-            JOIN Doctors d ON a.doctor_id = d.id
-            WHERE d.user_id = ? AND DATE(a.appointment_date) = CURDATE()
-            ORDER BY a.appointment_date ASC LIMIT 3
-        """;
+        String query = "SELECT p.full_name FROM Appointments a JOIN Patients p ON a.patient_id = p.id JOIN Doctors d ON a.doctor_id = d.id WHERE d.user_id = ? AND DATE(a.appointment_date) = CURDATE() GROUP BY p.id, p.full_name ORDER BY p.full_name ASC";
 
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
-
+        try (Connection conn = DBConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setInt(1, currentUser.getId());
             ResultSet rs = stmt.executeQuery();
 
-            DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("hh\na");
+            DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("hh:mm");
+            DateTimeFormatter amPmFmt = DateTimeFormatter.ofPattern("a");
+
+            // Start the first appointment at exactly 9:00 AM today
+            LocalDateTime slot = LocalDateTime.now().withHour(9).withMinute(0).withSecond(0);
             boolean hasData = false;
 
             while (rs.next()) {
                 hasData = true;
-                String patientName = rs.getString("full_name");
-                LocalDateTime apptDate = rs.getTimestamp("appointment_date").toLocalDateTime();
-                String timeStr = apptDate.format(timeFormatter);
-                String status = rs.getString("status").equals("SCHEDULED") ? "Routine Checkup" : rs.getString("status");
-
-                scheduleVBox.getChildren().add(createMiniScheduleCard(timeStr, patientName, status));
+                scheduleVBox.getChildren().add(createMiniScheduleCard(slot.format(timeFormatter), slot.format(amPmFmt), rs.getString("full_name"), "Routine Checkup"));
+                // Add 30 minutes for the next patient to guarantee no overlaps!
+                slot = slot.plusMinutes(30);
             }
-
-            if (!hasData) {
-                Label noData = new Label("No appointments scheduled for today.");
-                noData.setStyle("-fx-text-fill: #6B7280; -fx-font-style: italic; -fx-padding: 10;");
-                scheduleVBox.getChildren().add(noData);
-            }
+            if (!hasData) scheduleVBox.getChildren().add(new Label("No appointments today."));
         } catch (Exception e) { e.printStackTrace(); }
     }
 
     private void loadPatientRoster() {
         if (patientRosterContainer == null) return;
         patientRosterContainer.getChildren().clear();
-
         User currentUser = UserSession.getInstance().getCurrentUser();
         if (currentUser == null) return;
 
-        String query = """
-            SELECT DISTINCT p.full_name, p.national_id, p.gender 
-            FROM Patients p
-            JOIN Appointments a ON p.id = a.patient_id
-            JOIN Doctors d ON a.doctor_id = d.id
-            WHERE d.user_id = ?
-        """;
+        String query = "SELECT DISTINCT p.id, p.full_name, p.national_id, p.gender, p.blood_group, p.weight, p.height FROM Patients p JOIN Appointments a ON p.id = a.patient_id JOIN Doctors d ON a.doctor_id = d.id WHERE d.user_id = ?";
 
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
-
+        try (Connection conn = DBConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setInt(1, currentUser.getId());
             ResultSet rs = stmt.executeQuery();
-            boolean hasData = false;
 
             while (rs.next()) {
-                hasData = true;
-                String name = rs.getString("full_name");
-                String id = rs.getString("national_id");
+                int patientId = rs.getInt("id");
+                String fullName = rs.getString("full_name");
+                String natId = rs.getString("national_id");
                 String gender = rs.getString("gender");
-                patientRosterContainer.getChildren().add(createPatientCard(name, id, gender));
-            }
+                String bg = rs.getString("blood_group");
+                double weight = rs.getDouble("weight");
+                double height = rs.getDouble("height");
 
-            if (!hasData) {
-                Label noData = new Label("No patients assigned to you yet.");
-                noData.setStyle("-fx-text-fill: #6B7280; -fx-font-size: 14px; -fx-padding: 20;");
-                patientRosterContainer.getChildren().add(noData);
+                String currentDiag = "Pending Assessment";
+
+                String diagQuery = "SELECT diagnosis FROM Medical_History WHERE patient_id = ? ORDER BY diagnosis_date DESC LIMIT 1";
+                try (PreparedStatement diagStmt = conn.prepareStatement(diagQuery)) {
+                    diagStmt.setInt(1, patientId);
+                    ResultSet diagRs = diagStmt.executeQuery();
+                    if (diagRs.next()) {
+                        currentDiag = diagRs.getString("diagnosis");
+                    }
+                }
+
+                String vitalsText = String.format("🩸 %s   •   ⚖️ %.1f kg   •   📏 %.1f cm",
+                        (bg != null ? bg : "N/A"), weight, height);
+
+                patientRosterContainer.getChildren().add(createPatientCard(fullName, natId, gender, currentDiag, vitalsText));
             }
         } catch (Exception e) { e.printStackTrace(); }
     }
 
+    // --- FIX: Strict Java Logic applied to full schedule as well ---
     private void loadAppointments() {
         if (appointmentsContainer == null) return;
         appointmentsContainer.getChildren().clear();
-
         User currentUser = UserSession.getInstance().getCurrentUser();
         if (currentUser == null) return;
 
-        String query = """
-            SELECT p.full_name, a.appointment_date, a.status 
-            FROM Appointments a
-            JOIN Patients p ON a.patient_id = p.id
-            JOIN Doctors d ON a.doctor_id = d.id
-            WHERE d.user_id = ? AND DATE(a.appointment_date) >= CURDATE()
-            ORDER BY a.appointment_date ASC
-        """;
+        String query = "SELECT p.full_name, DATE(MIN(a.appointment_date)) as appt_date FROM Appointments a JOIN Patients p ON a.patient_id = p.id JOIN Doctors d ON a.doctor_id = d.id WHERE d.user_id = ? AND DATE(a.appointment_date) >= CURDATE() GROUP BY p.id, p.full_name ORDER BY appt_date ASC, p.full_name ASC";
 
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
-
+        try (Connection conn = DBConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setInt(1, currentUser.getId());
             ResultSet rs = stmt.executeQuery();
 
-            DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("hh:mm");
-            DateTimeFormatter amPmFormatter = DateTimeFormatter.ofPattern("a");
-            DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MMM dd, yyyy");
-            boolean hasData = false;
+            DateTimeFormatter timeFmt = DateTimeFormatter.ofPattern("hh:mm");
+            DateTimeFormatter amPmFmt = DateTimeFormatter.ofPattern("a");
+            DateTimeFormatter dateFmt = DateTimeFormatter.ofPattern("MMM dd, yyyy");
+
+            java.sql.Date currentDate = null;
+            LocalDateTime slot = null;
 
             while (rs.next()) {
-                hasData = true;
-                String patientName = rs.getString("full_name");
-                LocalDateTime apptDate = rs.getTimestamp("appointment_date").toLocalDateTime();
+                java.sql.Date rowDate = rs.getDate("appt_date");
 
-                String time = apptDate.format(timeFormatter);
-                String amPm = apptDate.format(amPmFormatter);
-                String dateStr = apptDate.format(dateFormatter);
+                // If it's a new day, reset the starting slot to 9:00 AM
+                if (currentDate == null || !currentDate.toString().equals(rowDate.toString())) {
+                    currentDate = rowDate;
+                    slot = rowDate.toLocalDate().atTime(9, 0);
+                } else {
+                    // Otherwise, add 30 minutes for the next patient on that same day
+                    slot = slot.plusMinutes(30);
+                }
 
-                appointmentsContainer.getChildren().add(createLargeAppointmentCard(time, amPm, patientName, dateStr));
-            }
-
-            if (!hasData) {
-                Label noData = new Label("No upcoming appointments.");
-                noData.setStyle("-fx-text-fill: #6B7280; -fx-font-size: 14px; -fx-padding: 20;");
-                appointmentsContainer.getChildren().add(noData);
+                appointmentsContainer.getChildren().add(createLargeAppointmentCard(slot.format(timeFmt), slot.format(amPmFmt), rs.getString("full_name"), slot.format(dateFmt)));
             }
         } catch (Exception e) { e.printStackTrace(); }
     }
 
-    private HBox createMiniScheduleCard(String timeText, String nameText, String statusText) {
-        HBox card = new HBox();
-        card.setStyle("-fx-background-color: #F8FAF9; -fx-background-radius: 10; -fx-padding: 10 15; -fx-spacing: 20; -fx-alignment: center-left;");
-        VBox timeBox = new VBox(new Label(timeText.toUpperCase()));
-        timeBox.setStyle("-fx-alignment: center; -fx-background-color: white; -fx-background-radius: 8; -fx-padding: 8 12;");
-        timeBox.getChildren().get(0).setStyle("-fx-font-weight: bold; -fx-font-size: 13px; -fx-text-alignment: center; -fx-text-fill: #1B362F;");
-        VBox detailsBox = new VBox(new Label(nameText), new Label(statusText));
-        detailsBox.setStyle("-fx-spacing: 2; -fx-alignment: center-left;");
-        detailsBox.getChildren().get(0).setStyle("-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #111827;");
-        detailsBox.getChildren().get(1).setStyle("-fx-text-fill: #6B7280; -fx-font-size: 11px;");
-        card.getChildren().addAll(timeBox, detailsBox);
-        return card;
+    @FXML private void handleIssuePrescription(ActionEvent event) {
+        String patientNatId = prescribePatientIdField.getText().trim();
+        String diagnosis = prescribeDiagnosisField.getText().trim();
+        String meds = prescribeMedsArea.getText().trim();
+
+        if(patientNatId.isEmpty() || diagnosis.isEmpty() || meds.isEmpty()) {
+            showAlert(Alert.AlertType.ERROR, "Missing Information", "Please fill out all prescription fields.");
+            return;
+        }
+
+        User currentUser = UserSession.getInstance().getCurrentUser();
+        String findIdsQuery = "SELECT (SELECT id FROM Patients WHERE national_id = ?) as pid, id as did, hospital_id as hid FROM Doctors WHERE user_id = ?";
+        String insertPrescriptionQuery = "INSERT INTO Prescriptions (patient_id, doctor_id, hospital_id, prescription_date, notes) VALUES (?, ?, ?, CURDATE(), ?)";
+        String insertMedsQuery = "INSERT INTO Prescription_Items (prescription_id, medicine_name, dosage, frequency, duration, instructions) VALUES (?, ?, 'As prescribed', 'Regularly', 'Until finished', 'Follow doctor orders')";
+
+        try (Connection conn = DBConnection.getConnection()) {
+            int patientId = -1, doctorId = -1, hospitalId = -1;
+            try(PreparedStatement st1 = conn.prepareStatement(findIdsQuery)) {
+                st1.setString(1, patientNatId);
+                st1.setInt(2, currentUser.getId());
+                ResultSet rs1 = st1.executeQuery();
+                if(rs1.next()) {
+                    patientId = rs1.getInt("pid");
+                    doctorId = rs1.getInt("did");
+                    hospitalId = rs1.getInt("hid");
+                }
+            }
+
+            if(patientId == -1 || patientId == 0) {
+                showAlert(Alert.AlertType.ERROR, "Patient Not Found", "No patient exists with ID: " + patientNatId);
+                return;
+            }
+
+            int newPrescriptionId = -1;
+            try(PreparedStatement st2 = conn.prepareStatement(insertPrescriptionQuery, Statement.RETURN_GENERATED_KEYS)) {
+                st2.setInt(1, patientId);
+                st2.setInt(2, doctorId);
+                st2.setInt(3, hospitalId);
+                st2.setString(4, diagnosis);
+                st2.executeUpdate();
+                ResultSet keys = st2.getGeneratedKeys();
+                if(keys.next()) newPrescriptionId = keys.getInt(1);
+            }
+
+            if(newPrescriptionId != -1) {
+                String[] medLines = meds.split("\\n");
+                try(PreparedStatement st3 = conn.prepareStatement(insertMedsQuery)) {
+                    for(String line : medLines) {
+                        if(!line.trim().isEmpty()) {
+                            st3.setInt(1, newPrescriptionId);
+                            st3.setString(2, line.trim());
+                            st3.executeUpdate();
+                        }
+                    }
+                }
+            }
+
+            showAlert(Alert.AlertType.INFORMATION, "Success", "Prescription securely issued to global registry.");
+            prescribePatientIdField.clear(); prescribeDiagnosisField.clear(); prescribeMedsArea.clear();
+
+            loadPatientRoster();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            showAlert(Alert.AlertType.ERROR, "Database Error", "Could not issue prescription. " + e.getMessage());
+        }
     }
 
-    private HBox createPatientCard(String name, String id, String gender) {
-        HBox card = new HBox();
-        card.setStyle("-fx-background-color: white; -fx-background-radius: 20; -fx-padding: 25; -fx-effect: dropshadow(three-pass-box, rgba(38,70,61,0.08), 20, 0, 5, 5); -fx-alignment: center-left; -fx-spacing: 20;");
+    // --- PATIENT TAB TRAY LOGIC ---
+    @FXML private void showRosterTab() {
+        if(subViewRoster != null) { subViewRoster.setVisible(true); subViewRoster.setManaged(true); }
+        if(subViewProfile != null) { subViewProfile.setVisible(false); subViewProfile.setManaged(false); }
+        if(btnTabRoster != null) btnTabRoster.setStyle(TAB_ACTIVE);
+        if(btnTabProfile != null) btnTabProfile.setStyle(TAB_INACTIVE);
+    }
+
+    @FXML private void showProfileTab() {
+        if(subViewRoster != null) { subViewRoster.setVisible(false); subViewRoster.setManaged(false); }
+        if(subViewProfile != null) { subViewProfile.setVisible(true); subViewProfile.setManaged(true); }
+        if(btnTabProfile != null) btnTabProfile.setStyle(TAB_ACTIVE);
+        if(btnTabRoster != null) btnTabRoster.setStyle(TAB_INACTIVE);
+    }
+
+    // --- APPOINTMENT TAB TRAY LOGIC ---
+    @FXML private void showScheduleTab() {
+        if(subViewSchedule != null) { subViewSchedule.setVisible(true); subViewSchedule.setManaged(true); }
+        if(subViewPrescribe != null) { subViewPrescribe.setVisible(false); subViewPrescribe.setManaged(false); }
+        if(btnTabSchedule != null) btnTabSchedule.setStyle(TAB_ACTIVE);
+        if(btnTabPrescribe != null) btnTabPrescribe.setStyle(TAB_INACTIVE);
+    }
+
+    @FXML private void showPrescribeTab() {
+        if(subViewSchedule != null) { subViewSchedule.setVisible(false); subViewSchedule.setManaged(false); }
+        if(subViewPrescribe != null) { subViewPrescribe.setVisible(true); subViewPrescribe.setManaged(true); }
+        if(btnTabPrescribe != null) btnTabPrescribe.setStyle(TAB_ACTIVE);
+        if(btnTabSchedule != null) btnTabSchedule.setStyle(TAB_INACTIVE);
+    }
+
+    private void jumpToPrescribe(String patientId) {
+        hideAllViews();
+        if (viewAppointments != null) { viewAppointments.setVisible(true); viewAppointments.setManaged(true); }
+        resetButtons();
+        if (btnAppointments != null) btnAppointments.setStyle(ACTIVE_STYLE);
+
+        showPrescribeTab();
+
+        if (prescribePatientIdField != null) {
+            prescribePatientIdField.setText(patientId);
+        }
+    }
+
+    @FXML private void handlePrescribeFromProfile(ActionEvent event) {
+        jumpToPrescribe(currentProfilePatientId);
+    }
+
+    // --- PROFILE SUB-VIEW LOGIC ---
+    private void loadPatientProfileData(String nationalId) {
+        String query = "SELECT id, full_name, date_of_birth, gender, blood_group, weight, height, phone FROM Patients WHERE national_id = ?";
+        try (Connection conn = DBConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setString(1, nationalId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                currentProfilePatientId = nationalId;
+                int internalPatientId = rs.getInt("id");
+
+                profileName.setText(rs.getString("full_name"));
+                profileId.setText("ID: " + nationalId);
+                profilePhone.setText("📞 " + rs.getString("phone"));
+                profileAvatar.setText("MALE".equalsIgnoreCase(rs.getString("gender")) ? "👨" : "👩");
+                profileBlood.setText(rs.getString("blood_group"));
+                profileWeight.setText(rs.getDouble("weight") + " kg");
+                profileHeight.setText(rs.getDouble("height") + " cm");
+                profileDob.setText(rs.getDate("date_of_birth") != null ? rs.getDate("date_of_birth").toString() : "N/A");
+
+                loadExtendedMedicalHistory(internalPatientId);
+
+                if(profileDataContainer != null) { profileDataContainer.setVisible(true); profileDataContainer.setManaged(true); }
+                if(profilePlaceholder != null) { profilePlaceholder.setVisible(false); profilePlaceholder.setManaged(false); }
+
+                if(profilePlaceholderIcon != null) profilePlaceholderIcon.setText("🏥");
+                if(profilePlaceholderTitle != null) profilePlaceholderTitle.setText("No Patient Profile Loaded");
+                if(profilePlaceholderSubtitle != null) profilePlaceholderSubtitle.setText("Search using the top bar, or select 'Full Profile' from the Patient Roster.");
+
+                showPatients(null);
+                showProfileTab();
+                if (mainScrollPane != null) mainScrollPane.setVvalue(0.0);
+
+            }
+        } catch (Exception e) { e.printStackTrace(); }
+    }
+
+    private void loadExtendedMedicalHistory(int patientId) {
+        if(profileDiagnosesContainer == null || profileMedicationsContainer == null || profileTestsContainer == null) return;
+
+        profileDiagnosesContainer.getChildren().clear();
+        profileMedicationsContainer.getChildren().clear();
+        profileTestsContainer.getChildren().clear();
+
+        try (Connection conn = DBConnection.getConnection()) {
+
+            try {
+                String diagQuery = "SELECT mh.diagnosis, mh.diagnosis_date, u.full_name as doctor_name FROM Medical_History mh JOIN Doctors d ON mh.diagnosed_by = d.id JOIN Users u ON d.user_id = u.id WHERE mh.patient_id = ? ORDER BY mh.diagnosis_date DESC";
+                try (PreparedStatement st = conn.prepareStatement(diagQuery)) {
+                    st.setInt(1, patientId);
+                    ResultSet rs = st.executeQuery();
+                    boolean hasData = false;
+                    while(rs.next()) {
+                        hasData = true;
+                        String dateStr = rs.getDate("diagnosis_date") != null ? rs.getDate("diagnosis_date").toString() : "Recent";
+                        profileDiagnosesContainer.getChildren().add(createDataCard(rs.getString("diagnosis"), "Diagnosed by " + rs.getString("doctor_name"), dateStr));
+                    }
+                    if(!hasData) profileDiagnosesContainer.getChildren().add(createEmptyLabel("No prior diagnostic history found."));
+                }
+            } catch (Exception e) {
+                profileDiagnosesContainer.getChildren().add(createEmptyLabel("Error loading diagnoses: " + e.getMessage()));
+            }
+
+            try {
+                String medQuery = "SELECT pi.medicine_name, pi.dosage, pi.frequency, pi.instructions FROM Prescription_Items pi JOIN Prescriptions p ON pi.prescription_id = p.id WHERE p.patient_id = ? ORDER BY p.prescription_date DESC LIMIT 10";
+                try (PreparedStatement st = conn.prepareStatement(medQuery)) {
+                    st.setInt(1, patientId);
+                    ResultSet rs = st.executeQuery();
+                    boolean hasData = false;
+                    while(rs.next()) {
+                        hasData = true;
+                        String instructions = rs.getString("instructions") != null ? " (" + rs.getString("instructions") + ")" : "";
+                        profileMedicationsContainer.getChildren().add(createDataCard("💊 " + rs.getString("medicine_name"), "Dosage: " + rs.getString("dosage") + " - " + rs.getString("frequency") + instructions, null));
+                    }
+                    if(!hasData) profileMedicationsContainer.getChildren().add(createEmptyLabel("No active medications found."));
+                }
+            } catch (Exception e) {
+                profileMedicationsContainer.getChildren().add(createEmptyLabel("Error loading medications: " + e.getMessage()));
+            }
+
+            try {
+                String testQuery = "SELECT report_type, report_date, notes, file_url FROM Test_Reports WHERE patient_id = ? ORDER BY report_date DESC";
+                try (PreparedStatement st = conn.prepareStatement(testQuery)) {
+                    st.setInt(1, patientId);
+                    ResultSet rs = st.executeQuery();
+                    boolean hasData = false;
+                    while(rs.next()) {
+                        hasData = true;
+                        String dateStr = rs.getDate("report_date") != null ? rs.getDate("report_date").toString() : "Recent";
+                        String notes = rs.getString("notes") != null ? rs.getString("notes") : "File attached.";
+                        String fileUrl = rs.getString("file_url");
+
+                        profileTestsContainer.getChildren().add(createTestCard("🔬 " + rs.getString("report_type"), "Notes: " + notes, dateStr, fileUrl));
+                    }
+                    if(!hasData) profileTestsContainer.getChildren().add(createEmptyLabel("No test reports found for this patient."));
+                }
+            } catch (Exception e) {
+                profileTestsContainer.getChildren().add(createEmptyLabel("Error loading test reports: " + e.getMessage()));
+            }
+
+        } catch(Exception e) { e.printStackTrace(); }
+    }
+
+    private VBox createDataCard(String titleText, String subtitleText, String dateText) {
+        VBox box = new VBox(3);
+        box.setStyle("-fx-background-color: #F8FAFC; -fx-background-radius: 8; -fx-padding: 12; -fx-border-color: #E2E8F0; -fx-border-radius: 8;");
+
+        HBox header = new HBox();
+        Label title = new Label(titleText);
+        title.setStyle("-fx-font-weight: bold; -fx-text-fill: #111827; -fx-font-size: 14px;");
+        header.getChildren().add(title);
+
+        if (dateText != null) {
+            HBox.setHgrow(title, Priority.ALWAYS);
+            Label dateLabel = new Label(dateText);
+            dateLabel.setStyle("-fx-text-fill: #6B7280; -fx-font-size: 11px;");
+            header.getChildren().add(dateLabel);
+            header.setSpacing(10);
+        }
+
+        Label subtitle = new Label(subtitleText);
+        subtitle.setStyle("-fx-text-fill: #6B7280; -fx-font-size: 12px;");
+        subtitle.setWrapText(true);
+
+        box.getChildren().addAll(header, subtitle);
+        return box;
+    }
+
+    private VBox createTestCard(String titleText, String subtitleText, String dateText, String fileUrl) {
+        VBox box = new VBox(8);
+        box.setStyle("-fx-background-color: #F8FAFC; -fx-background-radius: 8; -fx-padding: 15; -fx-border-color: #E2E8F0; -fx-border-radius: 8;");
+
+        HBox header = new HBox();
+        Label title = new Label(titleText);
+        title.setStyle("-fx-font-weight: bold; -fx-text-fill: #111827; -fx-font-size: 14px;");
+        header.getChildren().add(title);
+
+        if (dateText != null) {
+            HBox.setHgrow(title, Priority.ALWAYS);
+            Label dateLabel = new Label(dateText);
+            dateLabel.setStyle("-fx-text-fill: #6B7280; -fx-font-size: 11px;");
+            header.getChildren().add(dateLabel);
+            header.setSpacing(10);
+        }
+
+        Label subtitle = new Label(subtitleText);
+        subtitle.setStyle("-fx-text-fill: #6B7280; -fx-font-size: 12px;");
+        subtitle.setWrapText(true);
+
+        Button downloadBtn = new Button("📥 Download Full Report");
+        downloadBtn.setStyle("-fx-background-color: #E8F3EE; -fx-text-fill: #115E59; -fx-font-size: 11px; -fx-font-weight: bold; -fx-background-radius: 5; -fx-cursor: hand; -fx-padding: 5 10; -fx-font-family: 'Segoe UI Emoji', 'System';");
+        downloadBtn.setOnAction(e -> {
+            String path = (fileUrl != null && !fileUrl.isEmpty()) ? fileUrl : "Document not found in database.";
+            showAlert(Alert.AlertType.INFORMATION, "Downloading Report", "Simulating secure download for:\n\n" + path);
+        });
+
+        box.getChildren().addAll(header, subtitle, downloadBtn);
+        return box;
+    }
+
+    private Label createEmptyLabel(String text) {
+        Label l = new Label(text);
+        l.setStyle("-fx-text-fill: #9CA3AF; -fx-font-style: italic; -fx-padding: 10 0;");
+        l.setWrapText(true);
+        return l;
+    }
+
+    private void showAlert(Alert.AlertType type, String title, String content) {
+        Alert alert = new Alert(type); alert.setTitle(title); alert.setHeaderText(null); alert.setContentText(content); alert.showAndWait();
+    }
+
+    private HBox createMiniScheduleCard(String hourText, String amPmText, String nameText, String statusText) {
+        HBox card = new HBox(); card.setStyle("-fx-background-color: #F8FAF9; -fx-background-radius: 10; -fx-padding: 10 15; -fx-spacing: 20; -fx-alignment: center-left;");
+
+        Label lblHour = new Label(hourText);
+        lblHour.setStyle("-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #1B362F;");
+
+        Label lblAmPm = new Label(amPmText);
+        lblAmPm.setStyle("-fx-font-weight: bold; -fx-font-size: 10px; -fx-text-fill: #5C8D7D;");
+
+        VBox timeBox = new VBox(lblHour, lblAmPm);
+        timeBox.setStyle("-fx-alignment: center; -fx-background-color: white; -fx-background-radius: 8; -fx-padding: 8 12; -fx-min-width: 50;");
+
+        VBox detailsBox = new VBox(new Label(nameText), new Label(statusText)); detailsBox.setStyle("-fx-spacing: 2; -fx-alignment: center-left;"); detailsBox.getChildren().get(0).setStyle("-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #111827;"); detailsBox.getChildren().get(1).setStyle("-fx-text-fill: #6B7280; -fx-font-size: 11px;");
+
+        card.getChildren().addAll(timeBox, detailsBox); return card;
+    }
+
+    private HBox createPatientCard(String name, String id, String gender, String currentDiag, String oneLineVitals) {
+        HBox card = new HBox(20);
+        card.setStyle("-fx-background-color: white; -fx-background-radius: 20; -fx-padding: 25; -fx-effect: dropshadow(three-pass-box, rgba(38,70,61,0.08), 20, 0, 5, 5); -fx-alignment: center-left;");
 
         VBox iconBox = new VBox();
         iconBox.setStyle("-fx-background-color: #E8F3EE; -fx-background-radius: 50; -fx-min-width: 60; -fx-min-height: 60; -fx-alignment: center;");
-        String emoji = "MALE".equalsIgnoreCase(gender) ? "👨" : "👩";
-        Label icon = new Label(emoji);
+        Label icon = new Label("MALE".equalsIgnoreCase(gender) ? "👨" : "👩");
         icon.setStyle("-fx-font-size: 30px; -fx-font-family: 'Segoe UI Emoji';");
         iconBox.getChildren().add(icon);
 
-        VBox centerInfo = new VBox();
-        centerInfo.setSpacing(5);
+        VBox centerInfo = new VBox(10);
         HBox.setHgrow(centerInfo, Priority.ALWAYS);
 
-        HBox nameIdBox = new HBox();
-        nameIdBox.setSpacing(10);
+        HBox nameIdBox = new HBox(10);
         nameIdBox.setStyle("-fx-alignment: center-left;");
-        Label nameLabel = new Label(name != null ? name : "Unknown Patient");
-        nameLabel.setStyle("-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 20px;");
-        Label idLabel = new Label("ID: " + id);
-        idLabel.setStyle("-fx-text-fill: #6B7280; -fx-font-size: 12px; -fx-padding: 2 0 0 0;");
-        nameIdBox.getChildren().addAll(nameLabel, idLabel);
+        Label nameLbl = new Label(name != null ? name : "Unknown");
+        nameLbl.setStyle("-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 20px;");
+        Label idLbl = new Label("ID: " + id);
+        idLbl.setStyle("-fx-text-fill: #6B7280; -fx-font-size: 12px; -fx-padding: 4 0 0 0;");
+        nameIdBox.getChildren().addAll(nameLbl, idLbl);
 
-        HBox diagnosisBox = new HBox();
-        diagnosisBox.setSpacing(20);
+        HBox diagnosisBox = new HBox(30);
 
-        VBox currentDiag = new VBox();
-        currentDiag.setSpacing(3);
-        Label diagTitle = new Label("Current Diagnosis (Under your care)");
+        VBox diagCol = new VBox(2);
+        Label diagTitle = new Label("Current Diagnosis");
         diagTitle.setStyle("-fx-text-fill: #5C8D7D; -fx-font-size: 11px; -fx-font-weight: bold;");
-        Label diagValue = new Label("Pending Assessment");
-        diagValue.setStyle("-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 14px;");
-        currentDiag.getChildren().addAll(diagTitle, diagValue);
+        Label diagVal = new Label(currentDiag);
+        diagVal.setStyle("-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 14px;");
+        diagVal.setWrapText(true);
+        diagCol.getChildren().addAll(diagTitle, diagVal);
 
-        VBox otherDiag = new VBox();
-        otherDiag.setSpacing(3);
-        otherDiag.setStyle("-fx-border-color: #E2E8F0; -fx-border-width: 0 0 0 1; -fx-padding: 0 0 0 20;");
-        Label otherTitle = new Label("Other Known Conditions");
-        otherTitle.setStyle("-fx-text-fill: #9CA3AF; -fx-font-size: 11px; -fx-font-weight: bold;");
-        Label otherValue = new Label("• No prior major conditions reported.");
-        otherValue.setStyle("-fx-text-fill: #6B7280; -fx-font-style: italic; -fx-font-size: 12px;");
-        otherDiag.getChildren().addAll(otherTitle, otherValue);
+        VBox vitalsCol = new VBox(2);
+        vitalsCol.setStyle("-fx-border-color: #E2E8F0; -fx-border-width: 0 0 0 1; -fx-padding: 0 0 0 20;");
+        Label vitalsTitle = new Label("Physical Vitals");
+        vitalsTitle.setStyle("-fx-text-fill: #9CA3AF; -fx-font-size: 11px; -fx-font-weight: bold;");
 
-        diagnosisBox.getChildren().addAll(currentDiag, otherDiag);
+        Label vitalsVal = new Label(oneLineVitals);
+        vitalsVal.setStyle("-fx-text-fill: #6B7280; -fx-font-weight: bold; -fx-font-size: 12px; -fx-font-family: 'Segoe UI Emoji', 'System';");
+
+        vitalsCol.getChildren().addAll(vitalsTitle, vitalsVal);
+        diagnosisBox.getChildren().addAll(diagCol, vitalsCol);
         centerInfo.getChildren().addAll(nameIdBox, diagnosisBox);
 
-        VBox rightButtons = new VBox();
-        rightButtons.setSpacing(10);
+        VBox rightButtons = new VBox(10);
         rightButtons.setStyle("-fx-alignment: center-right;");
-        Button btnProfile = new Button("📄 Full Profile");
-        btnProfile.setStyle("-fx-background-color: #F8FAFC; -fx-text-fill: #26463D; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 15; -fx-cursor: hand; -fx-border-color: #E2E8F0; -fx-border-radius: 8; -fx-font-family: 'Segoe UI Emoji', 'System';");
-        Button btnPrescribe = new Button("💊 Prescribe");
-        btnPrescribe.setStyle("-fx-background-color: #115E59; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 15; -fx-cursor: hand; -fx-font-family: 'Segoe UI Emoji', 'System';");
-        rightButtons.getChildren().addAll(btnProfile, btnPrescribe);
 
+        Button btnProfile = new Button("📄 Full Profile");
+        btnProfile.setPrefWidth(140);
+        btnProfile.setStyle("-fx-background-color: #F8FAFC; -fx-text-fill: #26463D; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 15; -fx-cursor: hand; -fx-border-color: #E2E8F0; -fx-border-radius: 8; -fx-font-family: 'Segoe UI Emoji', 'System';");
+        btnProfile.setOnAction(e -> loadPatientProfileData(id));
+
+        Button btnPrescribe = new Button("💊 Prescribe");
+        btnPrescribe.setPrefWidth(140);
+        btnPrescribe.setStyle("-fx-background-color: #115E59; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 15; -fx-cursor: hand; -fx-font-family: 'Segoe UI Emoji', 'System';");
+        btnPrescribe.setOnAction(e -> jumpToPrescribe(id));
+
+        rightButtons.getChildren().addAll(btnProfile, btnPrescribe);
         card.getChildren().addAll(iconBox, centerInfo, rightButtons);
         return card;
     }
 
     private HBox createLargeAppointmentCard(String time, String amPm, String name, String dateText) {
-        HBox card = new HBox();
-        card.setStyle("-fx-background-color: white; -fx-background-radius: 15; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(38,70,61,0.08), 15, 0, 5, 5); -fx-alignment: center-left; -fx-spacing: 20;");
-
-        VBox timeBox = new VBox();
-        timeBox.setStyle("-fx-background-color: #115E59; -fx-background-radius: 12; -fx-min-width: 65; -fx-min-height: 65; -fx-alignment: center;");
-        Label timeLabel = new Label(time);
-        timeLabel.setStyle("-fx-text-fill: white; -fx-font-weight: 900; -fx-font-size: 18px;");
-        Label amPmLabel = new Label(amPm);
-        amPmLabel.setStyle("-fx-text-fill: #A3CFC0; -fx-font-weight: bold; -fx-font-size: 12px;");
-        timeBox.getChildren().addAll(timeLabel, amPmLabel);
-
-        VBox infoBox = new VBox();
-        infoBox.setSpacing(3);
-        HBox.setHgrow(infoBox, Priority.ALWAYS);
-
-        Label nameLabel = new Label(name);
-        nameLabel.setStyle("-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 18px;");
-        Label reasonLabel = new Label("Reason: Scheduled Consultation");
-        reasonLabel.setStyle("-fx-text-fill: #5C8D7D; -fx-font-weight: bold; -fx-font-size: 13px;");
-
-        HBox dateBox = new HBox();
-        dateBox.setSpacing(5);
-        dateBox.setStyle("-fx-alignment: center-left;");
-        Label calIcon = new Label("📅");
-        calIcon.setStyle("-fx-font-family: 'Segoe UI Emoji'; -fx-text-fill: #6B7280; -fx-font-size: 11px;");
-        Label dateLabel = new Label(dateText);
-        dateLabel.setStyle("-fx-text-fill: #6B7280; -fx-font-size: 12px;");
-        dateBox.getChildren().addAll(calIcon, dateLabel);
-
-        infoBox.getChildren().addAll(nameLabel, reasonLabel, dateBox);
-
-        card.getChildren().addAll(timeBox, infoBox);
-        return card;
+        HBox card = new HBox(); card.setStyle("-fx-background-color: white; -fx-background-radius: 15; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(38,70,61,0.08), 15, 0, 5, 5); -fx-alignment: center-left; -fx-spacing: 20;");
+        VBox timeBox = new VBox(new Label(time), new Label(amPm)); timeBox.setStyle("-fx-background-color: #115E59; -fx-background-radius: 12; -fx-min-width: 65; -fx-min-height: 65; -fx-alignment: center;"); timeBox.getChildren().get(0).setStyle("-fx-text-fill: white; -fx-font-weight: 900; -fx-font-size: 18px;"); timeBox.getChildren().get(1).setStyle("-fx-text-fill: #A3CFC0; -fx-font-weight: bold; -fx-font-size: 12px;");
+        VBox infoBox = new VBox(new Label(name), new Label("Reason: Scheduled Consultation"), new HBox(new Label("📅"), new Label(dateText))); infoBox.setSpacing(3); HBox.setHgrow(infoBox, Priority.ALWAYS); infoBox.getChildren().get(0).setStyle("-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 18px;"); infoBox.getChildren().get(1).setStyle("-fx-text-fill: #5C8D7D; -fx-font-weight: bold; -fx-font-size: 13px;"); ((HBox)infoBox.getChildren().get(2)).setSpacing(5); ((HBox)infoBox.getChildren().get(2)).getChildren().get(0).setStyle("-fx-font-family: 'Segoe UI Emoji'; -fx-text-fill: #6B7280; -fx-font-size: 11px;"); ((HBox)infoBox.getChildren().get(2)).getChildren().get(1).setStyle("-fx-text-fill: #6B7280; -fx-font-size: 12px;");
+        card.getChildren().addAll(timeBox, infoBox); return card;
     }
 
-    // Navigation
+    // --- MAIN SIDEBAR NAVIGATION ---
     @FXML private void showDashboard(ActionEvent event) { hideAllViews(); if (viewDashboard != null) { viewDashboard.setVisible(true); viewDashboard.setManaged(true); } resetButtons(); if (btnDashboard != null) btnDashboard.setStyle(ACTIVE_STYLE); }
-    @FXML private void showPatients(ActionEvent event) { hideAllViews(); if (viewPatients != null) { viewPatients.setVisible(true); viewPatients.setManaged(true); } resetButtons(); if (btnPatients != null) btnPatients.setStyle(ACTIVE_STYLE); }
-    @FXML private void showAppointments(ActionEvent event) { hideAllViews(); if (viewAppointments != null) { viewAppointments.setVisible(true); viewAppointments.setManaged(true); } resetButtons(); if (btnAppointments != null) btnAppointments.setStyle(ACTIVE_STYLE); }
+
+    @FXML private void showPatients(ActionEvent event) {
+        hideAllViews();
+        if (viewMyPatients != null) { viewMyPatients.setVisible(true); viewMyPatients.setManaged(true); }
+        resetButtons();
+        if (btnPatients != null) btnPatients.setStyle(ACTIVE_STYLE);
+        showRosterTab();
+    }
+
+    @FXML private void showAppointments(ActionEvent event) {
+        hideAllViews();
+        if (viewAppointments != null) { viewAppointments.setVisible(true); viewAppointments.setManaged(true); }
+        resetButtons();
+        if (btnAppointments != null) btnAppointments.setStyle(ACTIVE_STYLE);
+        showScheduleTab();
+    }
 
     private void hideAllViews() {
         if (viewDashboard != null) { viewDashboard.setVisible(false); viewDashboard.setManaged(false); }
-        if (viewPatients != null) { viewPatients.setVisible(false); viewPatients.setManaged(false); }
+        if (viewMyPatients != null) { viewMyPatients.setVisible(false); viewMyPatients.setManaged(false); }
         if (viewAppointments != null) { viewAppointments.setVisible(false); viewAppointments.setManaged(false); }
+        if (mainScrollPane != null) { mainScrollPane.setVvalue(0.0); }
     }
 
-    private void resetButtons() {
-        if (btnDashboard != null) btnDashboard.setStyle(INACTIVE_STYLE);
-        if (btnPatients != null) btnPatients.setStyle(INACTIVE_STYLE);
-        if (btnAppointments != null) btnAppointments.setStyle(INACTIVE_STYLE);
-    }
-
-    @FXML private void handleLogout(ActionEvent event) {
-        UserSession.getInstance().cleanUserSession();
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/RoleSelection.fxml"));
-            Parent root = loader.load();
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            stage.getScene().setRoot(root);
-        } catch (IOException e) { e.printStackTrace(); }
-    }
+    private void resetButtons() { if (btnDashboard != null) btnDashboard.setStyle(INACTIVE_STYLE); if (btnPatients != null) btnPatients.setStyle(INACTIVE_STYLE); if (btnAppointments != null) btnAppointments.setStyle(INACTIVE_STYLE); }
+    @FXML private void handleLogout(ActionEvent event) { UserSession.getInstance().cleanUserSession(); try { Parent root = FXMLLoader.load(getClass().getResource("/fxml/RoleSelection.fxml")); ((Stage) ((Node) event.getSource()).getScene().getWindow()).getScene().setRoot(root); } catch (IOException e) { e.printStackTrace(); } }
 }
