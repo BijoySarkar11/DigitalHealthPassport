@@ -3,10 +3,16 @@ package com.healthpassport.ui.login;
 import com.healthpassport.ui.common.BaseController;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
+import javafx.stage.Stage;
 
+import java.io.IOException;
 
 public class RoleSelectionController extends BaseController {
 
@@ -27,7 +33,18 @@ public class RoleSelectionController extends BaseController {
 
     @FXML
     private void handleRequestAdminStatus(ActionEvent event) {
-        System.out.println("Request Admin Status Clicked!");
+        try {
+            Parent root = FXMLLoader.load(getClass().getResource("/fxml/AdminRequestForm.fxml"));
+            Scene currentScene = ((Node) event.getSource()).getScene();
+            Stage stage = (Stage) currentScene.getWindow();
+
+            // FIX: Preserve the exact width and height of the current window so it doesn't shrink!
+            stage.setScene(new Scene(root, currentScene.getWidth(), currentScene.getHeight()));
+            stage.setTitle("Digital Health Passport - Request Access");
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("Could not load the AdminRequestForm.fxml file.");
+        }
     }
 
     @FXML

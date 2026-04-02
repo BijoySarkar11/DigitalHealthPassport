@@ -222,7 +222,7 @@
 
                         <HBox alignment="CENTER_LEFT" spacing="15.0" style="-fx-padding: 0 0 15 0;">
                             <Button fx:id="btnTabSchedule" text="Consultation Schedule" onAction="#showScheduleTab" style="-fx-background-color: #26463D; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 20; -fx-padding: 10 25; -fx-cursor: hand; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2);" />
-                            <Button fx:id="btnTabPrescribe" text="Quick Prescribe" onAction="#showPrescribeTab" style="-fx-background-color: white; -fx-text-fill: #6B7280; -fx-font-weight: bold; -fx-background-radius: 20; -fx-padding: 10 25; -fx-cursor: hand; -fx-border-color: #E2E8F0; -fx-border-radius: 20;" />
+                            <Button fx:id="btnTabPrescribe" text="Quick Prescribe" onAction="#showPrescribeTab" style="-fx-background-color: white; -fx-text-fill: #6B7280; -fx-font-weight: bold; -background-radius: 20; -fx-padding: 10 25; -fx-cursor: hand; -fx-border-color: #E2E8F0; -fx-border-radius: 20;" />
                         </HBox>
 
                         <StackPane VBox.vgrow="ALWAYS">
@@ -253,12 +253,15 @@
                                             <TextArea fx:id="prescribeDiagnosisField" promptText="e.g. Acute Bronchitis" style="-fx-background-color: #F8FAFC; -fx-background-radius: 8; -fx-border-color: #E2E8F0; -fx-border-radius: 8;" wrapText="true" VBox.vgrow="ALWAYS" prefHeight="80.0" />
                                         </VBox>
 
-                                        <VBox spacing="5.0" VBox.vgrow="ALWAYS">
+                                        <VBox spacing="10.0" VBox.vgrow="ALWAYS">
                                             <Label text="Medications &amp; Dosage" style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 12px;" />
-                                            <TextArea fx:id="prescribeMedsArea" promptText="1. Amoxicillin 500mg - 3 times/day (7 days)&#10;2. Paracetamol 500mg - When needed" style="-fx-background-color: #F8FAFC; -fx-background-radius: 8; -fx-border-color: #E2E8F0; -fx-border-radius: 8;" wrapText="true" VBox.vgrow="ALWAYS" prefHeight="120.0" />
+
+                                            <VBox fx:id="medicationsListContainer" spacing="10.0" />
+
+                                            <Button text="+ Add Another Medicine" onAction="#handleAddMedicationRow" style="-fx-background-color: #E8F3EE; -fx-text-fill: #115E59; -fx-font-weight: bold; -fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 8 15;" />
                                         </VBox>
 
-                                        <Button text="➕ Issue Digital Prescription" onAction="#handleIssuePrescription" maxWidth="Infinity" style="-fx-background-color: #115E59; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 15; -fx-cursor: hand; -fx-font-family: 'Segoe UI Emoji', 'System'; -fx-margin: 5 0 0 0;" />
+                                        <Button text="➕ Issue Digital Prescription" onAction="#handleIssuePrescription" maxWidth="Infinity" style="-fx-background-color: #115E59; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 15; -fx-cursor: hand; -fx-font-family: 'Segoe UI Emoji', 'System'; -fx-margin: 15 0 0 0;" />
                                     </VBox>
                                 </VBox>
                             </VBox>

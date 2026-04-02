@@ -50,6 +50,7 @@ CREATE TABLE Doctors (
     hospital_id INT NOT NULL,
     specialization VARCHAR(100) NOT NULL,
     license_number VARCHAR(100) UNIQUE NOT NULL,
+    degrees VARCHAR(255),
     years_of_experience INT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE,
@@ -116,6 +117,7 @@ CREATE TABLE Appointments (
     hospital_id INT NOT NULL,
     appointment_date DATETIME NOT NULL,
     status ENUM('SCHEDULED', 'COMPLETED', 'CANCELLED') DEFAULT 'SCHEDULED',
+    reason TEXT, 
     created_by INT NOT NULL, 
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (patient_id) REFERENCES Patients(id) ON DELETE CASCADE,
@@ -145,17 +147,6 @@ CREATE TABLE Audit_Logs (
     FOREIGN KEY (user_id) REFERENCES Users(id)
 );
 
-CREATE TABLE Doctor_Reviews (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    patient_id INT NOT NULL,
-    doctor_id INT NOT NULL,
-    rating INT NOT NULL CHECK (rating >= 1 AND rating <= 5),
-    review_text TEXT,
-    review_date DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (patient_id) REFERENCES Patients(id) ON DELETE CASCADE,
-    FOREIGN KEY (doctor_id) REFERENCES Doctors(id) ON DELETE CASCADE
-);
-
 
 -- =========================================================================
 -- 2. INSERT HOSPITALS & ADMINS
@@ -183,20 +174,20 @@ INSERT INTO Users (email, password_hash, role, hospital_id) VALUES ('admin.labai
 -- =========================================================================
 
 -- Dr. Maruf -> Dhaka Medical College (Hospital 1)
-INSERT INTO Users (national_id, full_name, email, password_hash, role, hospital_id) VALUES ('DOC-001', 'Dr. Maruf Ahmed Tamal', 'maruf.tamal@dmc.gov.bd', 'pass123', 'DOCTOR', 1);
-INSERT INTO Doctors (user_id, hospital_id, specialization, license_number, years_of_experience) VALUES (LAST_INSERT_ID(), 1, 'Cardiology', 'BMDC-1001', 15);
+INSERT INTO Users (national_id, full_name, email, password_hash, role, hospital_id) VALUES ('DOC-001', 'Maruf Ahmed Tamal', 'maruf.tamal@dmc.gov.bd', 'pass123', 'DOCTOR', 1);
+INSERT INTO Doctors (user_id, hospital_id, specialization, license_number, degrees, years_of_experience) VALUES (LAST_INSERT_ID(), 1, 'Cardiology', 'BMDC-1001', 'MBBS, MD', 15);
 
 -- Dr. Alisha -> United Hospital (Hospital 2)
-INSERT INTO Users (national_id, full_name, email, password_hash, role, hospital_id) VALUES ('DOC-002', 'Dr. Alisha Kabir', 'alisha.kabir@united.com', 'pass123', 'DOCTOR', 2);
-INSERT INTO Doctors (user_id, hospital_id, specialization, license_number, years_of_experience) VALUES (LAST_INSERT_ID(), 2, 'Neurology', 'BMDC-1002', 8);
+INSERT INTO Users (national_id, full_name, email, password_hash, role, hospital_id) VALUES ('DOC-002', 'Alisha Kabir', 'alisha.kabir@united.com', 'pass123', 'DOCTOR', 2);
+INSERT INTO Doctors (user_id, hospital_id, specialization, license_number, degrees, years_of_experience) VALUES (LAST_INSERT_ID(), 2, 'Neurology', 'BMDC-1002', 'MBBS, FCPS', 8);
 
 -- Dr. Faria -> Shaheed Suhrawardy (Hospital 3)
-INSERT INTO Users (national_id, full_name, email, password_hash, role, hospital_id) VALUES ('DOC-003', 'Dr. Faria Alam', 'faria.alam@ssmch.gov.bd', 'pass123', 'DOCTOR', 3);
-INSERT INTO Doctors (user_id, hospital_id, specialization, license_number, years_of_experience) VALUES (LAST_INSERT_ID(), 3, 'Dermatologist', 'BMDC-1003', 5);
+INSERT INTO Users (national_id, full_name, email, password_hash, role, hospital_id) VALUES ('DOC-003', 'Faria Alam', 'faria.alam@ssmch.gov.bd', 'pass123', 'DOCTOR', 3);
+INSERT INTO Doctors (user_id, hospital_id, specialization, license_number, degrees, years_of_experience) VALUES (LAST_INSERT_ID(), 3, 'Dermatologist', 'BMDC-1003', 'MBBS, DDV', 5);
 
 -- Dr. Sameha -> Labaid Hospital (Hospital 4)
-INSERT INTO Users (national_id, full_name, email, password_hash, role, hospital_id) VALUES ('DOC-004', 'Dr. Sameha Kamrul', 'sameha.kamrul@labaid.com', 'pass123', 'DOCTOR', 4);
-INSERT INTO Doctors (user_id, hospital_id, specialization, license_number, years_of_experience) VALUES (LAST_INSERT_ID(), 4, 'Orthopedics', 'BMDC-1004', 10);
+INSERT INTO Users (national_id, full_name, email, password_hash, role, hospital_id) VALUES ('DOC-004', 'Sameha Kamrul', 'sameha.kamrul@labaid.com', 'pass123', 'DOCTOR', 4);
+INSERT INTO Doctors (user_id, hospital_id, specialization, license_number, degrees, years_of_experience) VALUES (LAST_INSERT_ID(), 4, 'Orthopedics', 'BMDC-1004', 'MBBS, MS (Ortho)', 10);
 
 
 -- =========================================================================
@@ -375,19 +366,20 @@ INSERT INTO Patients (user_id, national_id, full_name, date_of_birth, gender, bl
 -- =========================================================================
 
 -- Insert 1 Past Appointment for EVERY patient (Populates the weekly chart)
-INSERT INTO Appointments (patient_id, doctor_id, hospital_id, appointment_date, status, created_by)
+INSERT INTO Appointments (patient_id, doctor_id, hospital_id, appointment_date, status, reason, created_by)
 SELECT 
     p.id, 
     d.id, 
     d.hospital_id, 
     DATE_SUB(CURDATE(), INTERVAL (p.id % 6) + 1 DAY), 
     'COMPLETED', 
+    'Routine Checkup',
     (SELECT id FROM Users WHERE role='ADMIN' AND hospital_id = d.hospital_id LIMIT 1)
 FROM Patients p
 JOIN Doctors d ON d.id = (p.id % 4) + 1;
 
 -- Insert 1 Future/Today Appointment for roughly 2/3 of the patients using a prime number!
-INSERT INTO Appointments (patient_id, doctor_id, hospital_id, appointment_date, status, created_by)
+INSERT INTO Appointments (patient_id, doctor_id, hospital_id, appointment_date, status, reason, created_by)
 SELECT 
     p.id, 
     d.id, 
@@ -395,6 +387,7 @@ SELECT
     -- Prime Number 7 ensures appointments land on 'Today' for every single doctor evenly
     DATE_ADD(CURDATE(), INTERVAL (p.id % 7) DAY), 
     'SCHEDULED', 
+    'Follow-up Consultation',
     (SELECT id FROM Users WHERE role='ADMIN' AND hospital_id = d.hospital_id LIMIT 1)
 FROM Patients p 
 JOIN Doctors d ON d.id = (p.id % 4) + 1 
@@ -435,4 +428,3 @@ SELECT p.id,
     DATE_SUB(CURDATE(), INTERVAL (p.id % 20) DAY), 
     'Report shows normal bounds.' 
 FROM Patients p;
-

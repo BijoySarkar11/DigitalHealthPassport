@@ -11,6 +11,8 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
@@ -64,6 +66,14 @@ public class PatientDashboardController extends BaseController {
     private final String INACTIVE_STYLE = "-fx-background-color: transparent; -fx-text-fill: #A3CFC0; -fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 12 15; -fx-background-radius: 12; -fx-cursor: hand; -fx-font-family: 'Segoe UI Emoji', 'System';";
     private final String TAB_ACTIVE = "-fx-background-color: #26463D; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 20; -fx-padding: 10 25; -fx-cursor: hand; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2);";
     private final String TAB_INACTIVE = "-fx-background-color: white; -fx-text-fill: #6B7280; -fx-font-weight: bold; -fx-background-radius: 20; -fx-padding: 10 25; -fx-cursor: hand; -fx-border-color: #E2E8F0; -fx-border-radius: 20;";
+
+    // ==========================================
+    // SANITIZATION UTILITIES
+    // ==========================================
+    private String formatDoctorName(String rawName) {
+        if (rawName == null) return "Unknown Doctor";
+        return "Dr. " + rawName.replaceFirst("^(?i)(\\s*(dr\\.?|doctor)\\s*)+", "").trim();
+    }
 
     public static class DoctorItem {
         private final int docId;
@@ -141,9 +151,6 @@ public class PatientDashboardController extends BaseController {
         }
     }
 
-    // ==========================================
-    // SMART GLOBAL SEARCH LOGIC
-    // ==========================================
     @FXML private void handleGlobalSearch(ActionEvent event) {
         String query = globalSearchField.getText();
         if (query == null) query = "";
@@ -154,26 +161,22 @@ public class PatientDashboardController extends BaseController {
             return;
         }
 
-        // 1. Try Test Reports
         boolean foundTest = loadTestReports(query);
         if (foundTest) {
-            showTestReports(null); // Passes null so it doesn't clear the search!
+            showTestReports(null);
             return;
         }
 
-        // 2. Try Prescriptions
         boolean foundPrescription = loadPrescriptions(query);
         if (foundPrescription) {
-            showPrescriptions(null); // Passes null so it doesn't clear the search!
+            showPrescriptions(null);
             return;
         }
 
-        // 3. Fallback to Doctors
         loadAvailableDoctors(query);
-        showAppointments(null); // Passes null so it doesn't clear the search!
+        showAppointments(null);
     }
 
-    // Helper to safely reset all lists when a user clicks a sidebar button
     private void clearSearchAndReload() {
         if (globalSearchField != null) globalSearchField.clear();
         loadAvailableDoctors("");
@@ -181,14 +184,11 @@ public class PatientDashboardController extends BaseController {
         loadTestReports("");
     }
 
-    // ==========================================
-    // APPOINTMENTS & BOOKING LOGIC
-    // ==========================================
     private void loadUpcomingAppointments() {
         if (appointmentsContainer == null || currentPatientDbId == -1) return;
         appointmentsContainer.getChildren().clear();
 
-        String query = "SELECT u.full_name, d.specialization, a.appointment_date, a.status " +
+        String query = "SELECT u.full_name, d.specialization, a.appointment_date, a.status, a.reason " +
                 "FROM Appointments a JOIN Doctors d ON a.doctor_id = d.id JOIN Users u ON d.user_id = u.id " +
                 "WHERE a.patient_id = ? ORDER BY a.appointment_date DESC";
 
@@ -205,10 +205,12 @@ public class PatientDashboardController extends BaseController {
                 hasData = true;
                 LocalDateTime ldt = rs.getTimestamp("appointment_date").toLocalDateTime();
                 String status = rs.getString("status");
-                String title = rs.getString("full_name");
-                String sub = rs.getString("specialization") + " • " + ldt.format(timeFmt) + " - " + status;
 
-                appointmentsContainer.getChildren().add(createAppointmentCard(ldt.format(monthFmt).toUpperCase(), ldt.format(dayFmt), title, sub, status));
+                String title = formatDoctorName(rs.getString("full_name"));
+                String sub = rs.getString("specialization") + " • " + ldt.format(timeFmt) + " - " + status;
+                String reason = rs.getString("reason");
+
+                appointmentsContainer.getChildren().add(createAppointmentCard(ldt.format(monthFmt).toUpperCase(), ldt.format(dayFmt), title, sub, status, reason));
             }
             if (!hasData) appointmentsContainer.getChildren().add(new Label("No appointments found."));
         } catch (Exception e) { e.printStackTrace(); }
@@ -233,7 +235,7 @@ public class PatientDashboardController extends BaseController {
                 String spec = rs.getString("specialization");
                 String hospName = rs.getString("hospital_name");
 
-                String displayText = name + " (" + spec + " • " + hospName + ")";
+                String displayText = formatDoctorName(name) + " (" + spec + " • " + hospName + ")";
 
                 DoctorItem item = new DoctorItem(docId, hospId, spec, displayText);
                 masterDoctorList.add(item);
@@ -290,7 +292,7 @@ public class PatientDashboardController extends BaseController {
                 String spec = rs.getString("specialization");
                 String hospName = rs.getString("hospital_name");
 
-                doctorsListContainer.getChildren().add(createDirectoryCard(docId, name, spec, hospName));
+                doctorsListContainer.getChildren().add(createDirectoryCard(docId, formatDoctorName(name), spec, hospName));
             }
             if (!hasData) {
                 if(searchTerm.isEmpty()) doctorsListContainer.getChildren().add(new Label("No doctors available."));
@@ -301,7 +303,7 @@ public class PatientDashboardController extends BaseController {
 
     @FXML private void handleBookPrimaryDoctor(ActionEvent event) {
         if (primaryDoctorId != -1) {
-            showAppointments(null); // Jumps to appointments without clearing search
+            showAppointments(null);
             openBookingForm(primaryDoctorId);
         } else {
             showAppointments(null);
@@ -341,6 +343,7 @@ public class PatientDashboardController extends BaseController {
 
         LocalDate selectedDate = appointmentDatePicker.getValue();
         String selectedTimeStr = appointmentTimeCombo.getValue();
+        String reason = appointmentReasonArea.getText();
 
         if (selectedDate == null || selectedTimeStr == null || selectedTimeStr.isEmpty()) {
             showAlert(Alert.AlertType.ERROR, "Incomplete Form", "Please select both a valid date and time slot.");
@@ -348,22 +351,28 @@ public class PatientDashboardController extends BaseController {
         }
 
         try {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("hh:mm a");
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("hh:mm a", java.util.Locale.US);
             LocalTime time = LocalTime.parse(selectedTimeStr, formatter);
             LocalDateTime appointmentDateTime = selectedDate.atTime(time);
 
-            String insertQuery = "INSERT INTO Appointments (patient_id, doctor_id, hospital_id, appointment_date, status, created_by) VALUES (?, ?, ?, ?, 'SCHEDULED', ?)";
+            String insertQuery = "INSERT INTO Appointments (patient_id, doctor_id, hospital_id, appointment_date, status, created_by, reason) VALUES (?, ?, ?, ?, 'SCHEDULED', ?, ?)";
 
             try (Connection conn = DBConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(insertQuery)) {
                 stmt.setInt(1, currentPatientDbId);
                 stmt.setInt(2, selectedDoc.getDocId());
                 stmt.setInt(3, selectedDoc.getHospId());
-                stmt.setObject(4, appointmentDateTime);
+                stmt.setTimestamp(4, java.sql.Timestamp.valueOf(appointmentDateTime));
                 stmt.setInt(5, UserSession.getInstance().getCurrentUser().getId());
+                stmt.setString(6, reason);
 
                 stmt.executeUpdate();
 
                 showAlert(Alert.AlertType.INFORMATION, "Success", "Your appointment has been successfully booked!");
+
+                appointmentDatePicker.setValue(null);
+                appointmentTimeCombo.getSelectionModel().clearSelection();
+                appointmentReasonArea.clear();
+
                 loadUpcomingAppointments();
                 showMyAptsTab();
             }
@@ -373,9 +382,6 @@ public class PatientDashboardController extends BaseController {
         }
     }
 
-    // ==========================================
-    // DATA LOADERS WITH SEARCH SUPPORT
-    // ==========================================
     private boolean loadPrescriptions(String searchTerm) {
         if (prescriptionsContainer == null) return false;
         prescriptionsContainer.getChildren().clear();
@@ -399,7 +405,7 @@ public class PatientDashboardController extends BaseController {
                         rs.getString("medicine_name"),
                         "Dosage: " + rs.getString("dosage") + " • " + rs.getString("frequency"),
                         "Duration: " + rs.getString("duration"),
-                        rs.getString("doctor_name")
+                        formatDoctorName(rs.getString("doctor_name"))
                 ));
             }
             if (!hasData) {
@@ -450,7 +456,7 @@ public class PatientDashboardController extends BaseController {
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
                 primaryDoctorId = rs.getInt("doc_id");
-                if (primaryDoctorNameLabel != null) primaryDoctorNameLabel.setText(rs.getString("full_name"));
+                if (primaryDoctorNameLabel != null) primaryDoctorNameLabel.setText(formatDoctorName(rs.getString("full_name")));
                 if (primaryDoctorSpecLabel != null) primaryDoctorSpecLabel.setText(rs.getString("specialization"));
             }
         } catch (SQLException e) { e.printStackTrace(); }
@@ -459,7 +465,7 @@ public class PatientDashboardController extends BaseController {
     private void loadMedicationReminders() {
         if (remindersContainer == null) return;
         remindersContainer.getChildren().clear();
-        String query = "SELECT pi.medicine_name, pi.dosage, pi.frequency, u.full_name as doctor_name FROM Prescription_Items pi JOIN Prescriptions p ON pi.prescription_id = p.id JOIN Doctors d ON p.doctor_id = d.id JOIN Users u ON d.user_id = u.id WHERE p.patient_id = ? ORDER BY p.prescription_date DESC LIMIT 5";
+        String query = "SELECT pi.medicine_name, pi.dosage, pi.frequency, pi.duration, u.full_name as doctor_name FROM Prescription_Items pi JOIN Prescriptions p ON pi.prescription_id = p.id JOIN Doctors d ON p.doctor_id = d.id JOIN Users u ON d.user_id = u.id WHERE p.patient_id = ? ORDER BY p.prescription_date DESC LIMIT 5";
         try (Connection conn = DBConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setInt(1, currentPatientDbId);
             ResultSet rs = stmt.executeQuery();
@@ -468,8 +474,8 @@ public class PatientDashboardController extends BaseController {
                 hasData = true;
                 remindersContainer.getChildren().add(createReminderCard(
                         rs.getString("medicine_name"),
-                        rs.getString("dosage") + " • " + rs.getString("frequency"),
-                        rs.getString("doctor_name")
+                        rs.getString("dosage") + " • " + rs.getString("duration"),
+                        formatDoctorName(rs.getString("doctor_name"))
                 ));
             }
             if (!hasData) remindersContainer.getChildren().add(new Label("No daily medications."));
@@ -549,9 +555,10 @@ public class PatientDashboardController extends BaseController {
     }
 
     // ==========================================
-    // UI CARD GENERATORS WITH GUARANTEED VISIBILITY
+    // UI CARD GENERATORS
     // ==========================================
-    private HBox createAppointmentCard(String month, String day, String title, String subtitle, String status) {
+
+    private HBox createAppointmentCard(String month, String day, String title, String subtitle, String status, String reason) {
         HBox card = new HBox(20);
         card.setStyle("-fx-background-color: white; -fx-background-radius: 15; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(38,70,61,0.08), 15, 0, 5, 5); -fx-alignment: center-left;");
 
@@ -560,7 +567,12 @@ public class PatientDashboardController extends BaseController {
         dateBox.getChildren().get(0).setStyle("-fx-text-fill: #A3CFC0; -fx-font-weight: bold; -fx-font-size: 12px;");
         dateBox.getChildren().get(1).setStyle("-fx-text-fill: white; -fx-font-weight: 900; -fx-font-size: 22px;");
 
-        VBox infoBox = new VBox(5, new Label(title), new Label(subtitle));
+        String displayReason = (reason != null && !reason.trim().isEmpty()) ? reason : "Scheduled Consultation";
+        Label reasonLbl = new Label("Reason: " + displayReason);
+        reasonLbl.setStyle("-fx-text-fill: #5C8D7D; -fx-font-style: italic; -fx-font-size: 11px;");
+        reasonLbl.setWrapText(true);
+
+        VBox infoBox = new VBox(5, new Label(title), new Label(subtitle), reasonLbl);
         HBox.setHgrow(infoBox, Priority.ALWAYS);
         infoBox.getChildren().get(0).setStyle("-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 16px;");
         infoBox.getChildren().get(1).setStyle("-fx-text-fill: #6B7280; -fx-font-size: 12px;");
@@ -589,12 +601,11 @@ public class PatientDashboardController extends BaseController {
         card.setStyle("-fx-background-color: white; -fx-background-radius: 12; -fx-padding: 15; -fx-border-color: #E2E8F0; -fx-border-radius: 12; -fx-alignment: center-left;");
 
         Label icon = new Label("👨‍⚕️");
-        // FIX: Mint green background with forced dark-green text-fill
         icon.setStyle("-fx-font-size: 24px; -fx-background-color: #E8F3EE; -fx-padding: 10 12; -fx-background-radius: 50; -fx-text-fill: #26463D;");
 
         VBox infoBox = new VBox(2);
         HBox.setHgrow(infoBox, Priority.ALWAYS);
-        Label nameLbl = new Label("Dr. " + name);
+        Label nameLbl = new Label(name);
         nameLbl.setStyle("-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #111827;");
         Label specLbl = new Label(spec);
         specLbl.setStyle("-fx-text-fill: #115E59; -fx-font-size: 11px; -fx-font-weight: bold;");
@@ -614,7 +625,6 @@ public class PatientDashboardController extends BaseController {
         HBox card = new HBox(15);
         card.setStyle("-fx-background-color: #F8FAFC; -fx-background-radius: 12; -fx-padding: 15 12;");
 
-        // FIX: Mint green background with forced dark-green text-fill
         VBox icon = new VBox(new Label("💊"));
         icon.setStyle("-fx-background-color: #E8F3EE; -fx-background-radius: 8; -fx-min-width: 35; -fx-min-height: 35; -fx-alignment: center;");
         icon.getChildren().get(0).setStyle("-fx-font-family: 'Segoe UI Emoji'; -fx-text-fill: #26463D;");
@@ -637,7 +647,6 @@ public class PatientDashboardController extends BaseController {
         HBox card = new HBox();
         card.setStyle("-fx-background-color: white; -fx-background-radius: 15; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(38,70,61,0.08), 15, 0, 5, 5); -fx-alignment: center-left; -fx-spacing: 20;");
 
-        // FIX: Mint green background with forced dark-green text-fill
         VBox iconBox = new VBox(new Label("💊"));
         iconBox.setStyle("-fx-background-color: #E8F3EE; -fx-background-radius: 12; -fx-min-width: 65; -fx-min-height: 65; -fx-alignment: center;");
         iconBox.getChildren().get(0).setStyle("-fx-font-size: 28px; -fx-font-family: 'Segoe UI Emoji'; -fx-text-fill: #26463D;");
@@ -676,10 +685,25 @@ public class PatientDashboardController extends BaseController {
         HBox card = new HBox();
         card.setStyle("-fx-background-color: white; -fx-background-radius: 15; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(38,70,61,0.08), 15, 0, 5, 5); -fx-alignment: center-left; -fx-spacing: 20;");
 
-        // FIX: Mint green background with forced dark-green text-fill
-        VBox iconBox = new VBox(new Label("\uD83D\uDCC4"));
+        VBox iconBox = new VBox();
         iconBox.setStyle("-fx-background-color: #E8F3EE; -fx-background-radius: 12; -fx-min-width: 65; -fx-min-height: 65; -fx-alignment: center;");
-        iconBox.getChildren().get(0).setStyle("-fx-font-size: 28px; -fx-font-family: 'Segoe UI Emoji'; -fx-text-fill: #26463D;");
+
+        try {
+            java.io.InputStream imageStream = getClass().getResourceAsStream("/images/report_icon.png");
+            if (imageStream != null) {
+                ImageView imgView = new ImageView(new Image(imageStream));
+                imgView.setFitWidth(32);
+                imgView.setFitHeight(32);
+                imgView.setPreserveRatio(true);
+                iconBox.getChildren().add(imgView);
+            } else {
+                throw new Exception("Image not found.");
+            }
+        } catch (Exception e) {
+            Label fallbackIcon = new Label("📄");
+            fallbackIcon.setStyle("-fx-font-size: 28px; -fx-font-family: 'Segoe UI Emoji'; -fx-text-fill: #26463D;");
+            iconBox.getChildren().add(fallbackIcon);
+        }
 
         VBox infoBox = new VBox();
         infoBox.setSpacing(5);
@@ -714,7 +738,7 @@ public class PatientDashboardController extends BaseController {
     }
 
     // ==========================================
-    // TAB & SIDEBAR NAVIGATION (Clears search on click)
+    // TAB & SIDEBAR NAVIGATION
     // ==========================================
     @FXML private void showMyAptsTab() {
         if(subViewMyApts != null) { subViewMyApts.setVisible(true); subViewMyApts.setManaged(true); }
@@ -749,15 +773,19 @@ public class PatientDashboardController extends BaseController {
         if (btnTestReports != null) btnTestReports.setStyle(INACTIVE_STYLE);
     }
 
+    private void showAlert(Alert.AlertType type, String title, String content) {
+        Alert alert = new Alert(type);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(content);
+        alert.showAndWait();
+    }
+
     @FXML private void handleLogout(ActionEvent event) {
         UserSession.getInstance().cleanUserSession();
         try {
             PreparedStatement stmt = DBConnection.getConnection().prepareStatement("SELECT 1"); // dummy
         } catch (Exception e) {}
         navigateTo(event, "/fxml/RoleSelection.fxml", "Digital Health Passport - Role Selection");
-    }
-
-    private void showAlert(Alert.AlertType type, String title, String content) {
-        Alert alert = new Alert(type); alert.setTitle(title); alert.setHeaderText(null); alert.setContentText(content); alert.showAndWait();
     }
 }

@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.effect.BoxBlur?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<StackPane fx:id="rootPane" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.healthpassport.ui.login.AdminRequestFormController">
+
+    <ImageView fitWidth="${rootPane.width}" fitHeight="${rootPane.height}" pickOnBounds="true" preserveRatio="false">
+        <image>
+            <Image url="@../icons/bg.png" />
+        </image>
+        <effect>
+            <BoxBlur height="15.0" width="15.0" iterations="3" />
+        </effect>
+    </ImageView>
+
+    <BorderPane>
+        <center>
+            <VBox alignment="CENTER">
+                <VBox maxWidth="650.0" spacing="20.0" style="-fx-background-color: white; -fx-background-radius: 20; -fx-padding: 40 50; -fx-effect: dropshadow(three-pass-box, rgba(38,70,61,0.15), 30, 0, 10, 10);">
+
+                    <VBox alignment="CENTER" spacing="5.0">
+                        <Label style="-fx-font-size: 36px; -fx-font-family: 'Segoe UI Emoji';" text="🛡️" />
+                        <Label style="-fx-font-size: 26px; -fx-font-weight: 900; -fx-text-fill: #111827;" text="Hospital Network Registration" />
+                        <Label style="-fx-text-fill: #6B7280; -fx-font-size: 14px;" text="Submit your healthcare facility credentials to join the Digital Health Passport." textAlignment="CENTER" wrapText="true" />
+                    </VBox>
+
+                    <VBox spacing="15.0" style="-fx-padding: 10 0 0 0;">
+
+                        <VBox spacing="15.0">
+                            <Label style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #115E59; -fx-border-color: #E2E8F0; -fx-border-width: 0 0 1 0; -fx-padding: 0 0 5 0;" text="Facility Information" />
+
+                            <TextField fx:id="hospNameField" promptText="Official Hospital / Clinic Name" style="-fx-background-color: #F8FAFC; -fx-border-color: #E2E8F0; -fx-border-radius: 8; -fx-padding: 12;" />
+
+                            <HBox spacing="15.0">
+                                <TextField fx:id="hospRegNoField" promptText="Govt. Registration / License No." style="-fx-background-color: #F8FAFC; -fx-border-color: #E2E8F0; -fx-border-radius: 8; -fx-padding: 12;" HBox.hgrow="ALWAYS" />
+                                <TextField fx:id="hospPhoneField" promptText="Official Contact Number" style="-fx-background-color: #F8FAFC; -fx-border-color: #E2E8F0; -fx-border-radius: 8; -fx-padding: 12;" HBox.hgrow="ALWAYS" />
+                            </HBox>
+
+                            <TextArea fx:id="hospAddressArea" prefRowCount="3" promptText="Complete Physical Address..." style="-fx-background-color: #F8FAFC; -fx-border-color: #E2E8F0; -fx-border-radius: 8; -fx-padding: 5;" wrapText="true" />
+                        </VBox>
+
+                        <VBox spacing="15.0">
+                            <Label style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #115E59; -fx-border-color: #E2E8F0; -fx-border-width: 0 0 1 0; -fx-padding: 0 0 5 0;" text="System Administrator Details" />
+
+                            <HBox spacing="15.0">
+                                <TextField fx:id="requesterNameField" promptText="Your Full Name" style="-fx-background-color: #F8FAFC; -fx-border-color: #E2E8F0; -fx-border-radius: 8; -fx-padding: 12;" HBox.hgrow="ALWAYS" />
+                                <TextField fx:id="hospEmailField" promptText="Official Hospital Email" style="-fx-background-color: #F8FAFC; -fx-border-color: #E2E8F0; -fx-border-radius: 8; -fx-padding: 12;" HBox.hgrow="ALWAYS" />
+                            </HBox>
+                        </VBox>
+
+                    </VBox>
+
+                    <VBox alignment="CENTER" minHeight="45.0">
+                        <Label fx:id="statusMessageLabel" style="-fx-font-size: 13px;" text="" textAlignment="CENTER" wrapText="true" />
+                    </VBox>
+
+                    <HBox alignment="CENTER" spacing="20.0" style="-fx-padding: 5 0 0 0;">
+                        <Button fx:id="cancelBtn" onAction="#handleCancel" style="-fx-background-color: transparent; -fx-text-fill: #6B7280; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 12 25;" text="Cancel / Go Back" />
+                        <Button fx:id="submitBtn" onAction="#handleSubmit" style="-fx-background-color: #115E59; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 12 30; -fx-cursor: hand; -fx-effect: dropshadow(three-pass-box, rgba(17, 94, 89, 0.3), 10, 0, 0, 4);" text="Submit Verification Request" />
+                    </HBox>
+
+                </VBox>
+            </VBox>
+        </center>
+    </BorderPane>
+
+</StackPane>
