@@ -126,7 +126,7 @@ CREATE TABLE Appointments (
     FOREIGN KEY (hospital_id) REFERENCES Hospitals(id),
     FOREIGN KEY (created_by) REFERENCES Users(id)
 );
-
+/*
 CREATE TABLE Reminders (
     id INT AUTO_INCREMENT PRIMARY KEY,
     patient_id INT NOT NULL,
@@ -136,7 +136,7 @@ CREATE TABLE Reminders (
     is_sent BOOLEAN DEFAULT FALSE,
     FOREIGN KEY (patient_id) REFERENCES Patients(id) ON DELETE CASCADE
 );
-
+*/
 CREATE TABLE Audit_Logs (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
@@ -362,32 +362,40 @@ INSERT INTO Patients (user_id, system_id, full_name, date_of_birth, gender, bloo
 -- =========================================================================
 -- 5. PERFECTED DISTRIBUTION APPOINTMENT SCRIPT (FIXED)
 -- =========================================================================
-
--- DELETE old appointments first to prevent clutter
-
-
--- 1. Create PAST VISITS (This fills the Chart)
+-- DELETE FROM Appointments;
 INSERT INTO Appointments (patient_id, doctor_id, hospital_id, appointment_date, status, reason, created_by)
 SELECT 
     p.id, 
     d.id, 
     d.hospital_id, 
-    DATE_SUB(CURDATE(), INTERVAL (p.id % 6) + 1 DAY), 
+    -- Inject d.id (* 7) to shift the days so doctors work on different past days
+    DATE_SUB(CURDATE(), INTERVAL ((ROW_NUMBER() OVER(PARTITION BY d.id ORDER BY p.id) + (d.id * 7)) % 14) + 1 DAY) 
+    -- Inject d.id (* 3) to shift the hours so their shifts look different
+    + INTERVAL (9 + ((ROW_NUMBER() OVER(PARTITION BY d.id ORDER BY p.id) + (d.id * 3)) % 8)) HOUR, 
     'COMPLETED', 
     'Routine Checkup',
     (SELECT id FROM Users WHERE role='ADMIN' AND hospital_id = d.hospital_id LIMIT 1)
 FROM Patients p
-JOIN Doctors d ON d.id = (p.id % 4) + 1;
-
-
-
--- 2. Create TODAY & FUTURE APPOINTMENTS (This fills "Today's Schedule" and "Upcoming")
+JOIN Doctors d ON d.id = ((p.id * 13) % 4) + 1
+-- This WHERE clause drops ~33% of the rows randomly so doctors have different totals
+WHERE (p.id + d.id) % 3 != 0;
 INSERT INTO Appointments (patient_id, doctor_id, hospital_id, appointment_date, status, reason, created_by)
-SELECT p.id, d.id, d.hospital_id, 
-    -- Picks a day between TODAY (0) and 10 days from now
-    DATE_ADD(CURDATE(), INTERVAL FLOOR(RAND() * 11) DAY) + INTERVAL (9 + (p.id % 8)) HOUR, 
-    'SCHEDULED', 'Follow-up', 1
-FROM Patients p JOIN Doctors d ON d.id = (p.id % 4) + 1;
+SELECT 
+    p.id, 
+    d.id, 
+    d.hospital_id, 
+    -- Inject d.id (* 5) to shift the scheduled days
+    DATE_ADD(CURDATE(), INTERVAL ((ROW_NUMBER() OVER(PARTITION BY d.id ORDER BY p.id) + (d.id * 5)) % 11) DAY) 
+    -- Inject d.id (* 2) to shift the scheduled hours
+    + INTERVAL (9 + ((ROW_NUMBER() OVER(PARTITION BY d.id ORDER BY p.id) + (d.id * 2)) % 8)) HOUR, 
+    'SCHEDULED', 
+    'Follow-up', 
+    1
+FROM Patients p 
+JOIN Doctors d ON d.id = ((p.id * 17) % 4) + 1
+-- This WHERE clause drops ~40% of the rows randomly, creating heavily varied schedule sizes
+WHERE (p.id + d.id) % 5 < 3;
+
 
 -- =========================================================================
 -- 6. FILL MEDICAL HISTORIES, PRESCRIPTIONS, AND TEST REPORTS
@@ -422,3 +430,4 @@ SELECT p.id,
     DATE_SUB(CURDATE(), INTERVAL (p.id % 20) DAY), 
     'Report shows normal bounds.' 
 FROM Patients p;
+

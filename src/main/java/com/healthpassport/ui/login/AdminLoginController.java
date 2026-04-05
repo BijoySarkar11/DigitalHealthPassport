@@ -2,7 +2,7 @@ package com.healthpassport.ui.login;
 
 import com.healthpassport.MODEL.service.AuthService;
 import com.healthpassport.MODEL.user.Role;
-import com.healthpassport.ui.BaseController; // Inheriting the shared navigation logic
+import com.healthpassport.ui.BaseController;
 import com.healthpassport.util.UserSession;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -17,35 +17,44 @@ public class AdminLoginController extends BaseController {
     @FXML private PasswordField passwordField;
     @FXML private Label errorLabel;
 
-    // OOP: Using the Service Layer to handle the database logic
     private final AuthService authService = new AuthService();
 
     @FXML
     private void handleLogin(ActionEvent event) {
         String identifier = usernameField.getText();
         String password = passwordField.getText();
-        errorLabel.setText(""); // Clear previous errors
+        errorLabel.setText("");
 
-        // 1. Let the AuthService authenticate against the database
-        if (authService.loginUser(identifier, password)) {
-
-            // 2. Verify that the authenticated user is actually an Admin
-            if (UserSession.getInstance().getCurrentUser().getRole() == Role.ADMIN) {
-                // 3. Use inherited BaseController method for a clean transition
-                navigateTo(event, "/fxml/AdminDashboard.fxml", "Digital Health Passport - Hospital Administration");
-            } else {
-                // If a Patient or Doctor tries to log in here, kick them out
-                authService.logoutUser();
-                errorLabel.setText("Access Denied: You do not have Administrator privileges.");
+        try {
+            // 1. Check Length
+            if (password == null || password.length() < 6) {
+                throw new ExceptionPassword("Password must be at least 6 characters.");
             }
-        } else {
-            errorLabel.setText("Invalid Admin credentials. Please try again.");
+
+            // 2. Check for at least one letter AND one number using Regex
+            if (!password.matches(".*[a-zA-Z].*") || !password.matches(".*\\d.*")) {
+                throw new ExceptionPassword("Password must contain both letters and numbers.");
+            }
+
+            // 3. Proceed with Database Login
+            if (authService.loginUser(identifier, password)) {
+                if (UserSession.getInstance().getCurrentUser().getRole() == Role.ADMIN) {
+                    navigateTo(event, "/fxml/AdminDashboard.fxml", "Digital Health Passport - Hospital Administration");
+                } else {
+                    authService.logoutUser();
+                    errorLabel.setText("Access Denied: You do not have Administrator privileges.");
+                }
+            } else {
+                errorLabel.setText("Invalid Admin credentials. Please try again.");
+            }
+
+        } catch (ExceptionPassword e) {
+            errorLabel.setText(e.getMessage());
         }
     }
 
     @FXML
     private void handleBackToRole(MouseEvent event) {
-        // Inherited cleanly from BaseController (works with MouseEvent now!)
         navigateTo(event, "/fxml/RoleSelection.fxml", "Digital Health Passport - Role Selection");
     }
 }

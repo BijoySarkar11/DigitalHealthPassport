@@ -13,6 +13,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
@@ -28,6 +29,8 @@ import java.time.format.DateTimeFormatter;
 
 public class AdminDashboardController extends BaseController {
 
+    @FXML private BorderPane rootPane;
+
     @FXML private Button btnSearch, btnNewPatient, btnNewDoctor, btnAddTestReport;
     @FXML private VBox viewSearch, viewNewPatient, viewNewDoctor, viewAddTestReport, viewFullProfile;
 
@@ -39,9 +42,18 @@ public class AdminDashboardController extends BaseController {
     @FXML private VBox doctorRecordsContainer, patientRecordsContainer;
 
     // Full Profile Viewer Elements
+    @FXML private VBox profileIconBox;
     @FXML private Label profileIconLbl, profileNameLbl, profileRoleBadge, profileIdLbl, profileContactLbl;
     @FXML private HBox profileInfoRow, profileMedicalGrid;
-    @FXML private VBox profileDiagnosesContainer, profileMedicationsContainer, profileTestsContainer;
+    @FXML private VBox profileDiagnosesContainer, profileMedicationsContainer;
+
+    // Test Report Inline Viewer Elements
+    @FXML private VBox testReportsListWrapper;
+    @FXML private VBox profileTestsContainer;
+    @FXML private VBox testReportDetailView;
+    @FXML private Label reportDetailTitle;
+    @FXML private Label reportDetailInfo;
+    @FXML private VBox reportDetailContentBox;
 
     private String currentProfileNatId = null;
     private String currentProfileRole = null;
@@ -88,8 +100,8 @@ public class AdminDashboardController extends BaseController {
 
     private final String ACTIVE = "-fx-background-color: #1B362F; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 12 15; -fx-background-radius: 12; -fx-cursor: hand; -fx-font-family: 'Segoe UI Emoji', 'System';";
     private final String INACTIVE = "-fx-background-color: transparent; -fx-text-fill: #A3CFC0; -fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 12 15; -fx-background-radius: 12; -fx-cursor: hand; -fx-font-family: 'Segoe UI Emoji', 'System';";
-    private final String TAB_ACTIVE = "-fx-background-color: #26463D; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 20; -fx-padding: 10 25; -fx-cursor: hand; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2); -fx-font-family: 'Segoe UI Emoji', 'System';";
-    private final String TAB_INACTIVE = "-fx-background-color: white; -fx-text-fill: #6B7280; -fx-font-weight: bold; -fx-background-radius: 20; -fx-padding: 10 25; -fx-cursor: hand; -fx-border-color: #E2E8F0; -fx-border-radius: 20; -fx-font-family: 'Segoe UI Emoji', 'System';";
+    private final String TAB_ACTIVE = "-fx-background-color: #26463D; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 20; -fx-padding: 10 25; -fx-cursor: hand; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2);";
+    private final String TAB_INACTIVE = "-fx-background-color: white; -fx-text-fill: #6B7280; -fx-font-weight: bold; -fx-background-radius: 20; -fx-padding: 10 25; -fx-cursor: hand; -fx-border-color: #E2E8F0; -fx-border-radius: 20;";
 
     private String cleanNameForDB(String rawName) {
         if (rawName == null) return "";
@@ -98,6 +110,15 @@ public class AdminDashboardController extends BaseController {
 
     private String formatDoctorName(String rawName) {
         return "Dr. " + cleanNameForDB(rawName);
+    }
+
+    private String getCleanFileName(String dbFileName) {
+        if (dbFileName == null || dbFileName.trim().isEmpty()) return "report_document.pdf";
+        String clean = dbFileName.replace("\\", "/");
+        if (clean.contains("/")) {
+            clean = clean.substring(clean.lastIndexOf('/') + 1);
+        }
+        return clean.trim().isEmpty() ? "report_document.pdf" : clean;
     }
 
     @FXML
@@ -178,9 +199,6 @@ public class AdminDashboardController extends BaseController {
         docNameField.clear(); docSpecialtyField.clear(); docLicenseField.clear(); docDegreesField.clear(); docPasswordField.clear();
     }
 
-    // ==========================================
-    // 1. REGISTER / EDIT PATIENT LOGIC
-    // ==========================================
     @FXML
     private void handleRegisterPatient(ActionEvent event) {
         if (patFullNameField.getText().isEmpty() || patGenderCombo.getValue() == null) {
@@ -256,9 +274,6 @@ public class AdminDashboardController extends BaseController {
         }
     }
 
-    // ==========================================
-    // 2. REGISTER / EDIT DOCTOR LOGIC
-    // ==========================================
     @FXML
     private void handleRegisterDoctor(ActionEvent event) {
         if (adminHospitalId <= 0) {
@@ -447,10 +462,6 @@ public class AdminDashboardController extends BaseController {
         } catch (Exception e) { e.printStackTrace(); }
     }
 
-
-    // ==========================================
-    // 3. UPLOAD TEST REPORT LOGIC (UPDATED WITH FILES)
-    // ==========================================
     @FXML
     private void handleVerifyPatient(ActionEvent event) {
         String inputId = testPatientIdField.getText().trim();
@@ -480,15 +491,13 @@ public class AdminDashboardController extends BaseController {
                 new FileChooser.ExtensionFilter("Supported Files", "*.pdf", "*.png", "*.jpg", "*.jpeg")
         );
 
-        // Bind to current window safely
         File tempFile = fileChooser.showOpenDialog(btnBrowseFile.getScene().getWindow());
 
         if (tempFile != null) {
             selectedUploadFile = tempFile;
             fileSelectedLabel.setText(selectedUploadFile.getName());
-            fileSelectedLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #10B981;"); // Make it green on success
+            fileSelectedLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #10B981;");
 
-            // Show Cancel button, change Browse button text
             btnCancelFile.setVisible(true);
             btnCancelFile.setManaged(true);
             btnBrowseFile.setText("Change File");
@@ -519,7 +528,6 @@ public class AdminDashboardController extends BaseController {
             return;
         }
 
-        // Include the file_data column in the SQL query
         String insertQuery = "INSERT INTO Test_Reports (patient_id, added_by_admin_id, hospital_id, report_type, file_url, report_date, notes, file_data) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = DBConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(insertQuery)) {
@@ -532,7 +540,6 @@ public class AdminDashboardController extends BaseController {
 
             if (selectedUploadFile != null) {
                 stmt.setString(5, selectedUploadFile.getName());
-                // Push the physical bytes into the BLOB column
                 FileInputStream fis = new FileInputStream(selectedUploadFile);
                 stmt.setBinaryStream(8, fis, (int) selectedUploadFile.length());
             } else {
@@ -542,18 +549,15 @@ public class AdminDashboardController extends BaseController {
 
             stmt.executeUpdate();
 
-            // On-screen Success Message
             testVerificationLabel.setText("✅ Test Report securely added to Digital Passport!");
             testVerificationLabel.setStyle("-fx-text-fill: #10B981; -fx-font-weight: bold; -fx-font-size: 14px;");
 
-            // Reset Form completely
             testPatientIdField.clear();
             verifiedPatientDbId = -1;
             testTypeCombo.getSelectionModel().clearSelection();
             testDatePicker.setValue(null);
             testSummaryArea.clear();
 
-            // Triggers the cancel logic to reset the file UI
             handleCancelFile(null);
 
         } catch (Exception e) {
@@ -563,10 +567,6 @@ public class AdminDashboardController extends BaseController {
         }
     }
 
-
-    // ==========================================
-    // GLOBAL SEARCH AND RECORD CARDS
-    // ==========================================
     @FXML
     private void handleSearch(ActionEvent event) {
         String searchTerm = dbSearchField.getText() == null ? "" : dbSearchField.getText().trim();
@@ -668,6 +668,7 @@ public class AdminDashboardController extends BaseController {
         } catch (Exception e) { e.printStackTrace(); }
     }
 
+    // FIX: Removed emojis from action buttons to prevent Windows rendering bugs
     private HBox createDoctorCard(String name, String subtitle) {
         HBox card = new HBox(20); card.setStyle("-fx-background-color: white; -fx-background-radius: 15; -fx-padding: 20 25; -fx-effect: dropshadow(three-pass-box, rgba(38,70,61,0.08), 15, 0, 5, 5); -fx-alignment: center-left;");
         VBox iconBox = new VBox(); iconBox.setStyle("-fx-background-color: #E8F3EE; -fx-background-radius: 50; -fx-min-width: 60; -fx-min-height: 60; -fx-alignment: center;");
@@ -679,11 +680,10 @@ public class AdminDashboardController extends BaseController {
         titleRow.getChildren().addAll(nameLbl, roleBadge);
         Label subLbl = new Label(subtitle); subLbl.setStyle("-fx-text-fill: #6B7280; -fx-font-size: 13px;"); infoBox.getChildren().addAll(titleRow, subLbl);
 
-        // FIX: explicitly define 'Segoe UI Emoji' so the icon renders on Windows
-        Button editBtn = new Button("📝 Edit Record");
-        editBtn.setStyle("-fx-background-color: #F8FAFC; -fx-border-color: #E2E8F0; -fx-border-radius: 8; -fx-text-fill: #26463D; -fx-font-weight: bold; -fx-padding: 8 15; -fx-cursor: hand; -fx-min-width: 130; -fx-font-family: 'Segoe UI Emoji', 'System';");
-        Button profileBtn = new Button("📄 Full Profile");
-        profileBtn.setStyle("-fx-background-color: #115E59; -fx-text-fill: white; -fx-background-radius: 8; -fx-font-weight: bold; -fx-padding: 8 15; -fx-cursor: hand; -fx-min-width: 130; -fx-font-family: 'Segoe UI Emoji', 'System';");
+        Button editBtn = new Button("Edit Record");
+        editBtn.setStyle("-fx-background-color: #F8FAFC; -fx-border-color: #E2E8F0; -fx-border-radius: 8; -fx-text-fill: #26463D; -fx-font-weight: bold; -fx-padding: 8 15; -fx-cursor: hand; -fx-min-width: 130;");
+        Button profileBtn = new Button("Full Profile");
+        profileBtn.setStyle("-fx-background-color: #115E59; -fx-text-fill: white; -fx-background-radius: 8; -fx-font-weight: bold; -fx-padding: 8 15; -fx-cursor: hand; -fx-min-width: 130;");
 
         VBox btnBox = new VBox(8, editBtn, profileBtn);
         btnBox.setAlignment(Pos.CENTER_RIGHT);
@@ -691,6 +691,7 @@ public class AdminDashboardController extends BaseController {
         card.getChildren().addAll(iconBox, infoBox, btnBox); return card;
     }
 
+    // FIX: Removed emojis from action buttons to prevent Windows rendering bugs
     private HBox createPatientCard(String name, String subtitle) {
         HBox card = new HBox(20); card.setStyle("-fx-background-color: white; -fx-background-radius: 15; -fx-padding: 20 25; -fx-effect: dropshadow(three-pass-box, rgba(38,70,61,0.08), 15, 0, 5, 5); -fx-alignment: center-left;");
         VBox iconBox = new VBox(); iconBox.setStyle("-fx-background-color: #F0F9FF; -fx-background-radius: 50; -fx-min-width: 60; -fx-min-height: 60; -fx-alignment: center;");
@@ -702,11 +703,10 @@ public class AdminDashboardController extends BaseController {
         titleRow.getChildren().addAll(nameLbl, roleBadge);
         Label subLbl = new Label(subtitle); subLbl.setStyle("-fx-text-fill: #6B7280; -fx-font-size: 13px;"); infoBox.getChildren().addAll(titleRow, subLbl);
 
-        // FIX: explicitly define 'Segoe UI Emoji' so the icon renders on Windows
-        Button editBtn = new Button("📝 Edit Record");
-        editBtn.setStyle("-fx-background-color: #F8FAFC; -fx-border-color: #E2E8F0; -fx-border-radius: 8; -fx-text-fill: #26463D; -fx-font-weight: bold; -fx-padding: 8 15; -fx-cursor: hand; -fx-min-width: 130; -fx-font-family: 'Segoe UI Emoji', 'System';");
-        Button profileBtn = new Button("📄 Full Profile");
-        profileBtn.setStyle("-fx-background-color: #115E59; -fx-text-fill: white; -fx-background-radius: 8; -fx-font-weight: bold; -fx-padding: 8 15; -fx-cursor: hand; -fx-min-width: 130; -fx-font-family: 'Segoe UI Emoji', 'System';");
+        Button editBtn = new Button("Edit Record");
+        editBtn.setStyle("-fx-background-color: #F8FAFC; -fx-border-color: #E2E8F0; -fx-border-radius: 8; -fx-text-fill: #26463D; -fx-font-weight: bold; -fx-padding: 8 15; -fx-cursor: hand; -fx-min-width: 130;");
+        Button profileBtn = new Button("Full Profile");
+        profileBtn.setStyle("-fx-background-color: #115E59; -fx-text-fill: white; -fx-background-radius: 8; -fx-font-weight: bold; -fx-padding: 8 15; -fx-cursor: hand; -fx-min-width: 130;");
 
         VBox btnBox = new VBox(8, editBtn, profileBtn);
         btnBox.setAlignment(Pos.CENTER_RIGHT);
@@ -714,9 +714,6 @@ public class AdminDashboardController extends BaseController {
         card.getChildren().addAll(iconBox, infoBox, btnBox); return card;
     }
 
-    // ==========================================
-    // 4. FULL PROFILE VIEWER
-    // ==========================================
     private void openFullProfile(String natId, String role) {
         currentProfileNatId = natId;
         currentProfileRole = role;
@@ -725,13 +722,30 @@ public class AdminDashboardController extends BaseController {
         profileInfoRow.getChildren().clear();
         profileDiagnosesContainer.getChildren().clear();
         profileMedicationsContainer.getChildren().clear();
-        profileTestsContainer.getChildren().clear();
+
+        if(testReportDetailView != null) {
+            testReportDetailView.setVisible(false);
+            testReportDetailView.setManaged(false);
+        }
+        if(testReportsListWrapper != null) {
+            testReportsListWrapper.setVisible(true);
+            testReportsListWrapper.setManaged(true);
+        }
+        if(profileTestsContainer != null) {
+            profileTestsContainer.getChildren().clear();
+        }
 
         try (Connection conn = DBConnection.getConnection()) {
             if ("PATIENT".equals(role)) {
                 profileRoleBadge.setText("Patient");
                 profileRoleBadge.setStyle("-fx-background-color: #DBEAFE; -fx-text-fill: #1E3A8A; -fx-font-weight: bold; -fx-font-size: 12px; -fx-padding: 4 10; -fx-background-radius: 5;");
+
                 profileIconLbl.setText("👤");
+                profileIconLbl.setStyle("-fx-font-size: 40px; -fx-font-family: 'Segoe UI Emoji'; -fx-text-fill: #1E3A8A;");
+                if (profileIconBox != null) {
+                    profileIconBox.setStyle("-fx-background-color: #F0F9FF; -fx-background-radius: 50; -fx-min-width: 80; -fx-min-height: 80; -fx-alignment: center;");
+                }
+
                 profileMedicalGrid.setVisible(true);
                 profileMedicalGrid.setManaged(true);
 
@@ -758,7 +772,13 @@ public class AdminDashboardController extends BaseController {
             } else {
                 profileRoleBadge.setText("Doctor");
                 profileRoleBadge.setStyle("-fx-background-color: #D1FAE5; -fx-text-fill: #065F46; -fx-font-weight: bold; -fx-font-size: 12px; -fx-padding: 4 10; -fx-background-radius: 5;");
+
                 profileIconLbl.setText("👨‍⚕️");
+                profileIconLbl.setStyle("-fx-font-size: 40px; -fx-font-family: 'Segoe UI Emoji'; -fx-text-fill: #26463D;");
+                if (profileIconBox != null) {
+                    profileIconBox.setStyle("-fx-background-color: #E8F3EE; -fx-background-radius: 50; -fx-min-width: 80; -fx-min-height: 80; -fx-alignment: center;");
+                }
+
                 profileMedicalGrid.setVisible(false);
                 profileMedicalGrid.setManaged(false);
 
@@ -819,7 +839,7 @@ public class AdminDashboardController extends BaseController {
             }
         }
 
-        String testQuery = "SELECT report_type, report_date, notes FROM Test_Reports WHERE patient_id = ? ORDER BY report_date DESC";
+        String testQuery = "SELECT id, report_type, report_date, notes, file_url FROM Test_Reports WHERE patient_id = ? ORDER BY report_date DESC";
         try (PreparedStatement st = conn.prepareStatement(testQuery)) {
             st.setInt(1, patientId);
             ResultSet rs = st.executeQuery();
@@ -827,7 +847,13 @@ public class AdminDashboardController extends BaseController {
             while(rs.next()) {
                 hasData = true;
                 String dateStr = rs.getDate("report_date") != null ? rs.getDate("report_date").toString() : "";
-                profileTestsContainer.getChildren().add(createTestReportCard(rs.getString("report_type"), dateStr, rs.getString("notes")));
+                profileTestsContainer.getChildren().add(createTestReportCard(
+                        rs.getInt("id"),
+                        rs.getString("report_type"),
+                        dateStr,
+                        rs.getString("notes"),
+                        rs.getString("file_url")
+                ));
             }
             if(!hasData) {
                 Label l = new Label("No test reports found for this patient."); l.setStyle("-fx-text-fill: #9CA3AF; -fx-font-style: italic;");
@@ -863,18 +889,115 @@ public class AdminDashboardController extends BaseController {
         return box;
     }
 
-    private VBox createTestReportCard(String title, String date, String notes) {
-        VBox box = new VBox(5);
-        HBox top = new HBox(10, new Label(title), new Label(date));
-        top.getChildren().get(0).setStyle("-fx-font-weight: bold; -fx-text-fill: #111827; -fx-font-size: 14px;");
-        top.getChildren().get(1).setStyle("-fx-text-fill: #9CA3AF; -fx-font-size: 11px;");
-        HBox.setHgrow(top.getChildren().get(0), Priority.ALWAYS);
-        Label notesLbl = new Label("Notes: " + (notes != null ? notes : "None"));
-        notesLbl.setStyle("-fx-text-fill: #6B7280; -fx-font-size: 12px;");
-        notesLbl.setWrapText(true);
-        box.getChildren().addAll(top, notesLbl);
-        box.setStyle("-fx-background-color: #F8FAFC; -fx-padding: 10; -fx-border-color: #E2E8F0; -fx-border-radius: 8; -fx-background-radius: 8;");
+    // FIX: Expanded the View and Download buttons and removed emojis
+    private VBox createTestReportCard(int reportId, String title, String date, String notes, String fileName) {
+        VBox box = new VBox(8);
+        box.setStyle("-fx-background-color: #F8FAFC; -fx-padding: 15; -fx-border-color: #E2E8F0; -fx-border-radius: 8; -fx-background-radius: 8;");
+
+        VBox topBox = new VBox(3);
+        Label titleLbl = new Label(title);
+        titleLbl.setStyle("-fx-font-weight: bold; -fx-text-fill: #111827; -fx-font-size: 14px;");
+        Label dateLbl = new Label("📅 " + date);
+        dateLbl.setStyle("-fx-text-fill: #6B7280; -fx-font-size: 11px;");
+        topBox.getChildren().addAll(titleLbl, dateLbl);
+
+        HBox btnBox = new HBox(10);
+        Button viewBtn = new Button("View");
+        viewBtn.setStyle("-fx-background-color: white; -fx-text-fill: #115E59; -fx-border-color: #E2E8F0; -fx-border-radius: 5; -fx-background-radius: 5; -fx-font-size: 12px; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 6 12;");
+        viewBtn.setOnAction(e -> handleViewReport(reportId, title, date, notes, fileName));
+
+        Button downBtn = new Button("Download");
+        downBtn.setStyle("-fx-background-color: #115E59; -fx-text-fill: white; -fx-border-radius: 5; -fx-background-radius: 5; -fx-font-size: 12px; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 6 12;");
+        downBtn.setOnAction(e -> handleDownloadReport(reportId, fileName));
+
+        btnBox.getChildren().addAll(viewBtn, downBtn);
+        box.getChildren().addAll(topBox, btnBox);
         return box;
+    }
+
+    private void handleViewReport(int reportId, String testName, String dateStr, String notes, String fileName) {
+        testReportsListWrapper.setVisible(false);
+        testReportsListWrapper.setManaged(false);
+        testReportDetailView.setVisible(true);
+        testReportDetailView.setManaged(true);
+
+        reportDetailTitle.setText(testName);
+        reportDetailInfo.setText("Tested on: " + dateStr);
+        reportDetailContentBox.getChildren().clear();
+
+        VBox notesBox = new VBox(5);
+        notesBox.setStyle("-fx-background-color: #F8FAFC; -fx-background-radius: 8; -fx-padding: 12; -fx-border-color: #E2E8F0; -fx-border-radius: 8;");
+        Label notesHeader = new Label("👨‍⚕️ Notes");
+        notesHeader.setStyle("-fx-text-fill: #115E59; -fx-font-weight: bold; -fx-font-size: 13px; -fx-font-family: 'Segoe UI Emoji', 'System';");
+        Label notesText = new Label(notes != null && !notes.trim().isEmpty() ? notes : "No specific notes provided.");
+        notesText.setStyle("-fx-text-fill: #4B5563; -fx-font-size: 12px;");
+        notesText.setWrapText(true);
+        notesBox.getChildren().addAll(notesHeader, notesText);
+
+        HBox fileBox = new HBox(10);
+        fileBox.setStyle("-fx-background-color: #E8F3EE; -fx-background-radius: 8; -fx-padding: 12; -fx-alignment: center-left;");
+        Label fileIcon = new Label("📄");
+        fileIcon.setStyle("-fx-font-size: 20px; -fx-font-family: 'Segoe UI Emoji'; -fx-text-fill: #26463D;");
+        VBox fileInfo = new VBox(2);
+
+        if (fileName != null && !fileName.trim().isEmpty() && !fileName.equals("No File Attached")) {
+            Label fileTitle = new Label("Document Attached");
+            fileTitle.setStyle("-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 12px;");
+            Label fileNameLbl = new Label(getCleanFileName(fileName));
+            fileNameLbl.setStyle("-fx-text-fill: #5C8D7D; -fx-font-size: 11px; -fx-font-weight: bold;");
+            fileInfo.getChildren().addAll(fileTitle, fileNameLbl);
+        } else {
+            Label fileTitle = new Label("No Document");
+            fileTitle.setStyle("-fx-text-fill: #B91C1C; -fx-font-weight: bold; -fx-font-size: 12px;");
+            fileBox.setStyle("-fx-background-color: #FEF2F2; -fx-background-radius: 8; -fx-padding: 12; -fx-alignment: center-left;");
+            fileIcon.setText("⚠️");
+            fileInfo.getChildren().addAll(fileTitle);
+        }
+        fileBox.getChildren().addAll(fileIcon, fileInfo);
+
+        reportDetailContentBox.getChildren().addAll(notesBox, fileBox);
+    }
+
+    @FXML private void hideTestReportDetails() {
+        testReportDetailView.setVisible(false);
+        testReportDetailView.setManaged(false);
+        testReportsListWrapper.setVisible(true);
+        testReportsListWrapper.setManaged(true);
+    }
+
+    private void handleDownloadReport(int reportId, String fileName) {
+        if (fileName == null || fileName.equals("No File Attached") || fileName.trim().isEmpty()) {
+            showAlert(Alert.AlertType.WARNING, "No File", "There is no file attached to this report.");
+            return;
+        }
+
+        String safeName = getCleanFileName(fileName);
+
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Save Test Report");
+        fileChooser.setInitialFileName(safeName);
+
+        File saveLocation = fileChooser.showSaveDialog(rootPane.getScene().getWindow());
+
+        if (saveLocation != null) {
+            String query = "SELECT file_data FROM Test_Reports WHERE id = ?";
+            try (Connection conn = DBConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
+                stmt.setInt(1, reportId);
+                ResultSet rs = stmt.executeQuery();
+                if (rs.next()) {
+                    byte[] fileBytes = rs.getBytes("file_data");
+                    if (fileBytes != null && fileBytes.length > 0) {
+                        java.nio.file.Files.write(saveLocation.toPath(), fileBytes);
+                        showAlert(Alert.AlertType.INFORMATION, "Success", "File downloaded successfully!");
+                    } else {
+                        showAlert(Alert.AlertType.WARNING, "Empty File", "This record was created before file uploads were fully supported. The file is empty.");
+                    }
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                showAlert(Alert.AlertType.ERROR, "Download Error", "Failed to save the file: " + ex.getMessage());
+            }
+        }
     }
 
     @FXML private void handleEditFromProfile(ActionEvent event) {

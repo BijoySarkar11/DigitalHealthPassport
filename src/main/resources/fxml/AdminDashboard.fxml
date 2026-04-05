@@ -68,8 +68,8 @@
                             </HBox>
 
                             <HBox alignment="CENTER_LEFT" spacing="15.0" style="-fx-padding: 5 0 10 0;">
-                                <Button fx:id="btnTabDoctors" text="👨‍⚕️ Doctors" onAction="#showDoctorsTab" style="-fx-background-color: #26463D; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 20; -fx-padding: 10 25; -fx-cursor: hand; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2); -fx-font-family: 'Segoe UI Emoji', 'System';" />
-                                <Button fx:id="btnTabPatients" text="👤 Patients" onAction="#showPatientsTab" style="-fx-background-color: white; -fx-text-fill: #6B7280; -fx-font-weight: bold; -fx-background-radius: 20; -fx-padding: 10 25; -fx-cursor: hand; -fx-border-color: #E2E8F0; -fx-border-radius: 20; -fx-font-family: 'Segoe UI Emoji', 'System';" />
+                                <Button fx:id="btnTabDoctors" text="Doctors" onAction="#showDoctorsTab" style="-fx-background-color: #26463D; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 20; -fx-padding: 10 25; -fx-cursor: hand; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2); -fx-font-family: 'System';" />
+                                <Button fx:id="btnTabPatients" text="Patients" onAction="#showPatientsTab" style="-fx-background-color: white; -fx-text-fill: #6B7280; -fx-font-weight: bold; -fx-background-radius: 20; -fx-padding: 10 25; -fx-cursor: hand; -fx-border-color: #E2E8F0; -fx-border-radius: 20; -fx-font-family: 'System';" />
                             </HBox>
 
                             <StackPane alignment="TOP_LEFT" VBox.vgrow="ALWAYS">
@@ -174,7 +174,7 @@
                         </VBox>
                     </VBox>
 
-                    <VBox fx:id="viewAddTestReport" managed="false" spacing="25.0" style="-fx-padding: 10 35 35 25; -fx-background-color: transparent;" visible="false">
+                    <VBox fx:id="viewAddTestReport" managed="false" spacing="25.0" style="-fx-padding: 10 35 35 25; -background-color: transparent;" visible="false">
                         <VBox spacing="5.0">
                             <Label style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 32px;" text="Upload Test Report" />
                             <Label style="-fx-text-fill: #4A7A68; -fx-font-size: 16px; -fx-font-weight: bold;" text="Attach verified lab results to a patient's passport." />
@@ -202,7 +202,7 @@
                                     <Label style="-fx-text-fill: #64748B; -fx-font-size: 11px;" text="Max file size: 10MB (PDF, PNG, JPG)" />
                                 </VBox>
                                 <HBox spacing="10.0" alignment="CENTER_RIGHT">
-                                    <Button fx:id="btnCancelFile" managed="false" visible="false" onAction="#handleCancelFile" style="-fx-background-color: #FEE2E2; -fx-border-color: #FCA5A5; -fx-border-radius: 8; -fx-padding: 10 15; -fx-cursor: hand; -fx-text-fill: #DC2626; -fx-font-weight: bold;" text="✖ Remove" />
+                                    <Button fx:id="btnCancelFile" managed="false" visible="false" onAction="#handleCancelFile" style="-fx-background-color: #FEE2E2; -fx-border-color: #FCA5A5; -fx-border-radius: 8; -fx-padding: 10 15; -fx-cursor: hand; -fx-text-fill: #DC2626; -fx-font-weight: bold;" text="Remove" />
                                     <Button fx:id="btnBrowseFile" onAction="#handleBrowseFiles" style="-fx-background-color: white; -fx-border-color: #E2E8F0; -fx-border-radius: 8; -fx-padding: 10 25; -fx-cursor: hand; -fx-text-fill: #111827; -fx-font-weight: bold;" text="Browse Files" />
                                 </HBox>
                             </HBox>
@@ -230,7 +230,7 @@
                                     </HBox>
                                     <Label fx:id="profileContactLbl" style="-fx-text-fill: #115E59; -fx-font-size: 13px; -fx-font-weight: bold;" text="📞 Contact" />
                                 </VBox>
-                                <Button onAction="#handleEditFromProfile" style="-fx-background-color: #115E59; -fx-text-fill: white; -fx-background-radius: 8; -fx-font-weight: bold; -fx-padding: 10 20; -fx-cursor: hand; -fx-font-family: 'Segoe UI Emoji', 'System';" text="📝 Edit Record" />
+                                <Button onAction="#handleEditFromProfile" style="-fx-background-color: #115E59; -fx-text-fill: white; -fx-background-radius: 8; -fx-font-weight: bold; -fx-padding: 10 20; -fx-cursor: hand;" text="Edit Record" />
                             </HBox>
 
                             <HBox fx:id="profileInfoRow" spacing="40" style="-fx-background-color: white; -fx-background-radius: 20; -fx-padding: 25; -fx-effect: dropshadow(three-pass-box, rgba(38,70,61,0.08), 20, 0, 5, 5);">
@@ -247,11 +247,23 @@
                                         <VBox fx:id="profileMedicationsContainer" spacing="10" />
                                     </VBox>
                                 </VBox>
+
                                 <VBox spacing="20" HBox.hgrow="ALWAYS" prefWidth="300">
-                                    <VBox spacing="15" style="-fx-background-color: white; -fx-background-radius: 20; -fx-padding: 25; -fx-effect: dropshadow(three-pass-box, rgba(38,70,61,0.08), 20, 0, 5, 5);" VBox.vgrow="ALWAYS">
-                                        <Label style="-fx-font-weight: bold; -fx-font-size: 16px; -fx-text-fill: #111827;" text="🔬 Test Reports" />
-                                        <VBox fx:id="profileTestsContainer" spacing="10" />
-                                    </VBox>
+                                    <StackPane VBox.vgrow="ALWAYS">
+                                        <VBox fx:id="testReportsListWrapper" spacing="15" style="-fx-background-color: white; -fx-background-radius: 20; -fx-padding: 25; -fx-effect: dropshadow(three-pass-box, rgba(38,70,61,0.08), 20, 0, 5, 5);" VBox.vgrow="ALWAYS">
+                                            <Label style="-fx-font-weight: bold; -fx-font-size: 16px; -fx-text-fill: #111827;" text="🔬 Test Reports" />
+                                            <VBox fx:id="profileTestsContainer" spacing="10" />
+                                        </VBox>
+
+                                        <VBox fx:id="testReportDetailView" visible="false" managed="false" spacing="15" style="-fx-background-color: white; -fx-background-radius: 20; -fx-padding: 25; -fx-effect: dropshadow(three-pass-box, rgba(38,70,61,0.08), 20, 0, 5, 5);" VBox.vgrow="ALWAYS">
+                                            <Button text="← Back" onAction="#hideTestReportDetails" style="-fx-background-color: #E8F3EE; -fx-text-fill: #26463D; -fx-font-weight: bold; -fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 6 12; -fx-font-size: 12px;" />
+                                            <VBox spacing="5.0">
+                                                <Label fx:id="reportDetailTitle" text="Report Name" style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 18px;" wrapText="true" />
+                                                <Label fx:id="reportDetailInfo" text="Date: ---" style="-fx-text-fill: #6B7280; -fx-font-size: 12px;" />
+                                            </VBox>
+                                            <VBox fx:id="reportDetailContentBox" spacing="15.0" VBox.vgrow="ALWAYS" style="-fx-padding: 5 0;" />
+                                        </VBox>
+                                    </StackPane>
                                 </VBox>
                             </HBox>
                         </VBox>

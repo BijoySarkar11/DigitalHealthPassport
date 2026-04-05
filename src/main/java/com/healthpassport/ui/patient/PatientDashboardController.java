@@ -44,6 +44,9 @@ public class PatientDashboardController extends BaseController {
     @FXML private Button btnToggleDiagnostic, btnToggleDrugs, btnToggleTests;
     @FXML private TextField globalSearchField;
 
+    // NEW: Today's Appointment Reminder Label
+    @FXML private Label appointmentReminderLabel;
+
     // Sub-Views for Appointments Tab
     @FXML private Button btnTabMyApts, btnTabBook;
     @FXML private VBox subViewMyApts, subViewBook;
@@ -60,7 +63,7 @@ public class PatientDashboardController extends BaseController {
     @FXML private VBox testReportDetailView;
     @FXML private Label reportDetailTitle;
     @FXML private Label reportDetailInfo;
-    @FXML private VBox reportDetailContentBox; // Replaced Label with VBox
+    @FXML private VBox reportDetailContentBox;
 
     private int currentPatientDbId = -1;
     private int primaryDoctorId = -1;
@@ -72,9 +75,6 @@ public class PatientDashboardController extends BaseController {
     private final String TAB_ACTIVE = "-fx-background-color: #26463D; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 20; -fx-padding: 10 25; -fx-cursor: hand; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2);";
     private final String TAB_INACTIVE = "-fx-background-color: white; -fx-text-fill: #6B7280; -fx-font-weight: bold; -fx-background-radius: 20; -fx-padding: 10 25; -fx-cursor: hand; -fx-border-color: #E2E8F0; -fx-border-radius: 20;";
 
-    // ==========================================
-    // SANITIZATION UTILITIES
-    // ==========================================
     private String formatDoctorName(String rawName) {
         if (rawName == null) return "Unknown Doctor";
         return "Dr. " + rawName.replaceFirst("^(?i)(\\s*(dr\\.?|doctor)\\s*)+", "").trim();
@@ -149,6 +149,7 @@ public class PatientDashboardController extends BaseController {
         } catch (SQLException e) { e.printStackTrace(); }
 
         if (currentPatientDbId != -1) {
+            checkTodayAppointment(); // Check for today's reminder
             loadPrimaryDoctor();
             loadUpcomingAppointments();
             loadAllDoctorsForBooking();
@@ -160,6 +161,36 @@ public class PatientDashboardController extends BaseController {
             loadInlineDrugs();
             loadInlineTests();
         }
+    }
+
+    // NEW: Method to dynamically check and display the top-right reminder
+    private void checkTodayAppointment() {
+        if (appointmentReminderLabel == null || currentPatientDbId == -1) return;
+
+        String query = "SELECT u.full_name, a.appointment_date " +
+                "FROM Appointments a JOIN Doctors d ON a.doctor_id = d.id JOIN Users u ON d.user_id = u.id " +
+                "WHERE a.patient_id = ? AND DATE(a.appointment_date) = CURDATE() AND a.status = 'SCHEDULED' " +
+                "ORDER BY a.appointment_date ASC LIMIT 1";
+
+        try (Connection conn = DBConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setInt(1, currentPatientDbId);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                String docName = formatDoctorName(rs.getString("full_name"));
+                DateTimeFormatter timeFmt = DateTimeFormatter.ofPattern("hh:mm a");
+                String timeStr = rs.getTimestamp("appointment_date").toLocalDateTime().format(timeFmt);
+
+                // Show the label dynamically if there is a match
+                appointmentReminderLabel.setText("🔔 Reminder: Today you have an appointment with " + docName + " at " + timeStr);
+                appointmentReminderLabel.setVisible(true);
+                appointmentReminderLabel.setManaged(true);
+            } else {
+                // Keep it hidden if no appointments today
+                appointmentReminderLabel.setVisible(false);
+                appointmentReminderLabel.setManaged(false);
+            }
+        } catch (Exception e) { e.printStackTrace(); }
     }
 
     @FXML
@@ -386,6 +417,7 @@ public class PatientDashboardController extends BaseController {
                 appointmentReasonArea.clear();
 
                 loadUpcomingAppointments();
+                checkTodayAppointment(); // Recheck reminder in case they booked for today!
                 showMyAptsTab();
             }
         } catch (Exception e) {
@@ -533,9 +565,6 @@ public class PatientDashboardController extends BaseController {
         } catch (SQLException e) { e.printStackTrace(); }
     }
 
-    // ==========================================
-    // TEST REPORTS: VIEW AND DOWNLOAD LOGIC
-    // ==========================================
     private boolean loadTestReports(String searchTerm) {
         if (testReportsContainer == null) return false;
         testReportsContainer.getChildren().clear();
@@ -605,13 +634,13 @@ public class PatientDashboardController extends BaseController {
         btnBox.setSpacing(10);
         btnBox.setStyle("-fx-alignment: center-right;");
 
-        Button viewBtn = new Button("👁️ View");
-        viewBtn.setStyle("-fx-background-color: #F8FAFC; -fx-text-fill: #26463D; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 15; -fx-cursor: hand; -fx-border-color: #E2E8F0; -fx-border-radius: 8; -fx-font-family: 'Segoe UI Emoji', 'System';");
+        Button viewBtn = new Button("View");
+        viewBtn.setStyle("-fx-background-color: #F8FAFC; -fx-text-fill: #26463D; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 15; -fx-cursor: hand; -fx-border-color: #E2E8F0; -fx-border-radius: 8;");
 
         viewBtn.setOnAction(e -> handleViewReport(reportId, testName, detailsLabel, dateStr, fileName));
 
-        Button downBtn = new Button("⬇️ Download");
-        downBtn.setStyle("-fx-background-color: #115E59; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 15; -fx-cursor: hand; -fx-font-family: 'Segoe UI Emoji', 'System';");
+        Button downBtn = new Button("Download");
+        downBtn.setStyle("-fx-background-color: #115E59; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 15; -fx-cursor: hand;");
         downBtn.setOnAction(e -> handleDownloadReport(reportId, fileName));
 
         btnBox.getChildren().addAll(viewBtn, downBtn);
@@ -619,9 +648,6 @@ public class PatientDashboardController extends BaseController {
         return card;
     }
 
-    // ==========================================
-    // STYLED INLINE VIEW LOGIC
-    // ==========================================
     private void handleViewReport(int reportId, String testName, String info, String dateStr, String fileName) {
         testReportsContainer.setVisible(false);
         testReportsContainer.setManaged(false);
@@ -721,19 +747,12 @@ public class PatientDashboardController extends BaseController {
                         showAlert(Alert.AlertType.WARNING, "Empty File", "This record was created before file uploads were fully supported. The file is empty.");
                     }
                 }
-            } catch (SQLException ex) {
-                ex.printStackTrace();
-                showAlert(Alert.AlertType.ERROR, "Database Error", "Ensure your 'Test_Reports' table has a 'file_data' BLOB column. Details: " + ex.getMessage());
             } catch (Exception ex) {
                 ex.printStackTrace();
                 showAlert(Alert.AlertType.ERROR, "Download Error", "Failed to save the file: " + ex.getMessage());
             }
         }
     }
-
-    // ==========================================
-    // UI CARD GENERATION FOR OTHERS
-    // ==========================================
 
     private HBox createAppointmentCard(String month, String day, String title, String subtitle, String status, String reason) {
         HBox card = new HBox(20);
@@ -858,9 +877,6 @@ public class PatientDashboardController extends BaseController {
         return card;
     }
 
-    // ==========================================
-    // TAB & SIDEBAR NAVIGATION
-    // ==========================================
     @FXML private void showMyAptsTab() {
         if(subViewMyApts != null) { subViewMyApts.setVisible(true); subViewMyApts.setManaged(true); }
         if(subViewBook != null) { subViewBook.setVisible(false); subViewBook.setManaged(false); }

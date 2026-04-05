@@ -11,10 +11,6 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
-import javafx.scene.chart.BarChart;
-import javafx.scene.chart.CategoryAxis;
-import javafx.scene.chart.NumberAxis;
-import javafx.scene.chart.XYChart;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
@@ -35,10 +31,6 @@ import java.sql.Statement;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 
 public class DoctorDashboardController extends BaseController {
 
@@ -48,7 +40,12 @@ public class DoctorDashboardController extends BaseController {
 
     @FXML private Label doctorNameLabel, doctorSpecialtyLabel, doctorIdLabel, doctorEmojiLabel, hospitalNameLabel;
     @FXML private Label totalPatientsLabel, totalPatientsSubLabel, activeCasesLabel, activeCasesSubLabel, todaysApptsLabel, todaysApptsSubLabel;
-    @FXML private BarChart<String, Number> visitsChart;
+
+    // NEW Labels for Credentials Box
+    @FXML private Label dashboardDegreesLabel;
+    @FXML private Label dashboardExperienceLabel;
+    @FXML private Label dashboardLicenseLabel; // Added License Label
+
     @FXML private TextField searchField;
     @FXML private ScrollPane mainScrollPane;
 
@@ -132,7 +129,7 @@ public class DoctorDashboardController extends BaseController {
     }
 
     @FXML private void handleIssuePrescription(ActionEvent event) {
-        String patientSysId = prescribePatientIdField.getText().trim(); // FIX: Renamed variable for clarity
+        String patientSysId = prescribePatientIdField.getText().trim();
         String diagnosis = prescribeDiagnosisField.getText().trim();
 
         if(patientSysId.isEmpty() || diagnosis.isEmpty()) {
@@ -142,7 +139,6 @@ public class DoctorDashboardController extends BaseController {
 
         User currentUser = UserSession.getInstance().getCurrentUser();
 
-        // FIX: Changed 'national_id' to 'system_id'
         String findIdsQuery = "SELECT (SELECT id FROM Patients WHERE system_id = ?) as pid, id as did, hospital_id as hid FROM Doctors WHERE user_id = ?";
         String insertDiagnosisQuery = "INSERT INTO Medical_History (patient_id, diagnosed_by, hospital_id, diagnosis, diagnosis_date, notes) VALUES (?, ?, ?, ?, CURDATE(), 'Via Quick Prescribe')";
         String insertPrescriptionQuery = "INSERT INTO Prescriptions (patient_id, doctor_id, hospital_id, prescription_date, notes) VALUES (?, ?, ?, CURDATE(), ?)";
@@ -250,19 +246,41 @@ public class DoctorDashboardController extends BaseController {
             doctorEmojiLabel.setText(isFemale ? "👩‍⚕️" : "👨‍⚕️");
         }
 
-        String query = "SELECT h.name AS hospital_name, d.specialization, d.license_number FROM Doctors d JOIN Hospitals h ON d.hospital_id = h.id WHERE d.user_id = ?";
+        String query = "SELECT h.name AS hospital_name, d.specialization, d.license_number, d.degrees FROM Doctors d JOIN Hospitals h ON d.hospital_id = h.id WHERE d.user_id = ?";
         try (Connection conn = DBConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setInt(1, currentUser.getId());
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
                 if (hospitalNameLabel != null) hospitalNameLabel.setText(rs.getString("hospital_name"));
-                if (doctorSpecialtyLabel != null) doctorSpecialtyLabel.setText(rs.getString("specialization"));
+                String spec = rs.getString("specialization");
+                if (doctorSpecialtyLabel != null) doctorSpecialtyLabel.setText(spec);
 
-                if (doctorIdLabel != null) doctorIdLabel.setText("ID: " + currentUser.getSystemId() + "  •  Lic: " + rs.getString("license_number"));
+                // STRIPPED LICENSE FROM SIDEBAR
+                if (doctorIdLabel != null) doctorIdLabel.setText("ID: " + currentUser.getSystemId());
+
+                String degrees = rs.getString("degrees");
+                if (dashboardDegreesLabel != null) {
+                    dashboardDegreesLabel.setText(degrees != null && !degrees.isEmpty() ? degrees : "MBBS, MD");
+                }
+
+                // INJECTED LICENSE INTO CREDENTIALS BOX
+                String license = rs.getString("license_number");
+                if (dashboardLicenseLabel != null) {
+                    dashboardLicenseLabel.setText(license != null && !license.isEmpty() ? license : "Pending Verification");
+                }
+
+                int exp = 4 + (currentUser.getId() % 15);
+                if (dashboardExperienceLabel != null) {
+                    dashboardExperienceLabel.setText(exp + "+ Years in " + (spec != null ? spec : "General Practice"));
+                }
+
             } else {
                 if (hospitalNameLabel != null) hospitalNameLabel.setText("Unassigned Hospital");
                 if (doctorSpecialtyLabel != null) doctorSpecialtyLabel.setText("General Practitioner");
                 if (doctorIdLabel != null) doctorIdLabel.setText("ID: " + currentUser.getSystemId());
+                if (dashboardDegreesLabel != null) dashboardDegreesLabel.setText("MBBS");
+                if (dashboardLicenseLabel != null) dashboardLicenseLabel.setText("N/A");
+                if (dashboardExperienceLabel != null) dashboardExperienceLabel.setText("5+ Years");
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -314,74 +332,7 @@ public class DoctorDashboardController extends BaseController {
                 }
             }
 
-            setupVisitsChart(conn, userId);
-
         } catch (Exception e) { e.printStackTrace(); }
-    }
-
-    private void setupVisitsChart(Connection conn, int userId) {
-        if (visitsChart == null) return;
-        visitsChart.getData().clear();
-        XYChart.Series<String, Number> series = new XYChart.Series<>();
-
-        Map<String, java.util.Set<Integer>> uniquePatientsPerDay = new LinkedHashMap<>();
-        LocalDate today = LocalDate.now();
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("EEE", java.util.Locale.ENGLISH);
-        List<String> orderedDays = new ArrayList<>();
-
-        for (int i = 6; i >= 0; i--) {
-            String dayStr = today.minusDays(i).format(fmt);
-            uniquePatientsPerDay.put(dayStr, new java.util.HashSet<>());
-            orderedDays.add(dayStr);
-        }
-
-        CategoryAxis xAxis = (CategoryAxis) visitsChart.getXAxis();
-        xAxis.setCategories(FXCollections.observableArrayList(orderedDays));
-
-        String q = "SELECT a.patient_id, a.appointment_date FROM Appointments a JOIN Doctors d ON a.doctor_id = d.id WHERE d.user_id = ? AND a.appointment_date >= ? AND a.status = 'COMPLETED'";
-
-        try (PreparedStatement st = conn.prepareStatement(q)) {
-            st.setInt(1, userId);
-            st.setTimestamp(2, java.sql.Timestamp.valueOf(today.minusDays(6).atStartOfDay()));
-            ResultSet rs = st.executeQuery();
-
-            while (rs.next()) {
-                java.sql.Timestamp ts = rs.getTimestamp("appointment_date");
-                if (ts != null) {
-                    LocalDate apptDate = ts.toLocalDateTime().toLocalDate();
-                    if (!apptDate.isAfter(today) && !apptDate.isBefore(today.minusDays(6))) {
-                        String dayStr = apptDate.format(fmt);
-                        if (uniquePatientsPerDay.containsKey(dayStr)) {
-                            uniquePatientsPerDay.get(dayStr).add(rs.getInt("patient_id"));
-                        }
-                    }
-                }
-            }
-        } catch (Exception e) { e.printStackTrace(); }
-
-        int maxPatients = 0;
-        for (Map.Entry<String, java.util.Set<Integer>> entry : uniquePatientsPerDay.entrySet()) {
-            int count = entry.getValue().size();
-            maxPatients = Math.max(maxPatients, count);
-            series.getData().add(new XYChart.Data<>(entry.getKey(), count));
-        }
-
-        NumberAxis yAxis = (NumberAxis) visitsChart.getYAxis();
-        yAxis.setAutoRanging(false);
-        yAxis.setLowerBound(0);
-        yAxis.setTickUnit(1);
-        yAxis.setUpperBound(maxPatients == 0 ? 5 : maxPatients + 2);
-
-        visitsChart.getData().add(series);
-
-        Platform.runLater(() -> {
-            for (XYChart.Data<String, Number> data : series.getData()) {
-                Node node = data.getNode();
-                if (node != null) {
-                    node.setStyle(data.getYValue().intValue() > 0 ? "-fx-bar-fill: #115E59; -fx-background-radius: 4 4 0 0;" : "-fx-bar-fill: transparent;");
-                }
-            }
-        });
     }
 
     @FXML private void handleGlobalPatientSearch(ActionEvent event) {
@@ -389,7 +340,6 @@ public class DoctorDashboardController extends BaseController {
         if (searchTerm == null || searchTerm.trim().isEmpty()) return;
         searchTerm = searchTerm.trim();
 
-        // FIX: Changed 'national_id' to 'system_id'
         String query = "SELECT system_id FROM Patients WHERE system_id = ? OR full_name LIKE ? LIMIT 1";
         try (Connection conn = DBConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setString(1, searchTerm);
@@ -397,7 +347,7 @@ public class DoctorDashboardController extends BaseController {
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
-                String sysId = rs.getString("system_id"); // FIX
+                String sysId = rs.getString("system_id");
                 loadPatientProfileData(sysId);
                 searchField.clear();
             } else {
@@ -418,7 +368,7 @@ public class DoctorDashboardController extends BaseController {
         User currentUser = UserSession.getInstance().getCurrentUser();
         if (currentUser == null) return;
 
-        String query = "SELECT p.full_name FROM Appointments a JOIN Patients p ON a.patient_id = p.id JOIN Doctors d ON a.doctor_id = d.id WHERE d.user_id = ? AND DATE(a.appointment_date) = CURDATE() AND a.status = 'SCHEDULED' ORDER BY p.full_name ASC LIMIT 4";
+        String query = "SELECT p.full_name, a.appointment_date FROM Appointments a JOIN Patients p ON a.patient_id = p.id JOIN Doctors d ON a.doctor_id = d.id WHERE d.user_id = ? AND DATE(a.appointment_date) = CURDATE() AND a.status = 'SCHEDULED' ORDER BY a.appointment_date ASC LIMIT 8";
 
         try (Connection conn = DBConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setInt(1, currentUser.getId());
@@ -427,14 +377,14 @@ public class DoctorDashboardController extends BaseController {
             DateTimeFormatter timeFmt = DateTimeFormatter.ofPattern("hh:mm");
             DateTimeFormatter amPmFmt = DateTimeFormatter.ofPattern("a");
 
-            LocalDateTime slot = LocalDate.now().atTime(9, 0);
             boolean hasData = false;
 
             while (rs.next()) {
                 hasData = true;
                 String patientName = rs.getString("full_name");
-                scheduleVBox.getChildren().add(createMiniScheduleCard(slot.format(timeFmt), slot.format(amPmFmt), patientName, "Routine Checkup"));
-                slot = slot.plusMinutes(45);
+                LocalDateTime apptTime = rs.getTimestamp("appointment_date").toLocalDateTime();
+
+                scheduleVBox.getChildren().add(createMiniScheduleCard(apptTime.format(timeFmt), apptTime.format(amPmFmt), patientName, "Follow-up Checkup"));
             }
             if (!hasData) scheduleVBox.getChildren().add(new Label("No appointments today."));
         } catch (Exception e) { e.printStackTrace(); }
@@ -446,7 +396,6 @@ public class DoctorDashboardController extends BaseController {
         User currentUser = UserSession.getInstance().getCurrentUser();
         if (currentUser == null) return;
 
-        // FIX: Changed 'national_id' to 'system_id'
         String query = "SELECT p.id, p.full_name, p.system_id, p.gender, p.blood_group, p.weight, p.height, " +
                 "(SELECT diagnosis FROM Medical_History mh WHERE mh.patient_id = p.id ORDER BY diagnosis_date DESC LIMIT 1) AS current_diag " +
                 "FROM Patients p " +
@@ -461,7 +410,7 @@ public class DoctorDashboardController extends BaseController {
 
             while (rs.next()) {
                 String fullName = rs.getString("full_name");
-                String sysId = rs.getString("system_id"); // FIX
+                String sysId = rs.getString("system_id");
                 String gender = rs.getString("gender");
                 String bg = rs.getString("blood_group");
                 double weight = rs.getDouble("weight");
@@ -484,7 +433,6 @@ public class DoctorDashboardController extends BaseController {
         User currentUser = UserSession.getInstance().getCurrentUser();
         if (currentUser == null) return;
 
-        // Fetch actual dates and order chronologically
         String query = "SELECT p.full_name, a.appointment_date FROM Appointments a JOIN Patients p ON a.patient_id = p.id JOIN Doctors d ON a.doctor_id = d.id WHERE d.user_id = ? AND DATE(a.appointment_date) >= CURDATE() AND a.status = 'SCHEDULED' ORDER BY a.appointment_date ASC LIMIT 15";
 
         try (Connection conn = DBConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
@@ -512,6 +460,7 @@ public class DoctorDashboardController extends BaseController {
             }
         } catch (Exception e) { e.printStackTrace(); }
     }
+
     @FXML private void showRosterTab() {
         if(subViewRoster != null) { subViewRoster.setVisible(true); subViewRoster.setManaged(true); }
         if(subViewProfile != null) { subViewProfile.setVisible(false); subViewProfile.setManaged(false); }
@@ -557,14 +506,13 @@ public class DoctorDashboardController extends BaseController {
         jumpToPrescribe(currentProfilePatientId);
     }
 
-    private void loadPatientProfileData(String systemId) { // FIX: Renamed variable
-        // FIX: Changed 'national_id' to 'system_id'
+    private void loadPatientProfileData(String systemId) {
         String query = "SELECT id, full_name, date_of_birth, gender, blood_group, weight, height, phone FROM Patients WHERE system_id = ?";
         try (Connection conn = DBConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setString(1, systemId);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
-                currentProfilePatientId = systemId; // FIX
+                currentProfilePatientId = systemId;
                 int internalPatientId = rs.getInt("id");
 
                 profileName.setText(rs.getString("full_name"));
@@ -724,20 +672,26 @@ public class DoctorDashboardController extends BaseController {
     }
 
     private HBox createMiniScheduleCard(String hourText, String amPmText, String nameText, String statusText) {
-        HBox card = new HBox(); card.setStyle("-fx-background-color: #F8FAF9; -fx-background-radius: 10; -fx-padding: 10 15; -fx-spacing: 20; -fx-alignment: center-left;");
+        HBox card = new HBox();
+        card.setStyle("-fx-background-color: #F8FAF9; -fx-background-radius: 10; -fx-padding: 10 15; -fx-spacing: 15; -fx-alignment: center-left;");
 
         Label lblHour = new Label(hourText);
         lblHour.setStyle("-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #1B362F;");
+        lblHour.setMinSize(Label.USE_PREF_SIZE, Label.USE_PREF_SIZE);
 
         Label lblAmPm = new Label(amPmText);
         lblAmPm.setStyle("-fx-font-weight: bold; -fx-font-size: 10px; -fx-text-fill: #5C8D7D;");
 
         VBox timeBox = new VBox(lblHour, lblAmPm);
-        timeBox.setStyle("-fx-alignment: center; -fx-background-color: white; -fx-background-radius: 8; -fx-padding: 8 12; -fx-min-width: 50;");
+        timeBox.setStyle("-fx-alignment: center; -fx-background-color: white; -fx-background-radius: 8; -fx-padding: 8 10; -fx-min-width: 65; -fx-pref-width: 65;");
 
-        VBox detailsBox = new VBox(new Label(nameText), new Label(statusText)); detailsBox.setStyle("-fx-spacing: 2; -fx-alignment: center-left;"); detailsBox.getChildren().get(0).setStyle("-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #111827;"); detailsBox.getChildren().get(1).setStyle("-fx-text-fill: #6B7280; -fx-font-size: 11px;");
+        VBox detailsBox = new VBox(new Label(nameText), new Label(statusText));
+        detailsBox.setStyle("-fx-spacing: 2; -fx-alignment: center-left;");
+        detailsBox.getChildren().get(0).setStyle("-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #111827;");
+        detailsBox.getChildren().get(1).setStyle("-fx-text-fill: #6B7280; -fx-font-size: 11px;");
 
-        card.getChildren().addAll(timeBox, detailsBox); return card;
+        card.getChildren().addAll(timeBox, detailsBox);
+        return card;
     }
 
     private HBox createPatientCard(String name, String id, String gender, String currentDiag, String oneLineVitals) {
