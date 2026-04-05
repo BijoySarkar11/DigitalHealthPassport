@@ -73,6 +73,7 @@ public class AdminDashboardController extends BaseController {
 
     // Doctor Form
     @FXML private TextField docNameField, docSpecialtyField, docLicenseField, docDegreesField, docPasswordField, docIdField;
+    @FXML private TextField docExperienceField; // NEW
 
     // Test Report Form
     @FXML private TextField testPatientIdField;
@@ -196,7 +197,7 @@ public class AdminDashboardController extends BaseController {
         }
 
         docPasswordField.setPromptText("Assign Password");
-        docNameField.clear(); docSpecialtyField.clear(); docLicenseField.clear(); docDegreesField.clear(); docPasswordField.clear();
+        docNameField.clear(); docSpecialtyField.clear(); docLicenseField.clear(); docDegreesField.clear(); docPasswordField.clear(); docExperienceField.clear();
     }
 
     @FXML
@@ -292,6 +293,17 @@ public class AdminDashboardController extends BaseController {
             return;
         }
 
+        int experience = 0;
+        try {
+            if (!docExperienceField.getText().trim().isEmpty()) {
+                experience = Integer.parseInt(docExperienceField.getText().trim());
+            }
+        } catch (NumberFormatException e) {
+            docStatusLabel.setText("❌ Years of Experience must be a valid number.");
+            docStatusLabel.setStyle("-fx-text-fill: #EF4444; -fx-font-weight: bold;");
+            return;
+        }
+
         Doctor doctor = new Doctor();
         doctor.setFullName(cleanNameForDB(docNameField.getText().trim()));
         doctor.setSpecialization(docSpecialtyField.getText().trim());
@@ -308,6 +320,7 @@ public class AdminDashboardController extends BaseController {
             boolean success = doctorService.updateDoctorProfile(doctor);
 
             if (success) {
+                updateExperience(editingDoctorNatId, experience);
                 updatePasswordIfProvided(editingDoctorNatId, pass);
                 resetDoctorForm();
                 docStatusLabel.setText("✅ Doctor Record Updated Successfully!");
@@ -326,6 +339,7 @@ public class AdminDashboardController extends BaseController {
             boolean success = doctorService.registerNewDoctor(doctor);
 
             if (success) {
+                updateExperience(newId, experience);
                 resetDoctorForm();
                 docStatusLabel.setText("✅ Registration Successful! ID: " + newId);
                 docStatusLabel.setStyle("-fx-text-fill: #10B981; -fx-font-weight: bold;");
@@ -335,6 +349,15 @@ public class AdminDashboardController extends BaseController {
                 docStatusLabel.setStyle("-fx-text-fill: #EF4444; -fx-font-weight: bold;");
             }
         }
+    }
+
+    private void updateExperience(String sysId, int exp) {
+        String query = "UPDATE Doctors SET years_of_experience = ? WHERE user_id = (SELECT id FROM Users WHERE system_id = ?)";
+        try (Connection conn = DBConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setInt(1, exp);
+            stmt.setString(2, sysId);
+            stmt.executeUpdate();
+        } catch (Exception e) { e.printStackTrace(); }
     }
 
     private void updatePasswordIfProvided(String systemId, String newPassword) {
@@ -432,7 +455,7 @@ public class AdminDashboardController extends BaseController {
     }
 
     private void openEditDoctorForm(String natId) {
-        String query = "SELECT u.full_name, d.specialization, d.license_number, d.degrees " +
+        String query = "SELECT u.full_name, d.specialization, d.license_number, d.degrees, d.years_of_experience " +
                 "FROM Users u JOIN Doctors d ON u.id = d.user_id WHERE u.system_id = ?";
         try (Connection conn = DBConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setString(1, natId);
@@ -449,6 +472,7 @@ public class AdminDashboardController extends BaseController {
                 docSpecialtyField.setText(rs.getString("specialization"));
                 docLicenseField.setText(rs.getString("license_number"));
                 docDegreesField.setText(rs.getString("degrees"));
+                docExperienceField.setText(String.valueOf(rs.getInt("years_of_experience")));
 
                 editingDoctorNatId = natId;
                 lblDoctorFormTitle.setText("Edit Doctor Record");
@@ -668,7 +692,6 @@ public class AdminDashboardController extends BaseController {
         } catch (Exception e) { e.printStackTrace(); }
     }
 
-    // FIX: Removed emojis from action buttons to prevent Windows rendering bugs
     private HBox createDoctorCard(String name, String subtitle) {
         HBox card = new HBox(20); card.setStyle("-fx-background-color: white; -fx-background-radius: 15; -fx-padding: 20 25; -fx-effect: dropshadow(three-pass-box, rgba(38,70,61,0.08), 15, 0, 5, 5); -fx-alignment: center-left;");
         VBox iconBox = new VBox(); iconBox.setStyle("-fx-background-color: #E8F3EE; -fx-background-radius: 50; -fx-min-width: 60; -fx-min-height: 60; -fx-alignment: center;");
@@ -691,7 +714,6 @@ public class AdminDashboardController extends BaseController {
         card.getChildren().addAll(iconBox, infoBox, btnBox); return card;
     }
 
-    // FIX: Removed emojis from action buttons to prevent Windows rendering bugs
     private HBox createPatientCard(String name, String subtitle) {
         HBox card = new HBox(20); card.setStyle("-fx-background-color: white; -fx-background-radius: 15; -fx-padding: 20 25; -fx-effect: dropshadow(three-pass-box, rgba(38,70,61,0.08), 15, 0, 5, 5); -fx-alignment: center-left;");
         VBox iconBox = new VBox(); iconBox.setStyle("-fx-background-color: #F0F9FF; -fx-background-radius: 50; -fx-min-width: 60; -fx-min-height: 60; -fx-alignment: center;");
@@ -782,7 +804,8 @@ public class AdminDashboardController extends BaseController {
                 profileMedicalGrid.setVisible(false);
                 profileMedicalGrid.setManaged(false);
 
-                String q = "SELECT u.full_name, u.email, u.created_at, d.specialization, d.license_number, d.degrees " +
+                // Fetch years_of_experience to display in full profile details
+                String q = "SELECT u.full_name, u.email, u.created_at, d.specialization, d.license_number, d.degrees, d.years_of_experience " +
                         "FROM Users u JOIN Doctors d ON u.id = d.user_id WHERE u.system_id = ?";
                 try (PreparedStatement st = conn.prepareStatement(q)) {
                     st.setString(1, natId);
@@ -798,7 +821,7 @@ public class AdminDashboardController extends BaseController {
                                 createProfileInfoBlock("⚕️", "Specialty", rs.getString("specialization")),
                                 createProfileInfoBlock("🎓", "Degrees", rs.getString("degrees")),
                                 createProfileInfoBlock("🔖", "License", rs.getString("license_number")),
-                                createProfileInfoBlock("📅", "Onboarded", onboardStr)
+                                createProfileInfoBlock("⏳", "Experience", rs.getInt("years_of_experience") + " Yrs") // Added Experience to Profile View
                         );
                     }
                 }
@@ -889,7 +912,6 @@ public class AdminDashboardController extends BaseController {
         return box;
     }
 
-    // FIX: Expanded the View and Download buttons and removed emojis
     private VBox createTestReportCard(int reportId, String title, String date, String notes, String fileName) {
         VBox box = new VBox(8);
         box.setStyle("-fx-background-color: #F8FAFC; -fx-padding: 15; -fx-border-color: #E2E8F0; -fx-border-radius: 8; -fx-background-radius: 8;");
@@ -1005,7 +1027,6 @@ public class AdminDashboardController extends BaseController {
         else if ("DOCTOR".equals(currentProfileRole)) openEditDoctorForm(currentProfileNatId);
     }
 
-    // --- TAB TOGGLES ---
     @FXML private void showDoctorsTab() {
         if(subViewDoctors != null) { subViewDoctors.setVisible(true); subViewDoctors.setManaged(true); }
         if(subViewPatients != null) { subViewPatients.setVisible(false); subViewPatients.setManaged(false); }
@@ -1020,7 +1041,6 @@ public class AdminDashboardController extends BaseController {
         if(btnTabDoctors != null) btnTabDoctors.setStyle(TAB_INACTIVE);
     }
 
-    // --- VIEW SWITCHING ---
     @FXML private void showSearch(ActionEvent e) { switchView(viewSearch, btnSearch); }
     @FXML private void showNewPatient(ActionEvent e) { resetPatientForm(); switchView(viewNewPatient, btnNewPatient); }
     @FXML private void showNewDoctor(ActionEvent e) { resetDoctorForm(); switchView(viewNewDoctor, btnNewDoctor); }
