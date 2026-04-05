@@ -1,20 +1,14 @@
 package com.healthpassport.ui.login;
 
+import com.healthpassport.ui.BaseController; // OOP: Inheriting shared navigation logic
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Node;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
-import javafx.stage.Stage;
 
-import java.io.IOException;
-
-public class AdminRequestFormController {
+public class AdminRequestFormController extends BaseController {
 
     @FXML private TextField hospNameField;
     @FXML private TextField hospRegNoField;
@@ -57,16 +51,7 @@ public class AdminRequestFormController {
 
     @FXML
     private void handleCancel(ActionEvent event) {
-        try {
-            Parent root = FXMLLoader.load(getClass().getResource("/fxml/RoleSelection.fxml"));
-            Scene currentScene = ((Node) event.getSource()).getScene();
-            Stage stage = (Stage) currentScene.getWindow();
-
-            // Keep window size completely stable when returning to the login menu
-            stage.setScene(new Scene(root, currentScene.getWidth(), currentScene.getHeight()));
-            stage.setTitle("Digital Health Passport - Role Selection");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        // OOP: Replaced the raw FXMLLoader try-catch block with our inherited navigation method
+        navigateTo(event, "/fxml/RoleSelection.fxml", "Digital Health Passport - Role Selection");
     }
 }

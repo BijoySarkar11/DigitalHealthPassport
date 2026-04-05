@@ -1,3 +1,4 @@
+/*
 package com.healthpassport.MODEL.user;
 
 public class Hospital {
@@ -18,3 +19,5 @@ public class Hospital {
     public String getAddress() { return address; }
     public String getContactNumber() { return contactNumber; }
 }
+
+ */

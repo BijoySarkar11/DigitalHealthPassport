@@ -10,7 +10,7 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.Priority?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
@@ -45,7 +45,6 @@
 
             <VBox VBox.vgrow="ALWAYS" />
 
-            <Button text="⚙️   Settings" alignment="BASELINE_LEFT" maxWidth="Infinity" style="-fx-background-color: transparent; -fx-text-fill: #A3CFC0; -fx-font-size: 13px; -fx-font-weight: bold; -fx-padding: 10 15; -fx-cursor: hand; -fx-font-family: 'Segoe UI Emoji', 'System';" />
             <Button fx:id="btnLogout" text="🚪   Logout" alignment="BASELINE_LEFT" maxWidth="Infinity" onAction="#handleLogout" style="-fx-background-color: transparent; -fx-text-fill: #FCA5A5; -fx-font-size: 13px; -fx-font-weight: bold; -fx-padding: 10 15; -fx-cursor: hand; -fx-font-family: 'Segoe UI Emoji', 'System';" />
         </VBox>
     </left>
@@ -55,8 +54,8 @@
             <HBox alignment="CENTER_LEFT" spacing="20.0" style="-fx-padding: 25 35 10 25;">
                 <HBox HBox.hgrow="ALWAYS" />
                 <HBox alignment="CENTER_LEFT" prefWidth="300.0" style="-fx-background-color: white; -fx-background-radius: 20; -fx-padding: 8 15; -fx-effect: dropshadow(three-pass-box, rgba(38,70,61,0.05), 10, 0, 0, 2);">
-                    <Label text="🔍" style="-fx-text-fill: #9CA3AF; -fx-font-family: 'Segoe UI Emoji';" />
-                    <TextField fx:id="globalSearchField" onAction="#handleGlobalSearch" promptText="Search records, doctors..." style="-fx-background-color: transparent; -fx-border-color: transparent; -fx-prompt-text-fill: #9CA3AF;" HBox.hgrow="ALWAYS" />
+                    <Label text="🔍" onMouseClicked="#handleGlobalSearch" style="-fx-text-fill: #9CA3AF; -fx-font-family: 'Segoe UI Emoji'; -fx-cursor: hand;" />
+                    <TextField fx:id="globalSearchField" onAction="#handleGlobalSearch" promptText="Search records, doctors..." style="-fx-background-color: transparent; -fx-border-color: transparent; -fx-prompt-text-fill: #9CA3AF; -fx-focus-color: transparent; -fx-faint-focus-color: transparent; -fx-background-insets: 0;" HBox.hgrow="ALWAYS" />
                 </HBox>
             </HBox>
 
@@ -102,7 +101,7 @@
                                 </HBox>
 
                                 <HBox spacing="20.0" VBox.vgrow="ALWAYS" style="-fx-background-color: white; -fx-background-radius: 20; -fx-padding: 25; -fx-effect: dropshadow(three-pass-box, rgba(38,70,61,0.08), 20, 0, 5, 5);">
-                                    <VBox alignment="CENTER" spacing="10.0" prefWidth="200.0" maxHeight="Infinity" style="-fx-background-color: #E8F3EE; -fx-background-radius: 15; -fx-padding: 20;">
+                                    <VBox alignment="CENTER" spacing="10.0" prefWidth="200.0" maxHeight="Infinity" style="-fx-background-color: #E8F3EE; -background-radius: 15; -fx-padding: 20;">
                                         <Label text="🩺" style="-fx-font-size: 65px; -fx-font-family: 'Segoe UI Emoji';" />
                                         <Label text="Stay Healthy!" style="-fx-text-fill: #26463D; -fx-font-weight: bold; -fx-font-size: 18px;" />
                                     </VBox>
@@ -163,13 +162,11 @@
                         </HBox>
 
                         <StackPane VBox.vgrow="ALWAYS">
-
                             <VBox fx:id="subViewMyApts" spacing="30.0">
                                 <VBox spacing="15.0">
                                     <Label text="Your Scheduled Appointments" style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 18px;" />
                                     <VBox fx:id="appointmentsContainer" spacing="15.0" />
                                 </VBox>
-
                                 <VBox spacing="15.0" VBox.vgrow="ALWAYS">
                                     <HBox alignment="CENTER_LEFT">
                                         <Label text="Available Doctors" style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 18px;" HBox.hgrow="ALWAYS" />
@@ -179,44 +176,39 @@
                             </VBox>
 
                             <VBox fx:id="subViewBook" visible="false" managed="false" alignment="TOP_CENTER" VBox.vgrow="ALWAYS">
+                                <VBox spacing="20.0" maxWidth="1000.0" minHeight="560.0" maxHeight="560.0" style="-fx-background-color: white; -fx-background-radius: 20; -fx-padding: 40; -fx-effect: dropshadow(three-pass-box, rgba(38,70,61,0.08), 20, 0, 5, 5);">
 
-                                <VBox spacing="20.0" maxWidth="1000.0" style="-fx-background-color: white; -fx-background-radius: 20; -fx-padding: 40; -fx-effect: dropshadow(three-pass-box, rgba(38,70,61,0.08), 20, 0, 5, 5);" VBox.vgrow="ALWAYS">
                                     <VBox spacing="5.0">
                                         <Label text="Book Consultation" style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 22px;" />
                                         <Label text="Select a specialty and doctor, then fill out the details to schedule an appointment." style="-fx-text-fill: #6B7280; -fx-font-size: 13px;" wrapText="true" />
                                     </VBox>
 
-                                    <VBox spacing="20.0" style="-fx-padding: 10 0 0 0;" VBox.vgrow="ALWAYS">
-
+                                    <VBox spacing="20.0" style="-fx-padding: 10 0 0 0;">
                                         <HBox spacing="20.0">
                                             <VBox spacing="5.0" HBox.hgrow="ALWAYS">
                                                 <Label text="Filter by Specialty" style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 12px;" />
-                                                <ComboBox fx:id="specialtyCombo" onAction="#handleSpecialtyFilter" maxWidth="Infinity" promptText="All Specialties" style="-fx-background-color: #F8FAFC; -fx-border-color: #E2E8F0; -fx-border-radius: 8; -fx-padding: 5;" />
+                                                <ComboBox fx:id="specialtyCombo" onAction="#handleSpecialtyFilter" maxWidth="Infinity" minHeight="45.0" prefHeight="45.0" maxHeight="45.0" promptText="All Specialties" style="-fx-background-color: #F8FAFC; -fx-border-color: #E2E8F0; -fx-border-radius: 8; -fx-padding: 5 10; -fx-focus-color: transparent; -fx-faint-focus-color: transparent; -fx-background-insets: 0;" />
                                             </VBox>
                                             <VBox spacing="5.0" HBox.hgrow="ALWAYS">
                                                 <Label text="Select Doctor" style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 12px;" />
-                                                <ComboBox fx:id="doctorSelectionCombo" maxWidth="Infinity" promptText="Choose a doctor..." style="-fx-background-color: #F8FAFC; -fx-border-color: #E2E8F0; -fx-border-radius: 8; -fx-padding: 5;" />
+                                                <ComboBox fx:id="doctorSelectionCombo" maxWidth="Infinity" minHeight="45.0" prefHeight="45.0" maxHeight="45.0" promptText="Choose a doctor..." style="-fx-background-color: #F8FAFC; -fx-border-color: #E2E8F0; -fx-border-radius: 8; -fx-padding: 5 10; -fx-focus-color: transparent; -fx-faint-focus-color: transparent; -fx-background-insets: 0;" />
                                             </VBox>
                                         </HBox>
-
                                         <HBox spacing="20.0">
                                             <VBox spacing="5.0" HBox.hgrow="ALWAYS">
                                                 <Label text="Select Date" style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 12px;" />
-                                                <DatePicker fx:id="appointmentDatePicker" maxWidth="Infinity" style="-fx-background-color: #F8FAFC; -fx-border-color: #E2E8F0; -fx-border-radius: 8; -fx-padding: 5;" />
+                                                <DatePicker fx:id="appointmentDatePicker" maxWidth="Infinity" minHeight="45.0" prefHeight="45.0" maxHeight="45.0" style="-fx-background-color: #F8FAFC; -fx-border-color: #E2E8F0; -fx-border-radius: 8; -fx-padding: 5 10; -fx-focus-color: transparent; -fx-faint-focus-color: transparent; -fx-background-insets: 0;" />
                                             </VBox>
-
                                             <VBox spacing="5.0" HBox.hgrow="ALWAYS">
                                                 <Label text="Select Time Slot" style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 12px;" />
-                                                <ComboBox fx:id="appointmentTimeCombo" maxWidth="Infinity" promptText="Choose a time..." style="-fx-background-color: #F8FAFC; -fx-border-color: #E2E8F0; -fx-border-radius: 8; -fx-padding: 5;" />
+                                                <ComboBox fx:id="appointmentTimeCombo" maxWidth="Infinity" minHeight="45.0" prefHeight="45.0" maxHeight="45.0" promptText="Choose a time..." style="-fx-background-color: #F8FAFC; -fx-border-color: #E2E8F0; -fx-border-radius: 8; -fx-padding: 5 10; -fx-focus-color: transparent; -fx-faint-focus-color: transparent; -fx-background-insets: 0;" />
                                             </VBox>
                                         </HBox>
-
-                                        <VBox spacing="5.0" VBox.vgrow="ALWAYS">
+                                        <VBox spacing="5.0">
                                             <Label text="Reason for Visit" style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 12px;" />
-                                            <TextArea fx:id="appointmentReasonArea" promptText="Briefly describe your symptoms..." wrapText="true" VBox.vgrow="ALWAYS" prefHeight="150.0" style="-fx-background-color: #F8FAFC; -fx-border-color: #E2E8F0; -fx-border-radius: 8;" />
+                                            <TextArea fx:id="appointmentReasonArea" promptText="Briefly describe your symptoms..." wrapText="true" minHeight="120.0" prefHeight="120.0" maxHeight="120.0" style="-fx-background-color: #F8FAFC; -fx-border-color: #E2E8F0; -fx-border-radius: 8; -fx-focus-color: transparent; -fx-faint-focus-color: transparent; -fx-background-insets: 0;" />
                                         </VBox>
-
-                                        <Button text="✔️ Confirm Booking" onAction="#handleConfirmBooking" maxWidth="Infinity" style="-fx-background-color: #115E59; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 15; -fx-cursor: hand; -fx-font-family: 'Segoe UI Emoji', 'System'; -fx-margin: 10 0 0 0;" />
+                                        <Button text="✔️ Confirm Booking" onAction="#handleConfirmBooking" maxWidth="Infinity" prefHeight="48.0" minHeight="48.0" style="-fx-background-color: #115E59; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 10; -fx-cursor: hand; -fx-font-family: 'Segoe UI Emoji', 'System'; -fx-margin: 10 0 0 0;" />
                                     </VBox>
                                 </VBox>
                             </VBox>
@@ -230,8 +222,21 @@
 
                     <VBox fx:id="viewTestReports" visible="false" managed="false" spacing="25.0" style="-fx-padding: 10 35 35 25; -fx-background-color: transparent;">
                         <VBox spacing="5.0"><Label text="My Test Reports" style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 32px;" /></VBox>
-                        <VBox fx:id="testReportsContainer" spacing="15.0" VBox.vgrow="ALWAYS" />
+
+                        <StackPane VBox.vgrow="ALWAYS">
+                            <VBox fx:id="testReportsContainer" spacing="15.0" />
+
+                            <VBox fx:id="testReportDetailView" visible="false" managed="false" spacing="20.0" style="-fx-background-color: white; -fx-background-radius: 20; -fx-padding: 30; -fx-effect: dropshadow(three-pass-box, rgba(38,70,61,0.08), 20, 0, 5, 5);">
+                                <Button text="← Back to List" onAction="#hideTestReportDetails" style="-fx-background-color: #E8F3EE; -fx-text-fill: #26463D; -fx-font-weight: bold; -fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 8 15;" />
+                                <VBox spacing="10.0">
+                                    <Label fx:id="reportDetailTitle" text="Report Name" style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 24px;" />
+                                    <Label fx:id="reportDetailInfo" text="Tested at: --- | Date: ---" style="-fx-text-fill: #6B7280; -fx-font-size: 14px;" />
+                                </VBox>
+                                <VBox fx:id="reportDetailContentBox" spacing="20.0" VBox.vgrow="ALWAYS" style="-fx-padding: 20 0;" />
+                            </VBox>
+                        </StackPane>
                     </VBox>
+
                 </StackPane>
             </ScrollPane>
         </VBox>

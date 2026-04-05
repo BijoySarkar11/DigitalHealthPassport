@@ -1,13 +1,12 @@
 package com.healthpassport.MODEL.user;
 
-public abstract class Person {
-    private int id;
+public abstract class Person implements IDatabaseEntity {
+    // Encapsulation: All fields are strictly private
+    private int id; // Internal Database integer ID
     private String fullName;
+    private String phone;
 
-    public Person(int id, String fullName) {
-        this.id = id;
-        this.fullName = fullName;
-    }
+    public Person() {}
 
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
@@ -15,6 +14,9 @@ public abstract class Person {
     public String getFullName() { return fullName; }
     public void setFullName(String fullName) { this.fullName = fullName; }
 
-    // Polymorphism: Subclasses MUST define their own dashboard routing
-    public abstract String getRoleDashboard();
+    public String getPhone() { return phone; }
+    public void setPhone(String phone) { this.phone = phone; }
+
+    // Polymorphism: Forces subclasses to define how their profile looks
+    public abstract String getProfileSummary();
 }

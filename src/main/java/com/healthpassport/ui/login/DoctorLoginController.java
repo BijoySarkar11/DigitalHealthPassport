@@ -2,58 +2,50 @@ package com.healthpassport.ui.login;
 
 import com.healthpassport.MODEL.service.AuthService;
 import com.healthpassport.MODEL.user.Role;
+import com.healthpassport.ui.BaseController; // OOP: Inheriting shared navigation logic
+import com.healthpassport.util.UserSession;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Node;
-import javafx.scene.Parent;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
-import javafx.stage.Stage;
-import java.io.IOException;
 
-public class DoctorLoginController {
+public class DoctorLoginController extends BaseController {
 
     @FXML private TextField usernameField;
     @FXML private PasswordField passwordField;
     @FXML private Label errorLabel;
 
+    // OOP: Using the Service Layer to handle the database logic
     private final AuthService authService = new AuthService();
 
     @FXML
     private void handleLogin(ActionEvent event) {
         String identifier = usernameField.getText();
         String password = passwordField.getText();
-        errorLabel.setText("");
+        errorLabel.setText(""); // Clear previous errors
 
+        // 1. Let the AuthService authenticate against the database
+        if (authService.loginUser(identifier, password)) {
 
-        if (authService.login(identifier, password, Role.DOCTOR)) {
-            try {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/DoctorDashboard.fxml"));
-                Parent root = loader.load();
-                Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-                stage.getScene().setRoot(root);
-                stage.setTitle("Digital Health Passport - Doctor Portal");
-            } catch (IOException e) {
-                e.printStackTrace();
+            // 2. Verify that the authenticated user is actually a Doctor
+            if (UserSession.getInstance().getCurrentUser().getRole() == Role.DOCTOR) {
+                // 3. Use inherited BaseController method for a clean transition
+                navigateTo(event, "/fxml/DoctorDashboard.fxml", "Digital Health Passport - Doctor Portal");
+            } else {
+                // If a Patient or Admin tries to log in here, kick them out
+                authService.logoutUser();
+                errorLabel.setText("Access Denied: You do not have Doctor privileges.");
             }
         } else {
-            errorLabel.setText("Invalid Doctor credentials. ");
+            errorLabel.setText("Invalid Doctor credentials. Please try again.");
         }
     }
 
     @FXML
     private void handleBackToRole(MouseEvent event) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/RoleSelection.fxml"));
-            Parent root = loader.load();
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            stage.getScene().setRoot(root);
-            stage.setTitle("Digital Health Passport - Role Selection");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        // Inherited cleanly from BaseController
+        navigateTo(event, "/fxml/RoleSelection.fxml", "Digital Health Passport - Role Selection");
     }
 }

@@ -1,3 +1,4 @@
+/*
 package com.healthpassport.ui.login;
 
 import javafx.event.ActionEvent;
@@ -66,3 +67,5 @@ public class LoginController {
         }
     }
 }
+
+ */

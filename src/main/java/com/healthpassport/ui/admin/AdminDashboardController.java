@@ -1,7 +1,11 @@
 package com.healthpassport.ui.admin;
 
+import com.healthpassport.MODEL.user.Doctor;
+import com.healthpassport.MODEL.user.Patient;
+import com.healthpassport.MODEL.service.DoctorService;
+import com.healthpassport.MODEL.service.PatientService;
 import com.healthpassport.MODEL.user.User;
-import com.healthpassport.ui.common.BaseController;
+import com.healthpassport.ui.BaseController;
 import com.healthpassport.util.DBConnection;
 import com.healthpassport.util.UserSession;
 import javafx.collections.FXCollections;
@@ -12,12 +16,14 @@ import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.Statement;
-import java.sql.Types;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
 public class AdminDashboardController extends BaseController {
@@ -63,6 +69,12 @@ public class AdminDashboardController extends BaseController {
     @FXML private DatePicker testDatePicker;
     @FXML private TextArea testSummaryArea;
 
+    // File Upload Variables
+    @FXML private Label fileSelectedLabel;
+    @FXML private Button btnCancelFile;
+    @FXML private Button btnBrowseFile;
+    private File selectedUploadFile;
+
     private int adminHospitalId = -1;
     private int verifiedPatientDbId = -1;
 
@@ -70,9 +82,12 @@ public class AdminDashboardController extends BaseController {
     private String editingPatientNatId = null;
     private String editingDoctorNatId = null;
 
+    // OOP Services
+    private final PatientService patientService = new PatientService();
+    private final DoctorService doctorService = new DoctorService();
+
     private final String ACTIVE = "-fx-background-color: #1B362F; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 12 15; -fx-background-radius: 12; -fx-cursor: hand; -fx-font-family: 'Segoe UI Emoji', 'System';";
     private final String INACTIVE = "-fx-background-color: transparent; -fx-text-fill: #A3CFC0; -fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 12 15; -fx-background-radius: 12; -fx-cursor: hand; -fx-font-family: 'Segoe UI Emoji', 'System';";
-
     private final String TAB_ACTIVE = "-fx-background-color: #26463D; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 20; -fx-padding: 10 25; -fx-cursor: hand; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2); -fx-font-family: 'Segoe UI Emoji', 'System';";
     private final String TAB_INACTIVE = "-fx-background-color: white; -fx-text-fill: #6B7280; -fx-font-weight: bold; -fx-background-radius: 20; -fx-padding: 10 25; -fx-cursor: hand; -fx-border-color: #E2E8F0; -fx-border-radius: 20; -fx-font-family: 'Segoe UI Emoji', 'System';";
 
@@ -92,9 +107,18 @@ public class AdminDashboardController extends BaseController {
         loadRecords("");
         showDoctorsTab();
 
-        if (patGenderCombo != null) patGenderCombo.setItems(FXCollections.observableArrayList("MALE", "FEMALE", "OTHER"));
-        if (patBloodCombo != null) patBloodCombo.setItems(FXCollections.observableArrayList("A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"));
-        if (testTypeCombo != null) testTypeCombo.setItems(FXCollections.observableArrayList("Complete Blood Count (CBC)", "Chest X-Ray", "MRI Scan", "CT Scan", "Urinalysis", "Lipid Profile", "ECG", "Other"));
+        if (patGenderCombo != null) {
+            patGenderCombo.setItems(FXCollections.observableArrayList("MALE", "FEMALE", "OTHER"));
+            patGenderCombo.setPromptText("Select Gender");
+        }
+        if (patBloodCombo != null) {
+            patBloodCombo.setItems(FXCollections.observableArrayList("A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"));
+            patBloodCombo.setPromptText("Blood Group");
+        }
+        if (testTypeCombo != null) {
+            testTypeCombo.setItems(FXCollections.observableArrayList("Complete Blood Count (CBC)", "Chest X-Ray", "MRI Scan", "CT Scan", "Urinalysis", "Lipid Profile", "ECG", "Other"));
+            testTypeCombo.setPromptText("Select Test Type");
+        }
     }
 
     private void loadAdminProfile() {
@@ -116,32 +140,6 @@ public class AdminDashboardController extends BaseController {
         } catch (Exception e) { e.printStackTrace(); }
     }
 
-    private String generateNextPatientId() throws Exception {
-        String query = "SELECT national_id FROM Users WHERE role = 'PATIENT' AND national_id LIKE 'PT-%' ORDER BY id DESC LIMIT 1";
-        try (Connection conn = DBConnection.getConnection(); PreparedStatement st = conn.prepareStatement(query)) {
-            ResultSet rs = st.executeQuery();
-            if (rs.next()) {
-                String lastId = rs.getString("national_id");
-                int nextNum = Integer.parseInt(lastId.replaceAll("[^0-9]", "")) + 1;
-                return String.format("PT-%07d", nextNum);
-            }
-        }
-        return "PT-0025000";
-    }
-
-    private String generateNextDoctorId() throws Exception {
-        String query = "SELECT national_id FROM Users WHERE role = 'DOCTOR' AND national_id LIKE 'DOC-%' ORDER BY id DESC LIMIT 1";
-        try (Connection conn = DBConnection.getConnection(); PreparedStatement st = conn.prepareStatement(query)) {
-            ResultSet rs = st.executeQuery();
-            if (rs.next()) {
-                String lastId = rs.getString("national_id");
-                int nextNum = Integer.parseInt(lastId.replaceAll("[^0-9]", "")) + 1;
-                return String.format("DOC-%03d", nextNum);
-            }
-        }
-        return "DOC-001";
-    }
-
     private void resetPatientForm() {
         editingPatientNatId = null;
         if (lblPatientFormTitle != null) lblPatientFormTitle.setText("Register New Patient");
@@ -150,7 +148,7 @@ public class AdminDashboardController extends BaseController {
         if (patIdLabel != null) patIdLabel.setText("Assigned System ID (Auto-Generated)");
 
         try {
-            if (patIdField != null) patIdField.setText(generateNextPatientId());
+            if (patIdField != null) patIdField.setText(patientService.generateSystemId());
         } catch (Exception e) {
             if (patIdField != null) patIdField.setText("Error generating ID");
         }
@@ -171,7 +169,7 @@ public class AdminDashboardController extends BaseController {
         if (docIdLabel != null) docIdLabel.setText("Assigned System ID (Auto-Generated)");
 
         try {
-            if (docIdField != null) docIdField.setText(generateNextDoctorId());
+            if (docIdField != null) docIdField.setText(doctorService.generateSystemId());
         } catch (Exception e) {
             if (docIdField != null) docIdField.setText("Error generating ID");
         }
@@ -180,6 +178,9 @@ public class AdminDashboardController extends BaseController {
         docNameField.clear(); docSpecialtyField.clear(); docLicenseField.clear(); docDegreesField.clear(); docPasswordField.clear();
     }
 
+    // ==========================================
+    // 1. REGISTER / EDIT PATIENT LOGIC
+    // ==========================================
     @FXML
     private void handleRegisterPatient(ActionEvent event) {
         if (patFullNameField.getText().isEmpty() || patGenderCombo.getValue() == null) {
@@ -198,136 +199,66 @@ public class AdminDashboardController extends BaseController {
             if (patWeightField.getText() != null && !patWeightField.getText().trim().isEmpty()) weight = Double.parseDouble(patWeightField.getText().trim());
             if (patHeightField.getText() != null && !patHeightField.getText().trim().isEmpty()) height = Double.parseDouble(patHeightField.getText().trim());
         } catch (NumberFormatException e) {
-            patStatusLabel.setText("❌ Weight and Height must be valid numbers (e.g., 70.5).");
+            patStatusLabel.setText("❌ Weight and Height must be valid numbers.");
             patStatusLabel.setStyle("-fx-text-fill: #EF4444; -fx-font-weight: bold;");
             return;
         }
 
-        String fullName = patFullNameField.getText().trim();
+        Patient patient = new Patient();
+        patient.setFullName(patFullNameField.getText().trim());
+        patient.setGender(patGenderCombo.getValue());
+        patient.setBloodGroup(patBloodCombo.getValue() != null ? patBloodCombo.getValue() : "");
+        patient.setPhone(patPhoneField.getText() != null ? patPhoneField.getText().trim() : "");
+        patient.setWeight(weight);
+        patient.setHeight(height);
+        patient.setDateOfBirth(patDobPicker.getValue() != null ? patDobPicker.getValue() : LocalDate.of(2000, 1, 1));
+        patient.setHospitalId(adminHospitalId);
+
         String pass = patPasswordField.getText().trim();
-        java.sql.Date dobDate = patDobPicker.getValue() != null ? java.sql.Date.valueOf(patDobPicker.getValue()) : java.sql.Date.valueOf("2000-01-01");
-        String gender = patGenderCombo.getValue();
-        String blood = patBloodCombo.getValue() != null ? patBloodCombo.getValue() : "";
-        String phone = patPhoneField.getText() != null ? patPhoneField.getText().trim() : "";
         String intakeDiag = patInitialDiagnosisField.getText() != null ? patInitialDiagnosisField.getText().trim() : "";
 
-        try (Connection conn = DBConnection.getConnection()) {
-            conn.setAutoCommit(false);
+        if (editingPatientNatId != null) {
+            patient.setSystemId(editingPatientNatId);
+            patient.setEmail(editingPatientNatId + "@dhp.com");
 
-            if (editingPatientNatId != null) {
-                String updateUser = "UPDATE Users SET full_name = ? WHERE national_id = ?";
-                try (PreparedStatement st = conn.prepareStatement(updateUser)) {
-                    st.setString(1, fullName); st.setString(2, editingPatientNatId); st.executeUpdate();
-                }
+            boolean success = patientService.updatePatientProfile(patient);
 
-                if (!pass.isEmpty()) {
-                    String updatePass = "UPDATE Users SET password_hash = ? WHERE national_id = ?";
-                    try (PreparedStatement st = conn.prepareStatement(updatePass)) {
-                        st.setString(1, pass); st.setString(2, editingPatientNatId); st.executeUpdate();
-                    }
-                }
+            if (success) {
+                updatePasswordIfProvided(editingPatientNatId, pass);
+                syncInitialDiagnosis(editingPatientNatId, intakeDiag);
 
-                String updatePatient = "UPDATE Patients SET full_name = ?, date_of_birth = ?, gender = ?, blood_group = ?, phone = ?, weight = ?, height = ? WHERE national_id = ?";
-                try (PreparedStatement st = conn.prepareStatement(updatePatient)) {
-                    st.setString(1, fullName); st.setDate(2, dobDate); st.setString(3, gender); st.setString(4, blood);
-                    st.setString(5, phone); st.setDouble(6, weight); st.setDouble(7, height);
-                    st.setString(8, editingPatientNatId);
-                    st.executeUpdate();
-                }
-
-                int patIdForDiag = -1;
-                try (PreparedStatement st = conn.prepareStatement("SELECT id FROM Patients WHERE national_id = ?")) {
-                    st.setString(1, editingPatientNatId);
-                    ResultSet r = st.executeQuery();
-                    if(r.next()) patIdForDiag = r.getInt("id");
-                }
-
-                if (patIdForDiag != -1) {
-                    boolean diagExists = false;
-                    try (PreparedStatement st = conn.prepareStatement("SELECT id FROM Medical_History WHERE patient_id = ? AND notes = 'Initial Registration Intake'")) {
-                        st.setInt(1, patIdForDiag);
-                        ResultSet r = st.executeQuery();
-                        diagExists = r.next();
-                    }
-
-                    if (diagExists && intakeDiag.isEmpty()) {
-                        try (PreparedStatement st = conn.prepareStatement("DELETE FROM Medical_History WHERE patient_id = ? AND notes = 'Initial Registration Intake'")) {
-                            st.setInt(1, patIdForDiag); st.executeUpdate();
-                        }
-                    } else if (diagExists && !intakeDiag.isEmpty()) {
-                        try (PreparedStatement st = conn.prepareStatement("UPDATE Medical_History SET diagnosis = ? WHERE patient_id = ? AND notes = 'Initial Registration Intake'")) {
-                            st.setString(1, intakeDiag); st.setInt(2, patIdForDiag); st.executeUpdate();
-                        }
-                    } else if (!diagExists && !intakeDiag.isEmpty()) {
-                        int defaultDoctorId = 1;
-                        try (PreparedStatement docStmt = conn.prepareStatement("SELECT id FROM Doctors WHERE hospital_id = ? LIMIT 1")) {
-                            docStmt.setInt(1, adminHospitalId); ResultSet drRs = docStmt.executeQuery();
-                            if (drRs.next()) defaultDoctorId = drRs.getInt("id");
-                        }
-                        try (PreparedStatement diagStmt = conn.prepareStatement("INSERT INTO Medical_History (patient_id, diagnosed_by, hospital_id, diagnosis, diagnosis_date, notes) VALUES (?, ?, ?, ?, CURDATE(), 'Initial Registration Intake')")) {
-                            diagStmt.setInt(1, patIdForDiag); diagStmt.setInt(2, defaultDoctorId); diagStmt.setInt(3, adminHospitalId); diagStmt.setString(4, intakeDiag);
-                            diagStmt.executeUpdate();
-                        }
-                    }
-                }
-
-                conn.commit();
                 resetPatientForm();
                 patStatusLabel.setText("✅ Patient Record Updated Successfully!");
                 patStatusLabel.setStyle("-fx-text-fill: #10B981; -fx-font-weight: bold;");
                 loadRecords(dbSearchField.getText());
-
             } else {
-                String natId = generateNextPatientId();
-                String email = natId + "@dhp.com";
-                int newUserId = -1, newPatientId = -1;
+                patStatusLabel.setText("❌ Failed to update patient record.");
+                patStatusLabel.setStyle("-fx-text-fill: #EF4444; -fx-font-weight: bold;");
+            }
+        } else {
+            String newId = patientService.generateSystemId();
+            patient.setSystemId(newId);
+            patient.setEmail(newId + "@dhp.com");
+            patient.setPasswordHash(pass);
 
-                String insertUserQuery = "INSERT INTO Users (national_id, full_name, email, password_hash, role, hospital_id) VALUES (?, ?, ?, ?, 'PATIENT', ?)";
-                try (PreparedStatement stmtUser = conn.prepareStatement(insertUserQuery, Statement.RETURN_GENERATED_KEYS)) {
-                    stmtUser.setString(1, natId); stmtUser.setString(2, fullName); stmtUser.setString(3, email); stmtUser.setString(4, pass);
-                    if (adminHospitalId > 0) stmtUser.setInt(5, adminHospitalId); else stmtUser.setNull(5, Types.INTEGER);
-                    stmtUser.executeUpdate();
-                    ResultSet rs = stmtUser.getGeneratedKeys();
-                    if (rs.next()) newUserId = rs.getInt(1);
-                }
+            boolean success = patientService.registerNewPatient(patient);
 
-                if (newUserId != -1) {
-                    String insertPatientQuery = "INSERT INTO Patients (user_id, national_id, full_name, date_of_birth, gender, blood_group, phone, weight, height) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-                    try (PreparedStatement stmtPat = conn.prepareStatement(insertPatientQuery, Statement.RETURN_GENERATED_KEYS)) {
-                        stmtPat.setInt(1, newUserId); stmtPat.setString(2, natId); stmtPat.setString(3, fullName); stmtPat.setDate(4, dobDate);
-                        stmtPat.setString(5, gender); stmtPat.setString(6, blood); stmtPat.setString(7, phone); stmtPat.setDouble(8, weight); stmtPat.setDouble(9, height);
-                        stmtPat.executeUpdate();
-                        ResultSet rsPat = stmtPat.getGeneratedKeys();
-                        if (rsPat.next()) newPatientId = rsPat.getInt(1);
-                    }
-                }
-
-                if (newPatientId != -1 && !intakeDiag.isEmpty() && adminHospitalId > 0) {
-                    int defaultDoctorId = 1;
-                    try (PreparedStatement docStmt = conn.prepareStatement("SELECT id FROM Doctors WHERE hospital_id = ? LIMIT 1")) {
-                        docStmt.setInt(1, adminHospitalId); ResultSet drRs = docStmt.executeQuery();
-                        if (drRs.next()) defaultDoctorId = drRs.getInt("id");
-                    }
-                    try (PreparedStatement diagStmt = conn.prepareStatement("INSERT INTO Medical_History (patient_id, diagnosed_by, hospital_id, diagnosis, diagnosis_date, notes) VALUES (?, ?, ?, ?, CURDATE(), 'Initial Registration Intake')")) {
-                        diagStmt.setInt(1, newPatientId); diagStmt.setInt(2, defaultDoctorId); diagStmt.setInt(3, adminHospitalId); diagStmt.setString(4, intakeDiag);
-                        diagStmt.executeUpdate();
-                    }
-                }
-
-                conn.commit();
+            if (success) {
+                syncInitialDiagnosis(newId, intakeDiag);
                 resetPatientForm();
-                patStatusLabel.setText("✅ Registration Successful! ID: " + natId);
+                patStatusLabel.setText("✅ Registration Successful! ID: " + newId);
                 patStatusLabel.setStyle("-fx-text-fill: #10B981; -fx-font-weight: bold;");
                 loadRecords("");
+            } else {
+                patStatusLabel.setText("❌ Failed to save patient record.");
+                patStatusLabel.setStyle("-fx-text-fill: #EF4444; -fx-font-weight: bold;");
             }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            patStatusLabel.setText("❌ Database Error: Failed to save patient record.");
-            patStatusLabel.setStyle("-fx-text-fill: #EF4444; -fx-font-weight: bold;");
         }
     }
 
+    // ==========================================
+    // 2. REGISTER / EDIT DOCTOR LOGIC
+    // ==========================================
     @FXML
     private void handleRegisterDoctor(ActionEvent event) {
         if (adminHospitalId <= 0) {
@@ -335,7 +266,6 @@ public class AdminDashboardController extends BaseController {
             docStatusLabel.setStyle("-fx-text-fill: #EF4444; -fx-font-weight: bold;");
             return;
         }
-
         if (docNameField.getText().isEmpty() || docSpecialtyField.getText().isEmpty() || docLicenseField.getText().isEmpty()) {
             docStatusLabel.setText("❌ Name, Specialty, and License are mandatory.");
             docStatusLabel.setStyle("-fx-text-fill: #EF4444; -fx-font-weight: bold;");
@@ -347,80 +277,105 @@ public class AdminDashboardController extends BaseController {
             return;
         }
 
-        String fullName = cleanNameForDB(docNameField.getText().trim());
+        Doctor doctor = new Doctor();
+        doctor.setFullName(cleanNameForDB(docNameField.getText().trim()));
+        doctor.setSpecialization(docSpecialtyField.getText().trim());
+        doctor.setLicenseNumber(docLicenseField.getText().trim());
+        doctor.setDegrees(docDegreesField.getText().trim());
+        doctor.setHospitalId(adminHospitalId);
+
         String pass = docPasswordField.getText().trim();
-        String spec = docSpecialtyField.getText().trim();
-        String lic = docLicenseField.getText().trim();
-        String deg = docDegreesField.getText().trim();
 
-        try (Connection conn = DBConnection.getConnection()) {
-            conn.setAutoCommit(false);
+        if (editingDoctorNatId != null) {
+            doctor.setSystemId(editingDoctorNatId);
+            doctor.setEmail(editingDoctorNatId + "@dhp.com");
 
-            if (editingDoctorNatId != null) {
-                String updateUser = "UPDATE Users SET full_name = ? WHERE national_id = ?";
-                try (PreparedStatement st = conn.prepareStatement(updateUser)) {
-                    st.setString(1, fullName); st.setString(2, editingDoctorNatId);
-                    st.executeUpdate();
-                }
+            boolean success = doctorService.updateDoctorProfile(doctor);
 
-                if (!pass.isEmpty()) {
-                    String updatePass = "UPDATE Users SET password_hash = ? WHERE national_id = ?";
-                    try (PreparedStatement st = conn.prepareStatement(updatePass)) {
-                        st.setString(1, pass); st.setString(2, editingDoctorNatId);
-                        st.executeUpdate();
-                    }
-                }
-
-                String updateDoctor = "UPDATE Doctors SET specialization = ?, license_number = ?, degrees = ? WHERE user_id = (SELECT id FROM Users WHERE national_id = ?)";
-                try (PreparedStatement st = conn.prepareStatement(updateDoctor)) {
-                    st.setString(1, spec); st.setString(2, lic); st.setString(3, deg); st.setString(4, editingDoctorNatId);
-                    st.executeUpdate();
-                }
-
-                conn.commit();
+            if (success) {
+                updatePasswordIfProvided(editingDoctorNatId, pass);
                 resetDoctorForm();
                 docStatusLabel.setText("✅ Doctor Record Updated Successfully!");
                 docStatusLabel.setStyle("-fx-text-fill: #10B981; -fx-font-weight: bold;");
                 loadRecords(dbSearchField.getText());
-
             } else {
-                String natId = generateNextDoctorId();
-                String email = natId + "@dhp.com";
-                int newUserId = -1;
+                docStatusLabel.setText("❌ Failed to update doctor record.");
+                docStatusLabel.setStyle("-fx-text-fill: #EF4444; -fx-font-weight: bold;");
+            }
+        } else {
+            String newId = doctorService.generateSystemId();
+            doctor.setSystemId(newId);
+            doctor.setEmail(newId + "@dhp.com");
+            doctor.setPasswordHash(pass);
 
-                String insertUserQuery = "INSERT INTO Users (national_id, full_name, email, password_hash, role, hospital_id) VALUES (?, ?, ?, ?, 'DOCTOR', ?)";
-                try (PreparedStatement stmtUser = conn.prepareStatement(insertUserQuery, Statement.RETURN_GENERATED_KEYS)) {
-                    stmtUser.setString(1, natId); stmtUser.setString(2, fullName); stmtUser.setString(3, email); stmtUser.setString(4, pass); stmtUser.setInt(5, adminHospitalId);
-                    stmtUser.executeUpdate();
-                    ResultSet rs = stmtUser.getGeneratedKeys();
-                    if (rs.next()) newUserId = rs.getInt(1);
-                }
+            boolean success = doctorService.registerNewDoctor(doctor);
 
-                if (newUserId != -1) {
-                    String insertDoctorQuery = "INSERT INTO Doctors (user_id, hospital_id, specialization, license_number, degrees, years_of_experience) VALUES (?, ?, ?, ?, ?, 0)";
-                    try (PreparedStatement stmtDoc = conn.prepareStatement(insertDoctorQuery)) {
-                        stmtDoc.setInt(1, newUserId); stmtDoc.setInt(2, adminHospitalId); stmtDoc.setString(3, spec); stmtDoc.setString(4, lic); stmtDoc.setString(5, deg);
-                        stmtDoc.executeUpdate();
-                    }
-                }
-
-                conn.commit();
+            if (success) {
                 resetDoctorForm();
-                docStatusLabel.setText("✅ Registration Successful! ID: " + natId);
+                docStatusLabel.setText("✅ Registration Successful! ID: " + newId);
                 docStatusLabel.setStyle("-fx-text-fill: #10B981; -fx-font-weight: bold;");
                 loadRecords("");
+            } else {
+                docStatusLabel.setText("❌ Failed to save doctor record.");
+                docStatusLabel.setStyle("-fx-text-fill: #EF4444; -fx-font-weight: bold;");
+            }
+        }
+    }
+
+    private void updatePasswordIfProvided(String systemId, String newPassword) {
+        if (newPassword == null || newPassword.isEmpty()) return;
+        String query = "UPDATE Users SET password_hash = ? WHERE system_id = ?";
+        try (Connection conn = DBConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setString(1, newPassword);
+            stmt.setString(2, systemId);
+            stmt.executeUpdate();
+        } catch (Exception e) { e.printStackTrace(); }
+    }
+
+    private void syncInitialDiagnosis(String systemId, String diagnosis) {
+        if (adminHospitalId <= 0) return;
+        try (Connection conn = DBConnection.getConnection()) {
+            int patientId = -1;
+            try (PreparedStatement st = conn.prepareStatement("SELECT id FROM Patients WHERE system_id = ?")) {
+                st.setString(1, systemId);
+                ResultSet r = st.executeQuery();
+                if(r.next()) patientId = r.getInt("id");
             }
 
-        } catch (Exception e) {
-            e.printStackTrace();
-            docStatusLabel.setText("❌ Database Error: Failed to save doctor record.");
-            docStatusLabel.setStyle("-fx-text-fill: #EF4444; -fx-font-weight: bold;");
-        }
+            if (patientId != -1) {
+                boolean diagExists = false;
+                try (PreparedStatement st = conn.prepareStatement("SELECT id FROM Medical_History WHERE patient_id = ? AND notes = 'Initial Registration Intake'")) {
+                    st.setInt(1, patientId);
+                    ResultSet r = st.executeQuery();
+                    diagExists = r.next();
+                }
+
+                if (diagExists && (diagnosis == null || diagnosis.isEmpty())) {
+                    try (PreparedStatement st = conn.prepareStatement("DELETE FROM Medical_History WHERE patient_id = ? AND notes = 'Initial Registration Intake'")) {
+                        st.setInt(1, patientId); st.executeUpdate();
+                    }
+                } else if (diagExists && !diagnosis.isEmpty()) {
+                    try (PreparedStatement st = conn.prepareStatement("UPDATE Medical_History SET diagnosis = ? WHERE patient_id = ? AND notes = 'Initial Registration Intake'")) {
+                        st.setString(1, diagnosis); st.setInt(2, patientId); st.executeUpdate();
+                    }
+                } else if (!diagExists && diagnosis != null && !diagnosis.isEmpty()) {
+                    int defaultDocId = 1;
+                    try (PreparedStatement ds = conn.prepareStatement("SELECT id FROM Doctors WHERE hospital_id = ? LIMIT 1")) {
+                        ds.setInt(1, adminHospitalId); ResultSet r = ds.executeQuery();
+                        if (r.next()) defaultDocId = r.getInt("id");
+                    }
+                    try (PreparedStatement st = conn.prepareStatement("INSERT INTO Medical_History (patient_id, diagnosed_by, hospital_id, diagnosis, diagnosis_date, notes) VALUES (?, ?, ?, ?, CURDATE(), 'Initial Registration Intake')")) {
+                        st.setInt(1, patientId); st.setInt(2, defaultDocId); st.setInt(3, adminHospitalId); st.setString(4, diagnosis);
+                        st.executeUpdate();
+                    }
+                }
+            }
+        } catch (Exception e) { e.printStackTrace(); }
     }
 
     private void openEditPatientForm(String natId) {
         String query = "SELECT u.full_name, p.date_of_birth, p.gender, p.blood_group, p.phone, p.weight, p.height " +
-                "FROM Users u JOIN Patients p ON u.id = p.user_id WHERE u.national_id = ?";
+                "FROM Users u JOIN Patients p ON u.id = p.user_id WHERE u.system_id = ?";
         try (Connection conn = DBConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setString(1, natId);
             ResultSet rs = stmt.executeQuery();
@@ -435,7 +390,7 @@ public class AdminDashboardController extends BaseController {
 
                 patInitialDiagnosisField.clear();
                 patInitialDiagnosisField.setPromptText("Update Initial Diagnosis (Optional)");
-                String diagQuery = "SELECT diagnosis FROM Medical_History WHERE patient_id = (SELECT id FROM Patients WHERE national_id = ?) AND notes = 'Initial Registration Intake' LIMIT 1";
+                String diagQuery = "SELECT diagnosis FROM Medical_History WHERE patient_id = (SELECT id FROM Patients WHERE system_id = ?) AND notes = 'Initial Registration Intake' LIMIT 1";
                 try (PreparedStatement diagStmt = conn.prepareStatement(diagQuery)) {
                     diagStmt.setString(1, natId);
                     ResultSet r = diagStmt.executeQuery();
@@ -463,7 +418,7 @@ public class AdminDashboardController extends BaseController {
 
     private void openEditDoctorForm(String natId) {
         String query = "SELECT u.full_name, d.specialization, d.license_number, d.degrees " +
-                "FROM Users u JOIN Doctors d ON u.id = d.user_id WHERE u.national_id = ?";
+                "FROM Users u JOIN Doctors d ON u.id = d.user_id WHERE u.system_id = ?";
         try (Connection conn = DBConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setString(1, natId);
             ResultSet rs = stmt.executeQuery();
@@ -492,12 +447,16 @@ public class AdminDashboardController extends BaseController {
         } catch (Exception e) { e.printStackTrace(); }
     }
 
+
+    // ==========================================
+    // 3. UPLOAD TEST REPORT LOGIC (UPDATED WITH FILES)
+    // ==========================================
     @FXML
     private void handleVerifyPatient(ActionEvent event) {
         String inputId = testPatientIdField.getText().trim();
         if (inputId.isEmpty()) return;
 
-        String query = "SELECT id, full_name FROM Patients WHERE national_id = ?";
+        String query = "SELECT id, full_name FROM Patients WHERE system_id = ?";
         try (Connection conn = DBConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setString(1, inputId);
             ResultSet rs = stmt.executeQuery();
@@ -514,33 +473,100 @@ public class AdminDashboardController extends BaseController {
     }
 
     @FXML
+    private void handleBrowseFiles(ActionEvent event) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Select Patient Report");
+        fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("Supported Files", "*.pdf", "*.png", "*.jpg", "*.jpeg")
+        );
+
+        // Bind to current window safely
+        File tempFile = fileChooser.showOpenDialog(btnBrowseFile.getScene().getWindow());
+
+        if (tempFile != null) {
+            selectedUploadFile = tempFile;
+            fileSelectedLabel.setText(selectedUploadFile.getName());
+            fileSelectedLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #10B981;"); // Make it green on success
+
+            // Show Cancel button, change Browse button text
+            btnCancelFile.setVisible(true);
+            btnCancelFile.setManaged(true);
+            btnBrowseFile.setText("Change File");
+        }
+    }
+
+    @FXML
+    private void handleCancelFile(ActionEvent event) {
+        selectedUploadFile = null;
+        fileSelectedLabel.setText("No file selected");
+        fileSelectedLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #111827;");
+
+        btnCancelFile.setVisible(false);
+        btnCancelFile.setManaged(false);
+        btnBrowseFile.setText("Browse Files");
+    }
+
+    @FXML
     private void handleSubmitTestReport(ActionEvent event) {
         if (verifiedPatientDbId == -1) {
-            showAlert(Alert.AlertType.ERROR, "Verification Required", "Please enter and verify a valid Patient ID first."); return;
+            testVerificationLabel.setText("❌ Please enter and verify a Patient ID first.");
+            testVerificationLabel.setStyle("-fx-text-fill: #EF4444; -fx-font-weight: bold;");
+            return;
         }
         if (testTypeCombo.getValue() == null || testDatePicker.getValue() == null || testSummaryArea.getText().trim().isEmpty()) {
-            showAlert(Alert.AlertType.ERROR, "Incomplete Form", "Please select a test type, date, and provide a summary."); return;
+            testVerificationLabel.setText("❌ Please select a test type, date, and provide a summary.");
+            testVerificationLabel.setStyle("-fx-text-fill: #EF4444; -fx-font-weight: bold;");
+            return;
         }
 
-        String insertQuery = "INSERT INTO Test_Reports (patient_id, added_by_admin_id, hospital_id, report_type, file_url, report_date, notes) VALUES (?, ?, ?, ?, ?, ?, ?)";
-        try (Connection conn = DBConnection.getConnection()) {
-            PreparedStatement stmt = conn.prepareStatement(insertQuery);
+        // Include the file_data column in the SQL query
+        String insertQuery = "INSERT INTO Test_Reports (patient_id, added_by_admin_id, hospital_id, report_type, file_url, report_date, notes, file_data) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+
+        try (Connection conn = DBConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(insertQuery)) {
             stmt.setInt(1, verifiedPatientDbId);
             stmt.setInt(2, UserSession.getInstance().getCurrentUser().getId());
             stmt.setInt(3, adminHospitalId);
             stmt.setString(4, testTypeCombo.getValue());
-            stmt.setString(5, "/docs/uploaded_report.pdf");
             stmt.setDate(6, java.sql.Date.valueOf(testDatePicker.getValue()));
             stmt.setString(7, testSummaryArea.getText().trim());
 
+            if (selectedUploadFile != null) {
+                stmt.setString(5, selectedUploadFile.getName());
+                // Push the physical bytes into the BLOB column
+                FileInputStream fis = new FileInputStream(selectedUploadFile);
+                stmt.setBinaryStream(8, fis, (int) selectedUploadFile.length());
+            } else {
+                stmt.setString(5, "No File Attached");
+                stmt.setNull(8, java.sql.Types.BLOB);
+            }
+
             stmt.executeUpdate();
 
-            showAlert(Alert.AlertType.INFORMATION, "Success", "Test Report securely added to Patient's Digital Passport!");
+            // On-screen Success Message
+            testVerificationLabel.setText("✅ Test Report securely added to Digital Passport!");
+            testVerificationLabel.setStyle("-fx-text-fill: #10B981; -fx-font-weight: bold; -fx-font-size: 14px;");
 
-            testPatientIdField.clear(); testVerificationLabel.setText("Please verify a Patient ID before uploading."); testVerificationLabel.setStyle("-fx-text-fill: #F59E0B; -fx-font-size: 12px; -fx-font-weight: bold;"); verifiedPatientDbId = -1; testTypeCombo.getSelectionModel().clearSelection(); testDatePicker.setValue(null); testSummaryArea.clear();
-        } catch (Exception e) { e.printStackTrace(); showAlert(Alert.AlertType.ERROR, "Database Error", "Could not submit report."); }
+            // Reset Form completely
+            testPatientIdField.clear();
+            verifiedPatientDbId = -1;
+            testTypeCombo.getSelectionModel().clearSelection();
+            testDatePicker.setValue(null);
+            testSummaryArea.clear();
+
+            // Triggers the cancel logic to reset the file UI
+            handleCancelFile(null);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            testVerificationLabel.setText("❌ Database Error: Could not submit report.");
+            testVerificationLabel.setStyle("-fx-text-fill: #EF4444; -fx-font-weight: bold;");
+        }
     }
 
+
+    // ==========================================
+    // GLOBAL SEARCH AND RECORD CARDS
+    // ==========================================
     @FXML
     private void handleSearch(ActionEvent event) {
         String searchTerm = dbSearchField.getText() == null ? "" : dbSearchField.getText().trim();
@@ -556,9 +582,9 @@ public class AdminDashboardController extends BaseController {
         if (doctorRecordsContainer == null) return;
         doctorRecordsContainer.getChildren().clear();
 
-        String query = "SELECT u.national_id, u.full_name, d.specialization, d.license_number, d.degrees " +
+        String query = "SELECT u.system_id, u.full_name, d.specialization, d.license_number, d.degrees " +
                 "FROM Doctors d JOIN Users u ON d.user_id = u.id " +
-                "WHERE d.hospital_id = ? AND (u.full_name LIKE ? OR u.national_id LIKE ?) " +
+                "WHERE d.hospital_id = ? AND (u.full_name LIKE ? OR u.system_id LIKE ?) " +
                 "ORDER BY u.full_name ASC";
 
         try (Connection conn = DBConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
@@ -570,7 +596,7 @@ public class AdminDashboardController extends BaseController {
 
             while (rs.next()) {
                 hasData = true;
-                String natId = rs.getString("national_id");
+                String natId = rs.getString("system_id");
                 String name = rs.getString("full_name");
                 String spec = rs.getString("specialization");
                 String lic = rs.getString("license_number");
@@ -603,9 +629,9 @@ public class AdminDashboardController extends BaseController {
         if (patientRecordsContainer == null) return;
         patientRecordsContainer.getChildren().clear();
 
-        String query = "SELECT national_id, full_name, created_at " +
+        String query = "SELECT system_id, full_name, created_at " +
                 "FROM Patients " +
-                "WHERE full_name LIKE ? OR national_id LIKE ? " +
+                "WHERE full_name LIKE ? OR system_id LIKE ? " +
                 "ORDER BY created_at DESC LIMIT 50";
 
         try (Connection conn = DBConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
@@ -618,7 +644,7 @@ public class AdminDashboardController extends BaseController {
 
             while (rs.next()) {
                 hasData = true;
-                String natId = rs.getString("national_id");
+                String natId = rs.getString("system_id");
                 String name = rs.getString("full_name");
                 String regDate = rs.getTimestamp("created_at").toLocalDateTime().format(dateFmt);
                 String subtitle = "Registered: " + regDate + " • ID: " + natId;
@@ -653,10 +679,11 @@ public class AdminDashboardController extends BaseController {
         titleRow.getChildren().addAll(nameLbl, roleBadge);
         Label subLbl = new Label(subtitle); subLbl.setStyle("-fx-text-fill: #6B7280; -fx-font-size: 13px;"); infoBox.getChildren().addAll(titleRow, subLbl);
 
-        Button editBtn = new Button("✏️ Edit Record");
-        editBtn.setStyle("-fx-background-color: #F8FAFC; -fx-border-color: #E2E8F0; -fx-border-radius: 8; -fx-text-fill: #26463D; -fx-font-weight: bold; -fx-padding: 8 15; -fx-cursor: hand; -fx-min-width: 130;");
+        // FIX: explicitly define 'Segoe UI Emoji' so the icon renders on Windows
+        Button editBtn = new Button("📝 Edit Record");
+        editBtn.setStyle("-fx-background-color: #F8FAFC; -fx-border-color: #E2E8F0; -fx-border-radius: 8; -fx-text-fill: #26463D; -fx-font-weight: bold; -fx-padding: 8 15; -fx-cursor: hand; -fx-min-width: 130; -fx-font-family: 'Segoe UI Emoji', 'System';");
         Button profileBtn = new Button("📄 Full Profile");
-        profileBtn.setStyle("-fx-background-color: #115E59; -fx-text-fill: white; -fx-background-radius: 8; -fx-font-weight: bold; -fx-padding: 8 15; -fx-cursor: hand; -fx-min-width: 130;");
+        profileBtn.setStyle("-fx-background-color: #115E59; -fx-text-fill: white; -fx-background-radius: 8; -fx-font-weight: bold; -fx-padding: 8 15; -fx-cursor: hand; -fx-min-width: 130; -fx-font-family: 'Segoe UI Emoji', 'System';");
 
         VBox btnBox = new VBox(8, editBtn, profileBtn);
         btnBox.setAlignment(Pos.CENTER_RIGHT);
@@ -675,10 +702,11 @@ public class AdminDashboardController extends BaseController {
         titleRow.getChildren().addAll(nameLbl, roleBadge);
         Label subLbl = new Label(subtitle); subLbl.setStyle("-fx-text-fill: #6B7280; -fx-font-size: 13px;"); infoBox.getChildren().addAll(titleRow, subLbl);
 
-        Button editBtn = new Button("✏️ Edit Record");
-        editBtn.setStyle("-fx-background-color: #F8FAFC; -fx-border-color: #E2E8F0; -fx-border-radius: 8; -fx-text-fill: #26463D; -fx-font-weight: bold; -fx-padding: 8 15; -fx-cursor: hand; -fx-min-width: 130;");
+        // FIX: explicitly define 'Segoe UI Emoji' so the icon renders on Windows
+        Button editBtn = new Button("📝 Edit Record");
+        editBtn.setStyle("-fx-background-color: #F8FAFC; -fx-border-color: #E2E8F0; -fx-border-radius: 8; -fx-text-fill: #26463D; -fx-font-weight: bold; -fx-padding: 8 15; -fx-cursor: hand; -fx-min-width: 130; -fx-font-family: 'Segoe UI Emoji', 'System';");
         Button profileBtn = new Button("📄 Full Profile");
-        profileBtn.setStyle("-fx-background-color: #115E59; -fx-text-fill: white; -fx-background-radius: 8; -fx-font-weight: bold; -fx-padding: 8 15; -fx-cursor: hand; -fx-min-width: 130;");
+        profileBtn.setStyle("-fx-background-color: #115E59; -fx-text-fill: white; -fx-background-radius: 8; -fx-font-weight: bold; -fx-padding: 8 15; -fx-cursor: hand; -fx-min-width: 130; -fx-font-family: 'Segoe UI Emoji', 'System';");
 
         VBox btnBox = new VBox(8, editBtn, profileBtn);
         btnBox.setAlignment(Pos.CENTER_RIGHT);
@@ -708,7 +736,7 @@ public class AdminDashboardController extends BaseController {
                 profileMedicalGrid.setManaged(true);
 
                 String q = "SELECT u.full_name, u.email, p.phone, p.blood_group, p.weight, p.height, p.date_of_birth, p.id AS pid " +
-                        "FROM Users u JOIN Patients p ON u.id = p.user_id WHERE u.national_id = ?";
+                        "FROM Users u JOIN Patients p ON u.id = p.user_id WHERE u.system_id = ?";
                 try (PreparedStatement st = conn.prepareStatement(q)) {
                     st.setString(1, natId);
                     ResultSet rs = st.executeQuery();
@@ -735,7 +763,7 @@ public class AdminDashboardController extends BaseController {
                 profileMedicalGrid.setManaged(false);
 
                 String q = "SELECT u.full_name, u.email, u.created_at, d.specialization, d.license_number, d.degrees " +
-                        "FROM Users u JOIN Doctors d ON u.id = d.user_id WHERE u.national_id = ?";
+                        "FROM Users u JOIN Doctors d ON u.id = d.user_id WHERE u.system_id = ?";
                 try (PreparedStatement st = conn.prepareStatement(q)) {
                     st.setString(1, natId);
                     ResultSet rs = st.executeQuery();
@@ -761,7 +789,6 @@ public class AdminDashboardController extends BaseController {
     }
 
     private void loadMedicalHistoryForProfile(Connection conn, int patientId) throws Exception {
-        // Diagnoses
         String diagQuery = "SELECT diagnosis, notes FROM Medical_History WHERE patient_id = ? ORDER BY diagnosis_date DESC";
         try (PreparedStatement st = conn.prepareStatement(diagQuery)) {
             st.setInt(1, patientId);
@@ -777,7 +804,6 @@ public class AdminDashboardController extends BaseController {
             }
         }
 
-        // Medications
         String medQuery = "SELECT pi.medicine_name, pi.dosage, pi.frequency FROM Prescription_Items pi JOIN Prescriptions p ON pi.prescription_id = p.id WHERE p.patient_id = ? ORDER BY p.prescription_date DESC LIMIT 10";
         try (PreparedStatement st = conn.prepareStatement(medQuery)) {
             st.setInt(1, patientId);
@@ -793,7 +819,6 @@ public class AdminDashboardController extends BaseController {
             }
         }
 
-        // Tests
         String testQuery = "SELECT report_type, report_date, notes FROM Test_Reports WHERE patient_id = ? ORDER BY report_date DESC";
         try (PreparedStatement st = conn.prepareStatement(testQuery)) {
             st.setInt(1, patientId);
@@ -895,10 +920,6 @@ public class AdminDashboardController extends BaseController {
         if(btnNewDoctor != null) btnNewDoctor.setStyle(INACTIVE);
         if(btnAddTestReport != null) btnAddTestReport.setStyle(INACTIVE);
         if (btn != null) btn.setStyle(ACTIVE);
-    }
-
-    private void showAlert(Alert.AlertType type, String title, String content) {
-        Alert alert = new Alert(type); alert.setTitle(title); alert.setHeaderText(null); alert.setContentText(content); alert.showAndWait();
     }
 
     @FXML private void handleLogout(ActionEvent event) {

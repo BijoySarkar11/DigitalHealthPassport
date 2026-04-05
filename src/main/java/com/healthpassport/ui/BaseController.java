@@ -1,31 +1,47 @@
+package com.healthpassport.ui;
 
-package com.healthpassport.ui.common;
-
-import javafx.event.Event;
+import javafx.event.Event; // Using the generic Event class
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.stage.Stage;
+
 import java.io.IOException;
 
-// ABSTRACTION: This class handles the complex screen-switching logic behind the scenes.
 public abstract class BaseController {
 
-    // ENCAPSULATION: 'protected' means only classes that inherit from BaseController can use this.
-    // POLYMORPHISM: Accepting the generic 'Event' allows this method to process both ActionEvent and MouseEvent.
+    /**
+     * Shared method to switch between screens securely.
+     * Accepts any JavaFX Event (ActionEvent, MouseEvent, etc.)
+     * Automatically preserves the current window dimensions.
+     */
     protected void navigateTo(Event event, String fxmlPath, String title) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
-            Parent root = loader.load();
+            Parent root = FXMLLoader.load(getClass().getResource(fxmlPath));
+            Scene currentScene = ((Node) event.getSource()).getScene();
+            Stage stage = (Stage) currentScene.getWindow();
 
-            // Extracts the stage from whatever generic event triggered the method
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            stage.getScene().setRoot(root);
-            stage.setTitle(title);
+            if (title != null) stage.setTitle(title);
+
+            // OOP Upgrade: Preserve exact window dimensions automatically!
+            stage.setScene(new Scene(root, currentScene.getWidth(), currentScene.getHeight()));
+            stage.show();
         } catch (IOException e) {
-            System.err.println("OOP Navigation Error: Failed to load " + fxmlPath);
             e.printStackTrace();
+            showAlert(Alert.AlertType.ERROR, "Navigation Error", "Could not load page: " + fxmlPath);
         }
     }
-}
 
+    /**
+     * Shared method to show universal popup messages.
+     */
+    protected void showAlert(Alert.AlertType type, String title, String content) {
+        Alert alert = new Alert(type);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(content);
+        alert.showAndWait();
+    }
+}

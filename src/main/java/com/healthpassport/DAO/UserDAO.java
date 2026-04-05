@@ -1,5 +1,8 @@
-package com.healthpassport.DAO;
+package com.healthpassport.MODEL.dao;
 
+import com.healthpassport.MODEL.user.Admin;
+import com.healthpassport.MODEL.user.Doctor;
+import com.healthpassport.MODEL.user.Patient;
 import com.healthpassport.MODEL.user.Role;
 import com.healthpassport.MODEL.user.User;
 import com.healthpassport.util.DBConnection;
@@ -11,9 +14,13 @@ import java.sql.SQLException;
 
 public class UserDAO {
 
-    // Authenticate using EITHER Email OR National ID
+    /**
+     * Authenticates a user using either Email OR System ID.
+     * Because 'User' is now abstract, this method acts as a Factory,
+     * returning the correct concrete subclass (Admin, Doctor, or Patient).
+     */
     public User authenticate(String identifier, String password) {
-        String query = "SELECT * FROM Users WHERE (email = ? OR national_id = ?) AND password_hash = ? AND is_active = TRUE";
+        String query = "SELECT id, system_id, full_name, email, password_hash, role, hospital_id FROM Users WHERE (email = ? OR system_id = ?) AND password_hash = ? AND is_active = TRUE";
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
@@ -25,24 +32,44 @@ public class UserDAO {
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
-                // Safely extract hospital_id (handles SQL NULL values)
-                int hospId = rs.getInt("hospital_id");
-                Integer hospitalId = rs.wasNull() ? null : hospId;
-
-                // Extract the newly added full_name column from the database
+                // 1. Extract raw data from the Users table
+                int internalId = rs.getInt("id");
+                String systemId = rs.getString("system_id");
                 String fullName = rs.getString("full_name");
+                String email = rs.getString("email");
+                String passHash = rs.getString("password_hash");
+                Role role = Role.valueOf(rs.getString("role")); // Convert SQL string to Enum
 
-                // Create and return the OOP User object
-                return new User(
-                        rs.getInt("id"),
-                        rs.getString("national_id"),
-                        rs.getString("email"),
-                        rs.getString("password_hash"),
-                        Role.valueOf(rs.getString("role")), // Converts SQL string to Java Enum
-                        hospitalId,
-                        rs.getBoolean("is_active"),
-                        fullName // NEW: Pass the full name to the constructor
-                );
+                int hospId = rs.getInt("hospital_id");
+                int finalHospitalId = rs.wasNull() ? -1 : hospId;
+
+                // 2. Instantiate the correct Concrete Class based on the Role
+                User authenticatedUser = null;
+
+                switch (role) {
+                    case ADMIN:
+                        authenticatedUser = new Admin();
+                        break;
+                    case DOCTOR:
+                        authenticatedUser = new Doctor();
+                        break;
+                    case PATIENT:
+                        authenticatedUser = new Patient();
+                        break;
+                }
+
+                // 3. Populate the shared base attributes
+                if (authenticatedUser != null) {
+                    authenticatedUser.setId(internalId);
+                    authenticatedUser.setSystemId(systemId);
+                    authenticatedUser.setFullName(fullName);
+                    authenticatedUser.setEmail(email);
+                    authenticatedUser.setPasswordHash(passHash);
+                    authenticatedUser.setRole(role);
+                    authenticatedUser.setHospitalId(finalHospitalId);
+                }
+
+                return authenticatedUser;
             }
         } catch (SQLException e) {
             e.printStackTrace();

@@ -1,29 +1,67 @@
 package com.healthpassport.MODEL.user;
 
-public class Doctor extends Person {
-    private int userId;
-    private int hospitalId; // Ties the Doctor to a specific Hospital
+import com.healthpassport.util.DBConnection;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+
+public class Doctor extends User {
     private String specialization;
     private String licenseNumber;
-    private int yearsOfExperience;
+    private String degrees;
 
-    public Doctor(int id, String fullName, int userId, int hospitalId, String specialization, String licenseNumber, int yearsOfExperience) {
-        super(id, fullName);
-        this.userId = userId;
-        this.hospitalId = hospitalId;
-        this.specialization = specialization;
-        this.licenseNumber = licenseNumber;
-        this.yearsOfExperience = yearsOfExperience;
+    public Doctor() {
+        this.setRole(Role.DOCTOR);
     }
 
-    public int getUserId() { return userId; }
-    public int getHospitalId() { return hospitalId; }
     public String getSpecialization() { return specialization; }
+    public void setSpecialization(String specialization) { this.specialization = specialization; }
+
     public String getLicenseNumber() { return licenseNumber; }
-    public int getYearsOfExperience() { return yearsOfExperience; }
+    public void setLicenseNumber(String licenseNumber) { this.licenseNumber = licenseNumber; }
+
+    public String getDegrees() { return degrees; }
+    public void setDegrees(String degrees) { this.degrees = degrees; }
 
     @Override
-    public String getRoleDashboard() {
-        return "/fxml/DoctorDashboard.fxml";
+    public String getProfileSummary() {
+        return "Dr. " + getFullName() + " - " + specialization + " (" + licenseNumber + ")";
+    }
+
+    @Override
+    public boolean saveToDatabase() {
+        int baseUserId = saveBaseUserRecord(); // Calls inherited method
+        if (baseUserId == -1) return false;
+
+        String query = "INSERT INTO Doctors (user_id, hospital_id, specialization, license_number, degrees) VALUES (?, ?, ?, ?, ?)";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setInt(1, baseUserId);
+            stmt.setInt(2, getHospitalId());
+            stmt.setString(3, specialization);
+            stmt.setString(4, licenseNumber);
+            stmt.setString(5, degrees);
+            return stmt.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    @Override
+    public boolean updateInDatabase() {
+        if (!updateBaseUserRecord()) return false;
+
+        String query = "UPDATE Doctors SET specialization = ?, license_number = ?, degrees = ? WHERE user_id = (SELECT id FROM Users WHERE system_id = ?)";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setString(1, specialization);
+            stmt.setString(2, licenseNumber);
+            stmt.setString(3, degrees);
+            stmt.setString(4, getSystemId());
+            return stmt.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 }

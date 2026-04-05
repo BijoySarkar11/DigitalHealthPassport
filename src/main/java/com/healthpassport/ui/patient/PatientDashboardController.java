@@ -1,24 +1,21 @@
 package com.healthpassport.ui.patient;
 
+import com.healthpassport.ui.BaseController;
 import com.healthpassport.MODEL.user.User;
-import com.healthpassport.ui.common.BaseController;
 import com.healthpassport.util.DBConnection;
 import com.healthpassport.util.UserSession;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Node;
-import javafx.scene.Parent;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
-import javafx.stage.Stage;
+import javafx.stage.FileChooser;
 
-import java.io.IOException;
+import java.io.File;
+import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -33,6 +30,8 @@ import java.util.List;
 import java.util.Set;
 
 public class PatientDashboardController extends BaseController {
+
+    @FXML private BorderPane rootPane;
 
     // Sidebar & Layout
     @FXML private Button btnDashboard, btnAppointments, btnPrescriptions, btnTestReports;
@@ -57,6 +56,12 @@ public class PatientDashboardController extends BaseController {
     @FXML private ComboBox<String> appointmentTimeCombo;
     @FXML private TextArea appointmentReasonArea;
 
+    // Inline Test Report Details Elements
+    @FXML private VBox testReportDetailView;
+    @FXML private Label reportDetailTitle;
+    @FXML private Label reportDetailInfo;
+    @FXML private VBox reportDetailContentBox; // Replaced Label with VBox
+
     private int currentPatientDbId = -1;
     private int primaryDoctorId = -1;
 
@@ -73,6 +78,15 @@ public class PatientDashboardController extends BaseController {
     private String formatDoctorName(String rawName) {
         if (rawName == null) return "Unknown Doctor";
         return "Dr. " + rawName.replaceFirst("^(?i)(\\s*(dr\\.?|doctor)\\s*)+", "").trim();
+    }
+
+    private String getCleanFileName(String dbFileName) {
+        if (dbFileName == null || dbFileName.trim().isEmpty()) return "report_document.pdf";
+        String clean = dbFileName.replace("\\", "/");
+        if (clean.contains("/")) {
+            clean = clean.substring(clean.lastIndexOf('/') + 1);
+        }
+        return clean.trim().isEmpty() ? "report_document.pdf" : clean;
     }
 
     public static class DoctorItem {
@@ -111,7 +125,7 @@ public class PatientDashboardController extends BaseController {
         User currentUser = UserSession.getInstance().getCurrentUser();
         if (currentUser == null) return;
 
-        String profileQuery = "SELECT id, national_id, full_name, weight, height, blood_group, phone, gender FROM Patients WHERE user_id = ?";
+        String profileQuery = "SELECT id, system_id, full_name, weight, height, blood_group, phone, gender FROM Patients WHERE user_id = ?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(profileQuery)) {
             stmt.setInt(1, currentUser.getId());
@@ -122,7 +136,7 @@ public class PatientDashboardController extends BaseController {
                 String firstName = fullName.split(" ")[0];
 
                 sidebarNameLabel.setText(fullName);
-                sidebarIdLabel.setText("ID: " + rs.getString("national_id"));
+                sidebarIdLabel.setText("ID: " + rs.getString("system_id"));
                 greetingLabel.setText("Hello, " + firstName + "!");
                 weightLabel.setText(String.format("%.0f kg", rs.getDouble("weight")));
                 heightLabel.setText(String.format("%.0f cm", rs.getDouble("height")));
@@ -137,13 +151,10 @@ public class PatientDashboardController extends BaseController {
         if (currentPatientDbId != -1) {
             loadPrimaryDoctor();
             loadUpcomingAppointments();
-
             loadAllDoctorsForBooking();
             loadAvailableDoctors("");
-
             loadPrescriptions("");
             loadTestReports("");
-
             loadMedicationReminders();
             loadInlineDiagnostics();
             loadInlineDrugs();
@@ -151,7 +162,8 @@ public class PatientDashboardController extends BaseController {
         }
     }
 
-    @FXML private void handleGlobalSearch(ActionEvent event) {
+    @FXML
+    private void handleGlobalSearch() {
         String query = globalSearchField.getText();
         if (query == null) query = "";
         query = query.trim();
@@ -416,39 +428,6 @@ public class PatientDashboardController extends BaseController {
         return hasData;
     }
 
-    private boolean loadTestReports(String searchTerm) {
-        if (testReportsContainer == null) return false;
-        testReportsContainer.getChildren().clear();
-
-        String query = "SELECT tr.report_type, tr.report_date, h.name as hospital_name " +
-                "FROM Test_Reports tr JOIN Hospitals h ON tr.hospital_id = h.id " +
-                "WHERE tr.patient_id = ? AND (tr.report_type LIKE ? OR h.name LIKE ?) " +
-                "ORDER BY tr.report_date DESC";
-
-        boolean hasData = false;
-        try (Connection conn = DBConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
-            stmt.setInt(1, currentPatientDbId);
-            stmt.setString(2, "%" + searchTerm + "%");
-            stmt.setString(3, "%" + searchTerm + "%");
-
-            ResultSet rs = stmt.executeQuery();
-            DateTimeFormatter dateFmt = DateTimeFormatter.ofPattern("MMM dd, yyyy");
-            while (rs.next()) {
-                hasData = true;
-                testReportsContainer.getChildren().add(createTestReportCard(
-                        rs.getString("report_type"),
-                        "Tested at: " + rs.getString("hospital_name"),
-                        "Tested on: " + rs.getDate("report_date").toLocalDate().format(dateFmt)
-                ));
-            }
-            if (!hasData) {
-                if(searchTerm.isEmpty()) testReportsContainer.getChildren().add(new Label("No test reports available."));
-                else testReportsContainer.getChildren().add(new Label("No test reports found matching '" + searchTerm + "'."));
-            }
-        } catch (SQLException e) { e.printStackTrace(); }
-        return hasData;
-    }
-
     private void loadPrimaryDoctor() {
         String query = "SELECT d.id AS doc_id, u.full_name, d.specialization FROM Appointments a JOIN Doctors d ON a.doctor_id = d.id JOIN Users u ON d.user_id = u.id WHERE a.patient_id = ? ORDER BY a.appointment_date DESC LIMIT 1";
         try (Connection conn = DBConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
@@ -555,7 +534,205 @@ public class PatientDashboardController extends BaseController {
     }
 
     // ==========================================
-    // UI CARD GENERATORS
+    // TEST REPORTS: VIEW AND DOWNLOAD LOGIC
+    // ==========================================
+    private boolean loadTestReports(String searchTerm) {
+        if (testReportsContainer == null) return false;
+        testReportsContainer.getChildren().clear();
+
+        String query = "SELECT tr.id, tr.report_type, tr.report_date, h.name as hospital_name, tr.file_url " +
+                "FROM Test_Reports tr JOIN Hospitals h ON tr.hospital_id = h.id " +
+                "WHERE tr.patient_id = ? AND (tr.report_type LIKE ? OR h.name LIKE ?) " +
+                "ORDER BY tr.report_date DESC";
+
+        boolean hasData = false;
+        try (Connection conn = DBConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setInt(1, currentPatientDbId);
+            stmt.setString(2, "%" + searchTerm + "%");
+            stmt.setString(3, "%" + searchTerm + "%");
+
+            ResultSet rs = stmt.executeQuery();
+            DateTimeFormatter dateFmt = DateTimeFormatter.ofPattern("MMM dd, yyyy");
+            while (rs.next()) {
+                hasData = true;
+                testReportsContainer.getChildren().add(createTestReportCard(
+                        rs.getInt("id"),
+                        rs.getString("report_type"),
+                        "Tested at: " + rs.getString("hospital_name"),
+                        "Tested on: " + rs.getDate("report_date").toLocalDate().format(dateFmt),
+                        rs.getString("file_url")
+                ));
+            }
+            if (!hasData) {
+                if(searchTerm.isEmpty()) testReportsContainer.getChildren().add(new Label("No test reports available."));
+                else testReportsContainer.getChildren().add(new Label("No test reports found matching '" + searchTerm + "'."));
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+        return hasData;
+    }
+
+    private HBox createTestReportCard(int reportId, String testName, String detailsLabel, String dateStr, String fileName) {
+        HBox card = new HBox();
+        card.setStyle("-fx-background-color: white; -fx-background-radius: 15; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(38,70,61,0.08), 15, 0, 5, 5); -fx-alignment: center-left; -fx-spacing: 20;");
+
+        VBox iconBox = new VBox();
+        iconBox.setStyle("-fx-background-color: #E8F3EE; -fx-background-radius: 12; -fx-min-width: 65; -fx-min-height: 65; -fx-alignment: center;");
+
+        Label fallbackIcon = new Label("📄");
+        fallbackIcon.setStyle("-fx-font-size: 28px; -fx-font-family: 'Segoe UI Emoji'; -fx-text-fill: #26463D;");
+        iconBox.getChildren().add(fallbackIcon);
+
+        VBox infoBox = new VBox();
+        infoBox.setSpacing(5);
+        HBox.setHgrow(infoBox, Priority.ALWAYS);
+        HBox titleBox = new HBox(new Label(testName), new Label("Ready"));
+        titleBox.setSpacing(10);
+        titleBox.setStyle("-fx-alignment: center-left;");
+        titleBox.getChildren().get(0).setStyle("-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 18px;");
+        titleBox.getChildren().get(1).setStyle("-fx-background-color: #D1FAE5; -fx-text-fill: #065F46; -fx-padding: 3 8; -fx-background-radius: 5; -fx-font-size: 10px; -fx-font-weight: bold;");
+
+        Label detLabel = new Label(detailsLabel);
+        detLabel.setStyle("-fx-text-fill: #5C8D7D; -fx-font-weight: bold; -fx-font-size: 13px;");
+
+        HBox dateBox = new HBox(new Label("📅"), new Label(dateStr));
+        dateBox.setSpacing(5);
+        dateBox.getChildren().get(0).setStyle("-fx-font-family: 'Segoe UI Emoji'; -fx-text-fill: #6B7280; -fx-font-size: 11px;");
+        dateBox.getChildren().get(1).setStyle("-fx-text-fill: #6B7280; -fx-font-size: 12px;");
+
+        infoBox.getChildren().addAll(titleBox, detLabel, dateBox);
+
+        HBox btnBox = new HBox();
+        btnBox.setSpacing(10);
+        btnBox.setStyle("-fx-alignment: center-right;");
+
+        Button viewBtn = new Button("👁️ View");
+        viewBtn.setStyle("-fx-background-color: #F8FAFC; -fx-text-fill: #26463D; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 15; -fx-cursor: hand; -fx-border-color: #E2E8F0; -fx-border-radius: 8; -fx-font-family: 'Segoe UI Emoji', 'System';");
+
+        viewBtn.setOnAction(e -> handleViewReport(reportId, testName, detailsLabel, dateStr, fileName));
+
+        Button downBtn = new Button("⬇️ Download");
+        downBtn.setStyle("-fx-background-color: #115E59; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 15; -fx-cursor: hand; -fx-font-family: 'Segoe UI Emoji', 'System';");
+        downBtn.setOnAction(e -> handleDownloadReport(reportId, fileName));
+
+        btnBox.getChildren().addAll(viewBtn, downBtn);
+        card.getChildren().addAll(iconBox, infoBox, btnBox);
+        return card;
+    }
+
+    // ==========================================
+    // STYLED INLINE VIEW LOGIC
+    // ==========================================
+    private void handleViewReport(int reportId, String testName, String info, String dateStr, String fileName) {
+        testReportsContainer.setVisible(false);
+        testReportsContainer.setManaged(false);
+        testReportDetailView.setVisible(true);
+        testReportDetailView.setManaged(true);
+
+        reportDetailTitle.setText(testName);
+        reportDetailInfo.setText(info + " | " + dateStr);
+
+        reportDetailContentBox.getChildren().clear();
+
+        String query = "SELECT notes, file_url FROM Test_Reports WHERE id = ?";
+        try (Connection conn = DBConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setInt(1, reportId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                String notes = rs.getString("notes");
+                String fileUrl = rs.getString("file_url");
+
+                VBox notesBox = new VBox(10);
+                notesBox.setStyle("-fx-background-color: #F8FAFC; -fx-background-radius: 12; -fx-padding: 20; -fx-border-color: #E2E8F0; -fx-border-radius: 12;");
+                Label notesHeader = new Label("👨‍⚕️ Admin/Doctor Notes");
+                notesHeader.setStyle("-fx-text-fill: #115E59; -fx-font-weight: bold; -fx-font-size: 15px; -fx-font-family: 'Segoe UI Emoji', 'System';");
+                Label notesText = new Label(notes != null && !notes.trim().isEmpty() ? notes : "No specific notes provided for this report.");
+                notesText.setStyle("-fx-text-fill: #4B5563; -fx-font-size: 14px;");
+                notesText.setWrapText(true);
+                notesBox.getChildren().addAll(notesHeader, notesText);
+
+                HBox fileBox = new HBox(15);
+                fileBox.setStyle("-fx-background-color: #E8F3EE; -fx-background-radius: 12; -fx-padding: 20; -fx-alignment: center-left;");
+                Label fileIcon = new Label("📄");
+                fileIcon.setStyle("-fx-font-size: 30px; -fx-font-family: 'Segoe UI Emoji'; -fx-text-fill: #26463D;");
+                VBox fileInfo = new VBox(3);
+
+                if (fileUrl != null && !fileUrl.trim().isEmpty() && !fileUrl.equals("No File Attached")) {
+                    Label fileTitle = new Label("Document Attached");
+                    fileTitle.setStyle("-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 15px;");
+                    Label fileNameLbl = new Label(getCleanFileName(fileUrl));
+                    fileNameLbl.setStyle("-fx-text-fill: #5C8D7D; -fx-font-size: 13px; -fx-font-weight: bold;");
+                    Label hint = new Label("Use the 'Download' button from the main list to save and view this file.");
+                    hint.setStyle("-fx-text-fill: #6B7280; -fx-font-size: 12px;");
+                    fileInfo.getChildren().addAll(fileTitle, fileNameLbl, hint);
+                } else {
+                    Label fileTitle = new Label("No Document Attached");
+                    fileTitle.setStyle("-fx-text-fill: #B91C1C; -fx-font-weight: bold; -fx-font-size: 15px;");
+                    Label hint = new Label("This report contains only the notes listed above.");
+                    hint.setStyle("-fx-text-fill: #6B7280; -fx-font-size: 12px;");
+                    fileBox.setStyle("-fx-background-color: #FEF2F2; -fx-background-radius: 12; -fx-padding: 20; -fx-alignment: center-left;");
+                    fileIcon.setText("⚠️");
+                    fileInfo.getChildren().addAll(fileTitle, hint);
+                }
+                fileBox.getChildren().addAll(fileIcon, fileInfo);
+
+                reportDetailContentBox.getChildren().addAll(notesBox, fileBox);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            Label errorLbl = new Label("Error loading report details from the database.");
+            errorLbl.setStyle("-fx-text-fill: #D97706; -fx-font-weight: bold;");
+            reportDetailContentBox.getChildren().add(errorLbl);
+        }
+    }
+
+    @FXML
+    private void hideTestReportDetails() {
+        testReportDetailView.setVisible(false);
+        testReportDetailView.setManaged(false);
+        testReportsContainer.setVisible(true);
+        testReportsContainer.setManaged(true);
+    }
+
+    private void handleDownloadReport(int reportId, String fileName) {
+        if (fileName == null || fileName.equals("No File Attached") || fileName.trim().isEmpty()) {
+            showAlert(Alert.AlertType.WARNING, "No File", "There is no file attached to this report.");
+            return;
+        }
+
+        String safeName = getCleanFileName(fileName);
+
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Save Test Report");
+        fileChooser.setInitialFileName(safeName);
+
+        File saveLocation = fileChooser.showSaveDialog(rootPane.getScene().getWindow());
+
+        if (saveLocation != null) {
+            String query = "SELECT file_data FROM Test_Reports WHERE id = ?";
+            try (Connection conn = DBConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
+                stmt.setInt(1, reportId);
+                ResultSet rs = stmt.executeQuery();
+                if (rs.next()) {
+                    byte[] fileBytes = rs.getBytes("file_data");
+                    if (fileBytes != null && fileBytes.length > 0) {
+                        Files.write(saveLocation.toPath(), fileBytes);
+                        showAlert(Alert.AlertType.INFORMATION, "Success", "File downloaded successfully!");
+                    } else {
+                        showAlert(Alert.AlertType.WARNING, "Empty File", "This record was created before file uploads were fully supported. The file is empty.");
+                    }
+                }
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+                showAlert(Alert.AlertType.ERROR, "Database Error", "Ensure your 'Test_Reports' table has a 'file_data' BLOB column. Details: " + ex.getMessage());
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                showAlert(Alert.AlertType.ERROR, "Download Error", "Failed to save the file: " + ex.getMessage());
+            }
+        }
+    }
+
+    // ==========================================
+    // UI CARD GENERATION FOR OTHERS
     // ==========================================
 
     private HBox createAppointmentCard(String month, String day, String title, String subtitle, String status, String reason) {
@@ -681,62 +858,6 @@ public class PatientDashboardController extends BaseController {
         return card;
     }
 
-    private HBox createTestReportCard(String testName, String details, String dateStr) {
-        HBox card = new HBox();
-        card.setStyle("-fx-background-color: white; -fx-background-radius: 15; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(38,70,61,0.08), 15, 0, 5, 5); -fx-alignment: center-left; -fx-spacing: 20;");
-
-        VBox iconBox = new VBox();
-        iconBox.setStyle("-fx-background-color: #E8F3EE; -fx-background-radius: 12; -fx-min-width: 65; -fx-min-height: 65; -fx-alignment: center;");
-
-        try {
-            java.io.InputStream imageStream = getClass().getResourceAsStream("/images/report_icon.png");
-            if (imageStream != null) {
-                ImageView imgView = new ImageView(new Image(imageStream));
-                imgView.setFitWidth(32);
-                imgView.setFitHeight(32);
-                imgView.setPreserveRatio(true);
-                iconBox.getChildren().add(imgView);
-            } else {
-                throw new Exception("Image not found.");
-            }
-        } catch (Exception e) {
-            Label fallbackIcon = new Label("📄");
-            fallbackIcon.setStyle("-fx-font-size: 28px; -fx-font-family: 'Segoe UI Emoji'; -fx-text-fill: #26463D;");
-            iconBox.getChildren().add(fallbackIcon);
-        }
-
-        VBox infoBox = new VBox();
-        infoBox.setSpacing(5);
-        HBox.setHgrow(infoBox, Priority.ALWAYS);
-        HBox titleBox = new HBox(new Label(testName), new Label("Ready"));
-        titleBox.setSpacing(10);
-        titleBox.setStyle("-fx-alignment: center-left;");
-        titleBox.getChildren().get(0).setStyle("-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 18px;");
-        titleBox.getChildren().get(1).setStyle("-fx-background-color: #D1FAE5; -fx-text-fill: #065F46; -fx-padding: 3 8; -fx-background-radius: 5; -fx-font-size: 10px; -fx-font-weight: bold;");
-
-        Label detailsLabel = new Label(details);
-        detailsLabel.setStyle("-fx-text-fill: #5C8D7D; -fx-font-weight: bold; -fx-font-size: 13px;");
-
-        HBox dateBox = new HBox(new Label("📅"), new Label(dateStr));
-        dateBox.setSpacing(5);
-        dateBox.getChildren().get(0).setStyle("-fx-font-family: 'Segoe UI Emoji'; -fx-text-fill: #6B7280; -fx-font-size: 11px;");
-        dateBox.getChildren().get(1).setStyle("-fx-text-fill: #6B7280; -fx-font-size: 12px;");
-
-        infoBox.getChildren().addAll(titleBox, detailsLabel, dateBox);
-
-        HBox btnBox = new HBox();
-        btnBox.setSpacing(10);
-        btnBox.setStyle("-fx-alignment: center-right;");
-        Button viewBtn = new Button("👁️ View");
-        viewBtn.setStyle("-fx-background-color: #F8FAFC; -fx-text-fill: #26463D; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 15; -fx-cursor: hand; -fx-border-color: #E2E8F0; -fx-border-radius: 8; -fx-font-family: 'Segoe UI Emoji', 'System';");
-        Button downBtn = new Button("⬇️ Download");
-        downBtn.setStyle("-fx-background-color: #115E59; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 15; -fx-cursor: hand; -fx-font-family: 'Segoe UI Emoji', 'System';");
-
-        btnBox.getChildren().addAll(viewBtn, downBtn);
-        card.getChildren().addAll(iconBox, infoBox, btnBox);
-        return card;
-    }
-
     // ==========================================
     // TAB & SIDEBAR NAVIGATION
     // ==========================================
@@ -757,7 +878,20 @@ public class PatientDashboardController extends BaseController {
     @FXML private void showDashboard(ActionEvent event) { if (event != null) clearSearchAndReload(); hideAllViews(); if (viewDashboard != null) { viewDashboard.setVisible(true); viewDashboard.setManaged(true); } resetButtons(); if (btnDashboard != null) btnDashboard.setStyle(ACTIVE_STYLE); }
     @FXML private void showAppointments(ActionEvent event) { if (event != null) clearSearchAndReload(); hideAllViews(); if (viewAppointments != null) { viewAppointments.setVisible(true); viewAppointments.setManaged(true); } resetButtons(); if (btnAppointments != null) btnAppointments.setStyle(ACTIVE_STYLE); showMyAptsTab(); }
     @FXML private void showPrescriptions(ActionEvent event) { if (event != null) clearSearchAndReload(); hideAllViews(); if (viewPrescriptions != null) { viewPrescriptions.setVisible(true); viewPrescriptions.setManaged(true); } resetButtons(); if (btnPrescriptions != null) btnPrescriptions.setStyle(ACTIVE_STYLE); }
-    @FXML private void showTestReports(ActionEvent event) { if (event != null) clearSearchAndReload(); hideAllViews(); if (viewTestReports != null) { viewTestReports.setVisible(true); viewTestReports.setManaged(true); } resetButtons(); if (btnTestReports != null) btnTestReports.setStyle(ACTIVE_STYLE); }
+
+    @FXML private void showTestReports(ActionEvent event) {
+        if (event != null) clearSearchAndReload();
+        hideAllViews();
+        if (viewTestReports != null) {
+            viewTestReports.setVisible(true);
+            viewTestReports.setManaged(true);
+        }
+        resetButtons();
+        if (btnTestReports != null) btnTestReports.setStyle(ACTIVE_STYLE);
+
+        if (testReportsContainer != null) { testReportsContainer.setVisible(true); testReportsContainer.setManaged(true); }
+        if (testReportDetailView != null) { testReportDetailView.setVisible(false); testReportDetailView.setManaged(false); }
+    }
 
     private void hideAllViews() {
         if (viewDashboard != null) { viewDashboard.setVisible(false); viewDashboard.setManaged(false); }
@@ -773,19 +907,8 @@ public class PatientDashboardController extends BaseController {
         if (btnTestReports != null) btnTestReports.setStyle(INACTIVE_STYLE);
     }
 
-    private void showAlert(Alert.AlertType type, String title, String content) {
-        Alert alert = new Alert(type);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(content);
-        alert.showAndWait();
-    }
-
     @FXML private void handleLogout(ActionEvent event) {
         UserSession.getInstance().cleanUserSession();
-        try {
-            PreparedStatement stmt = DBConnection.getConnection().prepareStatement("SELECT 1"); // dummy
-        } catch (Exception e) {}
         navigateTo(event, "/fxml/RoleSelection.fxml", "Digital Health Passport - Role Selection");
     }
 }

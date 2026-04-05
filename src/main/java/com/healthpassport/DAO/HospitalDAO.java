@@ -1,3 +1,4 @@
+/*
 package com.healthpassport.DAO;
 
 import com.healthpassport.MODEL.user.Hospital;
@@ -33,3 +34,5 @@ public class HospitalDAO {
         return null;
     }
 }
+
+ */

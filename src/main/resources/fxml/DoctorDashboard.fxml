@@ -64,7 +64,7 @@
             <HBox alignment="CENTER_LEFT" spacing="20.0" style="-fx-padding: 25 25 10 25;">
                 <HBox alignment="CENTER_LEFT" HBox.hgrow="ALWAYS" maxWidth="400.0" style="-fx-background-color: white; -fx-background-radius: 20; -fx-padding: 8 15; -fx-effect: dropshadow(three-pass-box, rgba(38,70,61,0.05), 10, 0, 0, 2);">
                     <Label text="🔍" style="-fx-text-fill: #9CA3AF; -fx-font-family: 'Segoe UI Emoji';" />
-                    <TextField fx:id="searchField" onAction="#handleGlobalPatientSearch" promptText="Search patients globally by name or ID..." style="-fx-background-color: transparent; -fx-border-color: transparent; -fx-prompt-text-fill: #9CA3AF;" HBox.hgrow="ALWAYS" />
+                    <TextField fx:id="searchField" onAction="#handleGlobalPatientSearch" promptText="Search patients globally by name or System ID..." style="-fx-background-color: transparent; -fx-border-color: transparent; -fx-prompt-text-fill: #9CA3AF;" HBox.hgrow="ALWAYS" />
                 </HBox>
                 <HBox HBox.hgrow="ALWAYS" />
                 <Label text="🔔" style="-fx-font-size: 18px; -fx-text-fill: #26463D; -fx-cursor: hand; -fx-font-family: 'Segoe UI Emoji';" />
@@ -241,7 +241,7 @@
 
                                     <VBox spacing="15.0" style="-fx-padding: 10 0 0 0;" VBox.vgrow="ALWAYS">
                                         <VBox spacing="5.0">
-                                            <Label text="Patient ID / System Email" style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 12px;" />
+                                            <Label text="System ID" style="-fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 12px;" />
                                             <HBox spacing="10.0">
                                                 <TextField fx:id="prescribePatientIdField" promptText="e.g. PT-0025235" HBox.hgrow="ALWAYS" style="-fx-background-color: #F8FAFC; -fx-background-radius: 8; -fx-padding: 12; -fx-border-color: #E2E8F0; -fx-border-radius: 8;" />
                                                 <Button text="Verify" maxHeight="Infinity" style="-fx-background-color: #E8F3EE; -fx-text-fill: #115E59; -fx-font-weight: bold; -fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 0 30;" />
