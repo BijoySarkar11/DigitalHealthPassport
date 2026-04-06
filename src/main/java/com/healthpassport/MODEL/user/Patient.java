@@ -35,11 +35,10 @@ public class Patient extends User {
     public String getProfileSummary() {
         return "Patient: " + getFullName() + " | Blood: " + bloodGroup + " | Vitals: " + weight + "kg, " + height + "cm";
     }
-
+/*
     @Override
     public boolean saveToDatabase() {
-        int baseUserId = saveBaseUserRecord(); // Calls inherited method
-        if (baseUserId == -1) return false;
+        int baseUserId = saveBaseUserRecord();
 
         String query = "INSERT INTO Patients (user_id, system_id, full_name, date_of_birth, gender, blood_group, phone, weight, height) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DBConnection.getConnection();
@@ -81,4 +80,6 @@ public class Patient extends User {
             return false;
         }
     }
+
+ */
 }

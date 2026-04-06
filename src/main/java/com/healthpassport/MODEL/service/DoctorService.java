@@ -15,8 +15,7 @@ public class DoctorService {
         this.doctorDAO = new DoctorDAO();
     }
 
-    /**
-     * Business Logic: Calculates the next sequential ID for a new Doctor.
+    /**next sequential ID new Doctor.
      */
     public String generateSystemId() {
         String query = "SELECT system_id FROM Users WHERE role = 'DOCTOR' AND system_id LIKE 'DOC-%' ORDER BY id DESC LIMIT 1";
@@ -35,7 +34,7 @@ public class DoctorService {
     }
 
     /**
-     * Validates and registers a new doctor.
+     * Validates and register newdoc.
      */
     public boolean registerNewDoctor(Doctor doctor) {
         if (doctor.getFullName() == null || doctor.getSpecialization() == null || doctor.getLicenseNumber() == null) {
@@ -45,7 +44,7 @@ public class DoctorService {
     }
 
     /**
-     * Updates an existing doctor.
+     * Update existingdoctor.
      */
     public boolean updateDoctorProfile(Doctor doctor) {
         if (doctor.getSystemId() == null) return false;

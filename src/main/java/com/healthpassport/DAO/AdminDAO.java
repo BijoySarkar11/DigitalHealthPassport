@@ -16,9 +16,9 @@ public class AdminDAO implements IDAO<Admin> {
     @Override
     public boolean create(Admin admin) {
         try (Connection conn = DBConnection.getConnection()) {
-            conn.setAutoCommit(false); // Start Transaction
+            conn.setAutoCommit(false);
 
-            // 1. Create Hospital if needed
+            // Hospital banano
             if (admin.getHospitalId() <= 0 && admin.getHospitalName() != null && !admin.getHospitalName().isEmpty()) {
                 String hospQuery = "INSERT INTO Hospitals (name, address, contact_number) VALUES (?, ?, ?)";
                 try (PreparedStatement stmt = conn.prepareStatement(hospQuery, Statement.RETURN_GENERATED_KEYS)) {
@@ -31,7 +31,7 @@ public class AdminDAO implements IDAO<Admin> {
                 }
             }
 
-            // 2. Create User
+            // User banano
             String userQuery = "INSERT INTO Users (system_id, full_name, email, password_hash, role, hospital_id) VALUES (?, ?, ?, ?, 'ADMIN', ?)";
             try (PreparedStatement stmt = conn.prepareStatement(userQuery, Statement.RETURN_GENERATED_KEYS)) {
                 stmt.setString(1, admin.getSystemId());

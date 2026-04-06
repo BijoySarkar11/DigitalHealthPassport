@@ -28,7 +28,7 @@ public class Admin extends User {
     public String getProfileSummary() {
         return "Administrator: " + getFullName() + " | Hospital: " + (hospitalName != null ? hospitalName : "Global Network");
     }
-
+/*
     @Override
     public boolean saveToDatabase() {
         // If this admin represents a new hospital, create the Hospitals record first
@@ -50,7 +50,7 @@ public class Admin extends User {
             }
         }
 
-        // Save the Admin user credentials
+        //Admin user credentials save
         return saveBaseUserRecord() != -1;
     }
 
@@ -58,7 +58,7 @@ public class Admin extends User {
     public boolean updateInDatabase() {
         boolean userUpdated = updateBaseUserRecord();
 
-        // Update the linked hospital details simultaneously
+        // linked hos details update simultaneouslyyy
         if (userUpdated && getHospitalId() > 0 && hospitalName != null) {
             String hospQuery = "UPDATE Hospitals SET name = ?, address = ?, contact_number = ? WHERE id = ?";
             try (Connection conn = DBConnection.getConnection();
@@ -74,4 +74,6 @@ public class Admin extends User {
         }
         return userUpdated;
     }
+
+ */
 }

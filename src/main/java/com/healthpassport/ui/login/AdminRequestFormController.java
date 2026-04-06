@@ -23,7 +23,7 @@ public class AdminRequestFormController extends BaseController {
 
     @FXML
     private void handleSubmit(ActionEvent event) {
-        // 1. Inline Validation (No popups)
+
         if (hospNameField.getText().trim().isEmpty() ||
                 hospRegNoField.getText().trim().isEmpty() ||
                 hospEmailField.getText().trim().isEmpty() ||
@@ -36,11 +36,11 @@ public class AdminRequestFormController extends BaseController {
 
         String hospital = hospNameField.getText().trim();
 
-        // 2. Display Success Inline (No popups)
+        //Display Success
         statusMessageLabel.setText("✅ Application Queued! Verification pending for " + hospital + ".\nWe will contact you via email within 1-2 business days.");
         statusMessageLabel.setStyle("-fx-text-fill: #10B981; -fx-font-weight: bold;");
 
-        // 3. Update the Buttons instantly
+        //  Button up
         submitBtn.setText("Submitted");
         submitBtn.setDisable(true); // Disable so they can't click it twice
         submitBtn.setStyle("-fx-background-color: #9CA3AF; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 12 30;");
@@ -51,7 +51,7 @@ public class AdminRequestFormController extends BaseController {
 
     @FXML
     private void handleCancel(ActionEvent event) {
-        // OOP: Replaced the raw FXMLLoader try-catch block with our inherited navigation method
+
         navigateTo(event, "/fxml/RoleSelection.fxml", "Digital Health Passport - Role Selection");
     }
 }

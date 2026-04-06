@@ -14,11 +14,7 @@ import java.sql.SQLException;
 
 public class UserDAO {
 
-    /**
-     * Authenticates a user using either Email OR System ID.
-     * Because 'User' is now abstract, this method acts as a Factory,
-     * returning the correct concrete subclass (Admin, Doctor, or Patient).
-     */
+
     public User authenticate(String identifier, String password) {
         String query = "SELECT id, system_id, full_name, email, password_hash, role, hospital_id FROM Users WHERE (email = ? OR system_id = ?) AND password_hash = ? AND is_active = TRUE";
 
@@ -32,18 +28,18 @@ public class UserDAO {
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
-                // 1. Extract raw data from the Users table
+                // raw data extractUsers table
                 int internalId = rs.getInt("id");
                 String systemId = rs.getString("system_id");
                 String fullName = rs.getString("full_name");
                 String email = rs.getString("email");
                 String passHash = rs.getString("password_hash");
-                Role role = Role.valueOf(rs.getString("role")); // Convert SQL string to Enum
+                Role role = Role.valueOf(rs.getString("role"));
 
                 int hospId = rs.getInt("hospital_id");
                 int finalHospitalId = rs.wasNull() ? -1 : hospId;
 
-                // 2. Instantiate the correct Concrete Class based on the Role
+
                 User authenticatedUser = null;
 
                 switch (role) {
@@ -58,7 +54,7 @@ public class UserDAO {
                         break;
                 }
 
-                // 3. Populate the shared base attributes
+
                 if (authenticatedUser != null) {
                     authenticatedUser.setId(internalId);
                     authenticatedUser.setSystemId(systemId);
@@ -75,6 +71,6 @@ public class UserDAO {
             e.printStackTrace();
         }
 
-        return null; // Return null if login fails
+        return null;
     }
 }

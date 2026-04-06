@@ -15,8 +15,7 @@ public class PatientService {
         this.patientDAO = new PatientDAO();
     }
 
-    /**
-     * Business Logic: Calculates the next sequential ID for a new Patient.
+    /**    next sequential IDnew P.
      */
     public String generateSystemId() {
         String query = "SELECT system_id FROM Users WHERE role = 'PATIENT' AND system_id LIKE 'PT-%' ORDER BY id DESC LIMIT 1";
@@ -34,8 +33,7 @@ public class PatientService {
         return "PT-0025000"; // Starting baseline
     }
 
-    /**
-     * Validates and registers a new patient.
+    /**Validates and register.
      */
     public boolean registerNewPatient(Patient patient) {
         // Business Rule: Ensure critical fields exist
@@ -45,8 +43,7 @@ public class PatientService {
         return patientDAO.create(patient);
     }
 
-    /**
-     * Updates an existing patient.
+    /**Updatesexisting p.
      */
     public boolean updatePatientProfile(Patient patient) {
         if (patient.getSystemId() == null) return false;

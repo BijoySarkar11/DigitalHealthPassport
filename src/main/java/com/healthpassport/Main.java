@@ -9,7 +9,7 @@ import java.io.IOException;
 
 public class Main extends Application {
 
-    // USER-DEFINED EXCEPTION
+
     public static class ApplicationStartupException extends Exception {
         public ApplicationStartupException(String message, Throwable cause) {
             super(message, cause);
@@ -36,7 +36,7 @@ public class Main extends Application {
         try {
             Parent root = FXMLLoader.load(getClass().getResource("/fxml/RoleSelection.fxml"));
 
-            //window title
+
             primaryStage.setTitle("Digital Health Passport");
             primaryStage.setScene(new Scene(root, 1000, 700));
             primaryStage.show();

@@ -26,10 +26,10 @@ public class Doctor extends User {
     public String getProfileSummary() {
         return "Dr. " + getFullName() + " - " + specialization + " (" + licenseNumber + ")";
     }
-
+/*
     @Override
     public boolean saveToDatabase() {
-        int baseUserId = saveBaseUserRecord(); // Calls inherited method
+        int baseUserId = saveBaseUserRecord(); // inherited
         if (baseUserId == -1) return false;
 
         String query = "INSERT INTO Doctors (user_id, hospital_id, specialization, license_number, degrees) VALUES (?, ?, ?, ?, ?)";
@@ -64,4 +64,6 @@ public class Doctor extends User {
             return false;
         }
     }
+
+ */
 }

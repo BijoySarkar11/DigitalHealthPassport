@@ -8,7 +8,7 @@ import java.sql.Statement;
 import java.sql.Types;
 
 public abstract class User extends Person {
-    private String systemId; // Replaces nationalId (e.g., PT-0025317)
+    private String systemId;
     private String email;
     private String passwordHash;
     private Role role;
@@ -31,10 +31,7 @@ public abstract class User extends Person {
     public int getHospitalId() { return hospitalId; }
     public void setHospitalId(int hospitalId) { this.hospitalId = hospitalId; }
 
-    /**
-     * Shared logic to save the base User record.
-     * @return The generated database ID, or -1 if failed.
-     */
+
     protected int saveBaseUserRecord() {
         String query = "INSERT INTO Users (system_id, full_name, email, password_hash, role, hospital_id) VALUES (?, ?, ?, ?, ?, ?)";
         try (Connection conn = DBConnection.getConnection();

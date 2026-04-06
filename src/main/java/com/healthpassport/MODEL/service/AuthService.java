@@ -13,9 +13,7 @@ public class AuthService {
     }
 
     /**
-     * Handles the login process and session initialization.
-     * @return true if successful, false if credentials are wrong.
-     */
+     * login process handling*/
     public boolean loginUser(String identifier, String password) {
         if (identifier == null || password == null || identifier.isEmpty() || password.isEmpty()) {
             return false;

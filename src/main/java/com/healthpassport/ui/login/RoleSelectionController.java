@@ -30,9 +30,7 @@ public class RoleSelectionController extends BaseController {
         navigateTo(event, "/fxml/AdminRequestForm.fxml", "Digital Health Passport - Request Access");
     }
 
-    // ==========================================
-    // UI HOVER ANIMATIONS
-    // ==========================================
+
 
     @FXML
     private void handleMouseEnter(MouseEvent event) {

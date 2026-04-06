@@ -19,10 +19,10 @@ public class PatientDAO implements IDAO<Patient> {
         String insertPatientQuery = "INSERT INTO Patients (user_id, system_id, full_name, date_of_birth, gender, blood_group, phone, weight, height) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = DBConnection.getConnection()) {
-            conn.setAutoCommit(false); // Transaction start
+            conn.setAutoCommit(false);
             int newUserId = -1;
 
-            // 1. Insert into Users table
+            // User table e insert
             try (PreparedStatement stmtUser = conn.prepareStatement(insertUserQuery, Statement.RETURN_GENERATED_KEYS)) {
                 stmtUser.setString(1, patient.getSystemId());
                 stmtUser.setString(2, patient.getFullName());
@@ -36,7 +36,7 @@ public class PatientDAO implements IDAO<Patient> {
                 if (rs.next()) newUserId = rs.getInt(1);
             }
 
-            // 2. Insert into Patients table
+            //Patients table e insert
             if (newUserId != -1) {
                 try (PreparedStatement stmtPat = conn.prepareStatement(insertPatientQuery)) {
                     stmtPat.setInt(1, newUserId);
@@ -52,7 +52,7 @@ public class PatientDAO implements IDAO<Patient> {
                 }
             }
 
-            conn.commit(); // Transaction commit
+            conn.commit();
             return true;
         } catch (Exception e) {
             e.printStackTrace();
@@ -97,7 +97,7 @@ public class PatientDAO implements IDAO<Patient> {
 
     @Override
     public boolean delete(String systemId) {
-        // Cascade delete will handle the Patients table if set up in SQL
+
         String query = "DELETE FROM Users WHERE system_id = ? AND role = 'PATIENT'";
         try (Connection conn = DBConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setString(1, systemId);

@@ -26,17 +26,17 @@ public class AdminLoginController extends BaseController {
         errorLabel.setText("");
 
         try {
-            // 1. Check Length
+
             if (password == null || password.length() < 6) {
                 throw new ExceptionPassword("Password must be at least 6 characters.");
             }
 
-            // 2. Check for at least one letter AND one number using Regex
+
             if (!password.matches(".*[a-zA-Z].*") || !password.matches(".*\\d.*")) {
                 throw new ExceptionPassword("Password must contain both letters and numbers.");
             }
 
-            // 3. Proceed with Database Login
+            //Database Login
             if (authService.loginUser(identifier, password)) {
                 if (UserSession.getInstance().getCurrentUser().getRole() == Role.ADMIN) {
                     navigateTo(event, "/fxml/AdminDashboard.fxml", "Digital Health Passport - Hospital Administration");

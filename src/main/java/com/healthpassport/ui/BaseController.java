@@ -12,11 +12,7 @@ import java.io.IOException;
 
 public abstract class BaseController {
 
-    /**
-     * Shared method to switch between screens securely.
-     * Accepts any JavaFX Event (ActionEvent, MouseEvent, etc.)
-     * Automatically preserves the current window dimensions.
-     */
+
     protected void navigateTo(Event event, String fxmlPath, String title) {
         try {
             Parent root = FXMLLoader.load(getClass().getResource(fxmlPath));
@@ -34,9 +30,7 @@ public abstract class BaseController {
         }
     }
 
-    /**
-     * Shared method to show universal popup messages.
-     */
+
     protected void showAlert(Alert.AlertType type, String title, String content) {
         Alert alert = new Alert(type);
         alert.setTitle(title);

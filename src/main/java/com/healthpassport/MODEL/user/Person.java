@@ -1,8 +1,9 @@
 package com.healthpassport.MODEL.user;
 
-public abstract class Person implements IDatabaseEntity {
-    // Encapsulation: All fields are strictly private
-    private int id; // Internal Database integer ID
+//public abstract class Person implements IDatabaseEntity {
+public abstract class Person{
+    // Encapsulation
+    private int id;
     private String fullName;
     private String phone;
 
@@ -17,6 +18,6 @@ public abstract class Person implements IDatabaseEntity {
     public String getPhone() { return phone; }
     public void setPhone(String phone) { this.phone = phone; }
 
-    // Polymorphism: Forces subclasses to define how their profile looks
+    // Polymorphism
     public abstract String getProfileSummary();
 }
