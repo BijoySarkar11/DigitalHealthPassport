@@ -1,11 +1,10 @@
--- Drop the database if it exists to start fresh, then create it
 DROP DATABASE IF EXISTS health_passport_db;
 CREATE DATABASE health_passport_db;
 USE health_passport_db;
 
--- =========================================================================
+
 -- 1. CREATE ALL TABLES
--- =========================================================================
+
 
 CREATE TABLE Hospitals (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -148,39 +147,38 @@ CREATE TABLE Audit_Logs (
     FOREIGN KEY (user_id) REFERENCES Users(id)
 );
 
--- =========================================================================
--- 2. INSERT HOSPITALS & ADMINS
--- =========================================================================
 
--- Hospital 1: Dhaka Medical College
+-- hospital 
+
+
+-- Hos1
 INSERT INTO Hospitals (name, address, contact_number) VALUES ('Dhaka Medical College', 'Dhaka, Bangladesh', '01711111111');
 INSERT INTO Users (email, password_hash, role, hospital_id) VALUES ('admin.dmc@gov.bd', 'pass123', 'ADMIN', 1);
 
--- Hospital 2: United Hospital
+-- Hos2
 INSERT INTO Hospitals (name, address, contact_number) VALUES ('United Hospital', 'Gulshan, Dhaka', '01722222222');
 INSERT INTO Users (email, password_hash, role, hospital_id) VALUES ('admin.united@hospital.com', 'pass123', 'ADMIN', 2);
 
--- Hospital 3: Shaheed Suhrawardy Medical College
+-- Hos3
 INSERT INTO Hospitals (name, address, contact_number) VALUES ('Shaheed Suhrawardy Medical College & Hospital', 'Sher-e-Bangla Nagar, Dhaka', '01733333333');
 INSERT INTO Users (email, password_hash, role, hospital_id) VALUES ('admin.ssmch@gov.bd', 'pass123', 'ADMIN', 3);
 
--- Hospital 4: Labaid Hospital
+-- Hos4
 INSERT INTO Hospitals (name, address, contact_number) VALUES ('Labaid Hospital', 'Dhanmondi, Dhaka', '01744444444');
 INSERT INTO Users (email, password_hash, role, hospital_id) VALUES ('admin.labaid@hospital.com', 'pass123', 'ADMIN', 4);
 
--- =========================================================================
--- 3. INSERT DOCTORS
--- =========================================================================
 
--- Dr. Maruf -> Dhaka Medical College (Hospital 1)
+-- doctors
+
+-- Dr. Maruf dmc
 INSERT INTO Users (system_id, full_name, email, password_hash, role, hospital_id) VALUES ('DOC-001', 'Maruf Ahmed Tamal', 'maruf.tamal@dmc.gov.bd', 'pass123', 'DOCTOR', 1);
 INSERT INTO Doctors (user_id, hospital_id, specialization, license_number, degrees, years_of_experience) VALUES (LAST_INSERT_ID(), 1, 'Cardiology', 'BMDC-1001', 'MBBS, MD', 15);
 
--- Dr. Alisha -> United Hospital (Hospital 2)
+-- Dr. Alisha United Hos
 INSERT INTO Users (system_id, full_name, email, password_hash, role, hospital_id) VALUES ('DOC-002', 'Alisha Kabir', 'alisha.kabir@united.com', 'pass123', 'DOCTOR', 2);
 INSERT INTO Doctors (user_id, hospital_id, specialization, license_number, degrees, years_of_experience) VALUES (LAST_INSERT_ID(), 2, 'Neurology', 'BMDC-1002', 'MBBS, FCPS', 8);
 
--- Dr. Faria -> Shaheed Suhrawardy (Hospital 3)
+-- Dr. Faria -> Shaheed Suhrawardy (Hospital 
 INSERT INTO Users (system_id, full_name, email, password_hash, role, hospital_id) VALUES ('DOC-003', 'Faria Alam', 'faria.alam@ssmch.gov.bd', 'pass123', 'DOCTOR', 3);
 INSERT INTO Doctors (user_id, hospital_id, specialization, license_number, degrees, years_of_experience) VALUES (LAST_INSERT_ID(), 3, 'Dermatologist', 'BMDC-1003', 'MBBS, DDV', 5);
 
@@ -188,9 +186,8 @@ INSERT INTO Doctors (user_id, hospital_id, specialization, license_number, degre
 INSERT INTO Users (system_id, full_name, email, password_hash, role, hospital_id) VALUES ('DOC-004', 'Sameha Kamrul', 'sameha.kamrul@labaid.com', 'pass123', 'DOCTOR', 4);
 INSERT INTO Doctors (user_id, hospital_id, specialization, license_number, degrees, years_of_experience) VALUES (LAST_INSERT_ID(), 4, 'Orthopedics', 'BMDC-1004', 'MBBS, MS (Ortho)', 10);
 
--- =========================================================================
--- 4. INSERT PATIENTS
--- =========================================================================
+
+-- patient insert
 
 INSERT INTO Users (system_id, full_name, email, password_hash, role, hospital_id) VALUES ('PT-0025235', 'Ummey Habiba Pranty', 'pranty@gmail.com', 'pass123', 'PATIENT', NULL);
 INSERT INTO Patients (user_id, system_id, full_name, date_of_birth, gender, blood_group, phone, weight, height) VALUES (LAST_INSERT_ID(), 'PT-0025235', 'Ummey Habiba Pranty', '1995-08-20', 'FEMALE', 'AB+', '01822222222', 60.00, 160.00);
@@ -359,16 +356,14 @@ INSERT INTO Users (system_id, email, password_hash, role, hospital_id) VALUES ('
 INSERT INTO Patients (user_id, system_id, full_name, date_of_birth, gender, blood_group, phone, weight, height) VALUES (LAST_INSERT_ID(), 'PT-0025316', 'Nazifa Rahman', '2001-09-02', 'FEMALE', 'O+', '01711000140', 56.5, 162.0);
 
 
--- =========================================================================
--- 5. PERFECTED DISTRIBUTION APPOINTMENT SCRIPT (FIXED)
--- =========================================================================
+
+-- appointment inserttt
 -- DELETE FROM Appointments;
 INSERT INTO Appointments (patient_id, doctor_id, hospital_id, appointment_date, status, reason, created_by)
 SELECT 
     p.id, 
     d.id, 
     d.hospital_id, 
-    -- Inject d.id (* 7) to shift the days so doctors work on different past days
     DATE_SUB(CURDATE(), INTERVAL ((ROW_NUMBER() OVER(PARTITION BY d.id ORDER BY p.id) + (d.id * 7)) % 14) + 1 DAY) 
     -- Inject d.id (* 3) to shift the hours so their shifts look different
     + INTERVAL (9 + ((ROW_NUMBER() OVER(PARTITION BY d.id ORDER BY p.id) + (d.id * 3)) % 8)) HOUR, 
@@ -377,50 +372,42 @@ SELECT
     (SELECT id FROM Users WHERE role='ADMIN' AND hospital_id = d.hospital_id LIMIT 1)
 FROM Patients p
 JOIN Doctors d ON d.id = ((p.id * 13) % 4) + 1
--- This WHERE clause drops ~33% of the rows randomly so doctors have different totals
 WHERE (p.id + d.id) % 3 != 0;
 INSERT INTO Appointments (patient_id, doctor_id, hospital_id, appointment_date, status, reason, created_by)
 SELECT 
     p.id, 
     d.id, 
     d.hospital_id, 
-    -- Inject d.id (* 5) to shift the scheduled days
     DATE_ADD(CURDATE(), INTERVAL ((ROW_NUMBER() OVER(PARTITION BY d.id ORDER BY p.id) + (d.id * 5)) % 11) DAY) 
-    -- Inject d.id (* 2) to shift the scheduled hours
     + INTERVAL (9 + ((ROW_NUMBER() OVER(PARTITION BY d.id ORDER BY p.id) + (d.id * 2)) % 8)) HOUR, 
     'SCHEDULED', 
     'Follow-up', 
     1
 FROM Patients p 
 JOIN Doctors d ON d.id = ((p.id * 17) % 4) + 1
--- This WHERE clause drops ~40% of the rows randomly, creating heavily varied schedule sizes
 WHERE (p.id + d.id) % 5 < 3;
 
 
--- =========================================================================
--- 6. FILL MEDICAL HISTORIES, PRESCRIPTIONS, AND TEST REPORTS
--- =========================================================================
 
--- Add 1 Diagnosis to EVERY patient
+-- meical history,test report,prescription
+
+
 INSERT INTO Medical_History (patient_id, diagnosed_by, hospital_id, diagnosis, diagnosis_date)
 SELECT id, (id % 4) + 1, (id % 4) + 1, 
     CASE WHEN id % 3 = 0 THEN 'Asthma (Mild)' WHEN id % 2 = 0 THEN 'Type 2 Diabetes' ELSE 'Hypertension' END, 
     DATE_SUB(CURDATE(), INTERVAL (id % 40) DAY) 
 FROM Patients;
 
--- Add 1 Prescription to EVERY patient
 INSERT INTO Prescriptions (patient_id, doctor_id, hospital_id, prescription_date, notes)
 SELECT id, (id % 4) + 1, (id % 4) + 1, DATE_SUB(CURDATE(), INTERVAL (id % 15) DAY), 'Routine follow-up medication'
 FROM Patients;
 
--- Add 2 Medications to EVERY Prescription
 INSERT INTO Prescription_Items (prescription_id, medicine_name, dosage, frequency, duration, instructions)
 SELECT id, 'Paracetamol', '500mg', '1-1-1', '5 Days', 'After meals' FROM Prescriptions;
 
 INSERT INTO Prescription_Items (prescription_id, medicine_name, dosage, frequency, duration, instructions)
 SELECT id, CASE WHEN patient_id % 2 = 0 THEN 'Metformin' ELSE 'Amlodipine' END, '50mg', '0-0-1', '30 Days', 'Before sleeping' FROM Prescriptions;
 
--- Add 1 Test Report to EVERY patient
 INSERT INTO Test_Reports (patient_id, added_by_admin_id, hospital_id, report_type, file_url, report_date, notes)
 SELECT p.id, 
     (SELECT id FROM Users WHERE role='ADMIN' AND hospital_id = (p.id % 4) + 1 LIMIT 1), 

@@ -81,7 +81,7 @@ public class DoctorDAO implements IDAO<Doctor> {
             return false;
         }
     }
-
+    /*
     @Override
     public boolean delete(String systemId) {
         String query = "DELETE FROM Users WHERE system_id = ? AND role = 'DOCTOR'";
@@ -96,4 +96,6 @@ public class DoctorDAO implements IDAO<Doctor> {
 
     @Override
     public List<Doctor> findAll() { return new ArrayList<>(); }
+
+     */
 }

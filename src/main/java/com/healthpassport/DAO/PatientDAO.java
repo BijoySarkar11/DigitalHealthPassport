@@ -94,7 +94,7 @@ public class PatientDAO implements IDAO<Patient> {
             return false;
         }
     }
-
+/*
     @Override
     public boolean delete(String systemId) {
 
@@ -110,4 +110,6 @@ public class PatientDAO implements IDAO<Patient> {
 
     @Override
     public List<Patient> findAll() { return new ArrayList<>(); }
+
+ */
 }

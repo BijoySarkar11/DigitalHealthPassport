@@ -85,7 +85,7 @@ public class AdminDAO implements IDAO<Admin> {
             return false;
         }
     }
-
+    /*
     @Override
     public boolean delete(String systemId) {
         String query = "DELETE FROM Users WHERE system_id = ? AND role = 'ADMIN'";
@@ -105,4 +105,6 @@ public class AdminDAO implements IDAO<Admin> {
     public List<Admin> findAll() {
         return new ArrayList<>();
     }
+
+     */
 }
