@@ -1,6 +1,6 @@
 # Digital Health Passport 🏥
 
-Digital Health Passport is a centralized, patient-centric Java desktop application designed to eliminate institutional data silos in healthcare. By decoupling patient records from specific hospital constraints, the platform ensures uncompromised continuity of care across an entire unified network.
+Digital Health Passport is a secure, centralized healthcare management system built with Java. Utilizing strict Object-Oriented Programming (OOP) methodologies and a relational SQL database, the platform eliminates institutional data silos. By maintaining a global patient registry, it empowers healthcare providers with instant access to comprehensive medical histories, enabling uninterrupted continuity of care across the entire network.
 
 ![Application Landing Screen](images/Starting.png)
 
@@ -11,14 +11,16 @@ Digital Health Passport is a centralized, patient-centric Java desktop applicati
 Unlike traditional healthcare systems where patient data is trapped within a single hospital's database, this application uses a hybrid global-local architecture:
 
 * **🌐 Global Patient Database:** Patient registration, medical histories, and test reports are completely global. Any registered doctor or administrator can securely access or update records across the entire ecosystem.
-![Global Database Management](images/AdminportalFeatures.jpeg)
+
 
 * **🏥 Localized Facility Control:** While patient data is global, doctor directories remain institutional. Individual hospital administrators manage their own local staff directories securely.
 
 * **⚡ Absolute Patient Autonomy:** Patients can book consultations with any doctor across the entire network, completely eliminating hospital boundaries.
+
 ![Cross-Hospital Booking Logic](images/PatientportalFeature.jpeg)
 
 * **🩺 Unrestricted Continuity of Care:** Doctors can instantly view the full medical details, test reports, and histories of *any* patient in the system, even if the patient has never visited their specific hospital before.
+
 ![Global Search & Prescribe Workflows](images/DoctorpotalFeatures.jpeg)
 
 ---
@@ -44,6 +46,8 @@ Unlike traditional healthcare systems where patient data is trapped within a sin
 * **Global Database Management:** Search records and register new patient files universally onto the global registry stack.
 * **Institutional Directory Control:** Manage localized facility staff by onboarding and updating verified doctors to that specific hospital's structural roster.
 * **Data Appending Utilities:** Secure entry pathways allowing administrators to authoritative add official laboratory test files and update historical patient profiles.
+
+![Global Database Management](images/AdminportalFeatures.jpeg)
 
 ### 4. Network Scalability & Registration
 ![Hospital Network Registration](images/HospitalReg.png)
