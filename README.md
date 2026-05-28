@@ -1,6 +1,6 @@
 # Digital Health Passport 🏥
 
-Digital Health Passport is a secure, centralized healthcare management system built with Java. Utilizing strict Object-Oriented Programming (OOP) methodologies and a relational SQL database, the platform eliminates institutional data silos. By maintaining a global patient registry, it empowers healthcare providers with instant access to comprehensive medical histories, enabling uninterrupted continuity of care across the entire network.
+Digital Health Passport is a secure Java desktop application that serves as a centralized healthcare management system. Utilizing strict Object-Oriented Programming (OOP) methodologies and a relational SQL database, the platform eliminates institutional data silos. By maintaining a global patient registry, it empowers healthcare providers with instant access to comprehensive medical histories, enabling uninterrupted continuity of care across the entire network.
 
 ![Application Landing Screen](images/Starting.png)
 
