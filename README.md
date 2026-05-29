@@ -17,7 +17,7 @@ Unlike traditional healthcare systems where patient data is trapped within a sin
 
 * **⚡ Absolute Patient Autonomy:** Patients can book consultations with any doctor across the entire network, completely eliminating hospital boundaries.
 
-![Cross-Hospital Booking Logic](images/PatientportalFeature.jpeg)
+![Cross-Hospital Booking Logic](images/PatientportalFeatures.jpeg)
 
 * **🩺 Unrestricted Continuity of Care:** Doctors can instantly view the full medical details, test reports, and histories of *any* patient in the system, even if the patient has never visited their specific hospital before.
 
